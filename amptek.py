@@ -67,6 +67,40 @@ class AmptekCdTe123:
 
         return status
 
+    def get_spectrum(self, clear=False):
+        """Send a spectrum request and return spectrum."""
+        if clear:
+            self._write('F5FA02020000FE0D')
+        else:
+            self._write('F5FA02010000FE0E')
+
+        spectrum = self._read(8000)
+
+        return spectrum
+
+    def get_spectrum_status(self, clear=False):
+        """Send a spectrum & status request and return spectrum & status."""
+        if clear:
+            self._write('F5FA02040000FE0B')
+        else:
+            self._write('F5FA02030000FE0C')
+
+        spectrum_status = self._read(8000)
+
+        return spectrum_status
+
+    def clear_spectum(self):
+        """Send a clear spectrum request."""
+        self._write('F5FAF0010000FD20')
+
+    def enable_mca(self):
+        """Enable MCA."""
+        self._write('F5FAF0020000FD1F')
+
+    def disable_mca(self):
+        """Disable MCA."""
+        self._write('F5FAF0030000FD1E')
+
     @staticmethod
     def from_raw_spectrun(answer, num_chan=2048):
         """Extract spectrum from response packet."""
