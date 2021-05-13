@@ -50,7 +50,8 @@ class AmptekCdTe123:
 
     def _write(self, msg):
         """Write a message to the device."""
-        answer = self.device.write(self._endpoint_out.bEndpointAddress, msg)
+        answer = self.device.write(self._endpoint_out.bEndpointAddress,
+                                   bytes.fromhex(msg))
         return answer
 
     def _read(self, buffer_size):
@@ -61,8 +62,9 @@ class AmptekCdTe123:
 
     def get_status(self):
         """Send a status request and return status information."""
-        self._write(bytes.fromhex('F5FA02010000FE0E'))
+        self._write('F5FA01010000FE0F')
         status = self._read(8000)
+
         return status
 
     @staticmethod
