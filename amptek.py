@@ -4,6 +4,9 @@ Created on Tue Mar 23 18:54:19 2021.
 
 @author: A. Vancraeyenest
 """
+
+from operator import xor, and_
+
 import usb.core
 import usb.util
 import numpy as np
@@ -109,6 +112,28 @@ class AmptekCdTe123:
         spectrum = raw[:, 0] + raw[:, 1]*2**8 + raw[:, 2]*2**16
 
         return spectrum
+
+    @staticmethod
+    def calculate_checksum(packet):
+        """
+        Calculate checksum of a string packet.
+
+        Parameters
+        ----------
+        packet : str
+            Full packet message for which one calculate checksum.
+
+        Returns
+        -------
+        checksum : str
+            Checksum as a string
+
+        """
+        pack = bytes.fromhex(packet)
+        checksum = sum(pack)
+        checksum = xor(checksum, 0xFFFF) + 1
+        checksum = and_(checksum, 0xFFFF)
+        return f'{checksum:04X}'
 
 
 class Status:
