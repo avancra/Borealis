@@ -63,7 +63,7 @@ class AmptekCdTe123:
     def get_status(self):
         """Send a status request and return status information."""
         self._write('F5FA01010000FE0F')
-        status = self._read(8000)
+        status = Status(self._read(8000))
 
         return status
 
@@ -111,9 +111,27 @@ class AmptekCdTe123:
         return spectrum
 
 
+class Status:
+    """Status packet of AmptekCdTe123."""
+
+    def __init__(self, raw_status):
+        self._raw = raw_status[6:70]
+        self.status = ""
+        self.serial_number = ""
+        self._process_raw()
+
+    def _process_raw(self):
+        """Decode the raw status byte into a human readable output."""
+        self.serial_number = '{:06}'.format((self._raw[26]
+                                             + self._raw[27]*2**8
+                                             + self._raw[28]*2**16
+                                             + self._raw[29]*2**24))
+
+
 if __name__ == '__main__':
     dev = AmptekCdTe123()
     dev.open_device()
     stat = dev.get_status()
-    print(stat)
+    print(stat._raw)
+    print(stat.serial_number)
     dev.close_device()
