@@ -55,6 +55,7 @@ class AmptekCdTe123:
         """Write a message to the device."""
         answer = self.device.write(self._endpoint_out.bEndpointAddress,
                                    bytes.fromhex(msg))
+        print(f'{answer=}')
         return answer
 
     def _read(self, buffer_size):
@@ -104,6 +105,70 @@ class AmptekCdTe123:
         """Disable MCA."""
         self._write('F5FAF0030000FD1E')
 
+    def send_text_config(self, config_cmd, save_to_mem=True):
+        """
+        Send a text fonfiguration command (ASCII commands).
+
+        Parameters
+        ----------
+        config_cmd : str
+            Command string, e.g. 'RESC=Y;'.
+        save_to_mem : bool, optional
+            True to save the config to detector memory. The default is True.
+
+        Raises
+        ------
+        error
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
+        if save_to_mem:
+            msg = 'F5FA2002'
+        else:
+            msg = 'F5FA2004'
+
+        cmd_length = len(config_cmd)
+        assert cmd_length <= 512
+
+        msg += f'{cmd_length:04X}'
+        msg += config_cmd.encode().hex().upper()
+
+        chksum = self.calculate_checksum(msg)
+        msg += chksum
+
+        self._write(msg)
+        resp = self._read(8000)
+
+        print(resp.tobytes())
+        # TODO: check response, log or raise error accordingly
+
+    def reset_configuration(self):
+        """Reset the Configuration to defaults."""
+        self.send_text_config('RESC=Y;', save_to_mem=True)
+
+    def set_acquisition_time(self, acq_time, save_to_mem=True):
+        """
+        Preset Acquisition Time.
+
+        Parameters
+        ----------
+        acq_time : float
+            Acquisition time in second, will be rounded to 1 decimal before
+            sending to the detector.
+        save_to_mem : bool, optional
+            True to save the config to detector memory. The default is True.
+
+        Returns
+        -------
+        None.
+
+        """
+        self.send_text_config(f'PRET={acq_time:.1f};', save_to_mem)
+
     @staticmethod
     def from_raw_spectrun(answer, num_chan=2048):
         """Extract spectrum from response packet."""
@@ -141,7 +206,7 @@ class Status:
 
     def __init__(self, raw_status):
         self._raw = raw_status[6:70]
-        self.status = ""
+        self.status = raw_status[6:70].tobytes()
         self.serial_number = ""
         self._process_raw()
 
@@ -154,9 +219,22 @@ class Status:
 
 
 if __name__ == '__main__':
+    import traceback
+    ACK_OK = b'\xF5\xFA\xFF\x00\x00\x00\xFD\x12'
     dev = AmptekCdTe123()
     dev.open_device()
     stat = dev.get_status()
     print(stat._raw)
+    print(stat.status)
     print(stat.serial_number)
+    try:
+        dev.get_spectrum()
+    except Exception:
+        traceback.print_exc()
+
+    try:
+        dev.set_acquisition_time(60, save_to_mem=True)
+    except Exception:
+        traceback.print_exc()
+
     dev.close_device()
