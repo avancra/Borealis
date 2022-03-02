@@ -93,7 +93,7 @@ class AmptekCdTe123:
 
         return spectrum_status
 
-    def clear_spectum(self):
+    def clear_spectrum(self):
         """Send a clear spectrum request."""
         self._write('F5FAF0010000FD20')
 
@@ -152,7 +152,7 @@ class AmptekCdTe123:
 
     def set_acquisition_time(self, acq_time, save_to_mem=True):
         """
-        Preset Acquisition Time.
+        Preset Acquisition Time, without any preset counts.
 
         Parameters
         ----------
@@ -167,7 +167,111 @@ class AmptekCdTe123:
         None.
 
         """
-        self.send_text_config(f'PRET={acq_time:.1f};', save_to_mem)
+        allowed_acq_time = [0, 99999999.9]
+        if allowed_acq_time[0] <= acq_time <= allowed_acq_time[1]:
+                self.send_text_config(f'PRET={acq_time:.1f};PREC=OFF;',
+                                      save_to_mem)
+        else:
+            raise ValueError('Acquisition time out of allowed range: '
+                             f'{allowed_acq_time}.')
+
+    def set_acquisition_counts(self, acq_counts, save_to_mem=True):
+        """
+        Preset Acquisition Counts, without any preset time.
+
+        Parameters
+        ----------
+        acq_counts : int
+        Acquisition counts aka number of events.
+        save_to_mem : bool, optional
+        True to save the config to detector memory. The default is True.
+
+        Returns
+        -------
+        None.
+
+        """
+        allowed_acq_counts = [0, 4294967295]
+        if not isinstance(acq_counts, int):
+            raise ValueError('Acquisition counts must be of type integer.')
+
+        if acq_counts <= allowed_acq_counts[1]:
+            self.send_text_config(f'PRET=OFF;PREC={acq_counts};',
+                                  save_to_mem)
+        else:
+            raise ValueError('Acquisition counts out of allowed range: '
+                             f'{allowed_acq_counts}.')
+
+
+    def set_acquisition_time_counts(self, acq_time, acq_counts, save_to_mem=True):
+        """
+        Preset Acquisition Time and Counts.
+
+        Parameters
+        ----------
+        acq_time : float
+        Acquisition time in seconds, will be rounded to 1 decimal before
+        sending to the detector.
+        acq_counts : int
+        Acquisition counts aka number of events.
+        save_to_mem : bool, optional
+        True to save the config to detector memory. The default is True.
+
+        Returns
+        -------
+        None.
+
+        """
+        allowed_acq_time = [0, 99999999.9]
+        allowed_acq_counts = [0, 4294967295]
+
+        if not isinstance(acq_counts, int):
+            raise ValueError('Acquisition counts must be of type integer.')
+
+        if acq_counts <= allowed_acq_counts[1]:
+            if allowed_acq_time[0] <= acq_time <= allowed_acq_time[1]:
+                self.send_text_config(f'PRET={acq_time:.1f};PREC={acq_counts};'
+                                      , save_to_mem)
+            else :
+                raise ValueError('Acquisition time out of allowed range: '
+                         f'{allowed_acq_time}.')
+        else:
+            raise ValueError('Acquisition counts out of allowed range: '
+                             f'{allowed_acq_counts}.')
+
+
+    def set_mca_channel(self, number_of_channel):
+       """Select Number of MCA Channels."""
+       allowed_values = [256, 512, 1024, 2048, 4096, 8192]
+       if number_of_channel in allowed_values:
+           self.send_text_config(f'MCAC={number_of_channel};', save_to_mem=True)
+       else:
+           raise ValueError('Wrong number of MCA channels.\n'
+                            f'{allowed_values=}')
+
+    def set_gain(self, gain, save_to_mem=True):
+        """
+        Set the total gain.
+
+        Parameters
+        ----------
+        gain : float,
+        Acquisition gain, will be rounded to 3 decimal before
+        sending to the detector.
+        save_to_mem : bool, optional
+        True to save the config to detector memory. The default is True.
+
+        Returns
+        -------
+        None.
+
+        """
+        allowed_gain = [0.750, 250]
+        if allowed_gain[0] <= gain <= allowed_gain[1]:
+            self.send_text_config(f'GAIN={gain:.3f};', save_to_mem)
+        else:
+            raise ValueError('Gain out of allowed range: '
+                             f'{allowed_gain}.')
 
     @staticmethod
     def from_raw_spectrun(answer, num_chan=2048):
@@ -199,6 +303,25 @@ class AmptekCdTe123:
         checksum = xor(checksum, 0xFFFF) + 1
         checksum = and_(checksum, 0xFFFF)
         return f'{checksum:04X}'
+
+    @staticmethod
+    def verify_checksum(packet):
+        """
+        Verify the checksum of a string message.
+
+        Parameters
+        ----------
+        packet : str
+            Full packet message with checksum.
+
+        Returns
+        -------
+        Bool
+            True if checksums match, False otherwise.
+
+        """
+        checksum = AmptekCdTe123.calculate_checksum(packet[:-4])
+        return checksum == packet[-4:]
 
 
 class Status:
@@ -233,7 +356,27 @@ if __name__ == '__main__':
         traceback.print_exc()
 
     try:
-        dev.set_acquisition_time(60, save_to_mem=True)
+        dev.set_gain(0.75, save_to_mem=True)
+    except Exception:
+        traceback.print_exc()
+
+    try:
+        dev.set_acquisition_counts(300, save_to_mem=True)
+    except Exception:
+        traceback.print_exc()
+
+    try:
+        dev.set_acquisition_time_counts(66, 300, save_to_mem=True)
+    except Exception:
+        traceback.print_exc()
+
+    try:
+        dev.set_acquisition_time(42, save_to_mem=True)
+    except Exception:
+        traceback.print_exc()
+
+    try:
+        dev.set_mca_channel(2048, save_to_mem=True)
     except Exception:
         traceback.print_exc()
 
