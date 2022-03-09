@@ -17,6 +17,11 @@ class AmptekCdTe123:
 
     vendor_id = 0x10C4
     product_id = 0x842A
+    max_allowed_acq_time = 99999999.9
+    max_allowed_acq_counts = 4294967295
+    min_allowed_gain = 0.750
+    max_allowed_gain = 250
+
 
     def __init__(self):
         self.device = None
@@ -167,13 +172,11 @@ class AmptekCdTe123:
         None.
 
         """
-        allowed_acq_time = [0, 99999999.9]
-        if allowed_acq_time[0] <= acq_time <= allowed_acq_time[1]:
-                self.send_text_config(f'PRET={acq_time:.1f};PREC=OFF;',
-                                      save_to_mem)
-        else:
+        if not 0 <= acq_time <= self.max_allowed_acq_time:
             raise ValueError('Acquisition time out of allowed range: '
-                             f'{allowed_acq_time}.')
+                             f'{[0, self.max_allowed_acq_time]}.')
+
+        self.send_text_config(f'PRET={acq_time:.1f};PREC=OFF;', save_to_mem)
 
     def set_acquisition_counts(self, acq_counts, save_to_mem=True):
         """
@@ -191,19 +194,17 @@ class AmptekCdTe123:
         None.
 
         """
-        allowed_acq_counts = [0, 4294967295]
         if not isinstance(acq_counts, int):
             raise ValueError('Acquisition counts must be of type integer.')
 
-        if acq_counts <= allowed_acq_counts[1]:
-            self.send_text_config(f'PRET=OFF;PREC={acq_counts};',
-                                  save_to_mem)
-        else:
+        if not 0 <= acq_counts <= self.max_allowed_acq_counts:
             raise ValueError('Acquisition counts out of allowed range: '
-                             f'{allowed_acq_counts}.')
+                             f'{[0, self.max_allowed_acq_count]}.')
 
+        self.send_text_config(f'PRET=OFF;PREC={acq_counts};', save_to_mem)
 
-    def set_acquisition_time_counts(self, acq_time, acq_counts, save_to_mem=True):
+    def set_acquisition_time_counts(self, acq_time, acq_counts,
+                                    save_to_mem=True):
         """
         Preset Acquisition Time and Counts.
 
@@ -222,32 +223,27 @@ class AmptekCdTe123:
         None.
 
         """
-        allowed_acq_time = [0, 99999999.9]
-        allowed_acq_counts = [0, 4294967295]
-
         if not isinstance(acq_counts, int):
             raise ValueError('Acquisition counts must be of type integer.')
 
-        if acq_counts <= allowed_acq_counts[1]:
-            if allowed_acq_time[0] <= acq_time <= allowed_acq_time[1]:
-                self.send_text_config(f'PRET={acq_time:.1f};PREC={acq_counts};'
-                                      , save_to_mem)
-            else :
-                raise ValueError('Acquisition time out of allowed range: '
-                         f'{allowed_acq_time}.')
-        else:
+        if not 0 <= acq_counts <= self.max_allowed_acq_counts:
             raise ValueError('Acquisition counts out of allowed range: '
-                             f'{allowed_acq_counts}.')
+                             f'{[0, self.max_allowed_acq_count]}.')
 
+        if not 0 <= acq_time <= self.max_allowed_acq_time:
+            raise ValueError('Acquisition time out of allowed range: '
+                             f'{[0, self.max_allowed_acq_time]}.')
+
+        self.send_text_config(f'PRET={acq_time:.1f};PREC={acq_counts};',
+                              save_to_mem)
 
     def set_mca_channel(self, number_of_channel):
-       """Select Number of MCA Channels."""
-       allowed_values = [256, 512, 1024, 2048, 4096, 8192]
-       if number_of_channel in allowed_values:
-           self.send_text_config(f'MCAC={number_of_channel};', save_to_mem=True)
-       else:
-           raise ValueError('Wrong number of MCA channels.\n'
-                            f'{allowed_values=}')
+        """Select Number of MCA Channels."""
+        allowed_values = [256, 512, 1024, 2048, 4096, 8192]
+        if number_of_channel not in allowed_values:
+            raise ValueError('Wrong number of MCA channels.\n'
+                             f'{allowed_values=}')
+        self.send_text_config(f'MCAC={number_of_channel};', save_to_mem=True)
 
     def set_gain(self, gain, save_to_mem=True):
         """
@@ -266,12 +262,12 @@ class AmptekCdTe123:
         None.
 
         """
-        allowed_gain = [0.750, 250]
-        if allowed_gain[0] <= gain <= allowed_gain[1]:
-            self.send_text_config(f'GAIN={gain:.3f};', save_to_mem)
-        else:
-            raise ValueError('Gain out of allowed range: '
-                             f'{allowed_gain}.')
+        if not self.min_allowed_gain <= gain <= self.max_allowed_gain:
+            raise ValueError(
+                'Gain out of allowed range: '
+                f'{[self.min_allowed_gain, self.max_allowed_gain]}')
+
+        self.send_text_config(f'GAIN={gain:.3f};', save_to_mem)
 
     @staticmethod
     def from_raw_spectrun(answer, num_chan=2048):
@@ -350,33 +346,14 @@ if __name__ == '__main__':
     print(stat._raw)
     print(stat.status)
     print(stat.serial_number)
+
     try:
         dev.get_spectrum()
     except Exception:
         traceback.print_exc()
 
     try:
-        dev.set_gain(0.75, save_to_mem=True)
-    except Exception:
-        traceback.print_exc()
-
-    try:
-        dev.set_acquisition_counts(300, save_to_mem=True)
-    except Exception:
-        traceback.print_exc()
-
-    try:
-        dev.set_acquisition_time_counts(66, 300, save_to_mem=True)
-    except Exception:
-        traceback.print_exc()
-
-    try:
-        dev.set_acquisition_time(42, save_to_mem=True)
-    except Exception:
-        traceback.print_exc()
-
-    try:
-        dev.set_mca_channel(2048, save_to_mem=True)
+        dev.set_acquisition_time_counts(42, 666, save_to_mem=False)
     except Exception:
         traceback.print_exc()
 
