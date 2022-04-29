@@ -172,9 +172,9 @@ class AmptekCdTe123:
         None.
 
         """
-        if not 0 <= acq_time <= self.max_allowed_acq_time:
+        if not 0 <= acq_time <= AmptekCdTe123.max_allowed_acq_time:
             raise ValueError('Acquisition time out of allowed range: '
-                             f'{[0, self.max_allowed_acq_time]}.')
+                             f'{[0, AmptekCdTe123.max_allowed_acq_time]}.')
 
         self.send_text_config(f'PRET={acq_time:.1f};PREC=OFF;', save_to_mem)
 
@@ -197,9 +197,9 @@ class AmptekCdTe123:
         if not isinstance(acq_counts, int):
             raise ValueError('Acquisition counts must be of type integer.')
 
-        if not 0 <= acq_counts <= self.max_allowed_acq_counts:
+        if not 0 <= acq_counts <= AmptekCdTe123.max_allowed_acq_counts:
             raise ValueError('Acquisition counts out of allowed range: '
-                             f'{[0, self.max_allowed_acq_count]}.')
+                             f'{[0, AmptekCdTe123.max_allowed_acq_counts]}.')
 
         self.send_text_config(f'PRET=OFF;PREC={acq_counts};', save_to_mem)
 
@@ -226,13 +226,13 @@ class AmptekCdTe123:
         if not isinstance(acq_counts, int):
             raise ValueError('Acquisition counts must be of type integer.')
 
-        if not 0 <= acq_counts <= self.max_allowed_acq_counts:
+        if not 0 <= acq_counts <= AmptekCdTe123.max_allowed_acq_counts:
             raise ValueError('Acquisition counts out of allowed range: '
-                             f'{[0, self.max_allowed_acq_count]}.')
+                             f'{[0, AmptekCdTe123.max_allowed_acq_counts]}.')
 
-        if not 0 <= acq_time <= self.max_allowed_acq_time:
+        if not 0 <= acq_time <= AmptekCdTe123.max_allowed_acq_time:
             raise ValueError('Acquisition time out of allowed range: '
-                             f'{[0, self.max_allowed_acq_time]}.')
+                             f'{[0, AmptekCdTe123.max_allowed_acq_time]}.')
 
         self.send_text_config(f'PRET={acq_time:.1f};PREC={acq_counts};',
                               save_to_mem)
@@ -240,9 +240,11 @@ class AmptekCdTe123:
     def set_mca_channel(self, number_of_channel):
         """Select Number of MCA Channels."""
         allowed_values = [256, 512, 1024, 2048, 4096, 8192]
+
         if number_of_channel not in allowed_values:
             raise ValueError('Wrong number of MCA channels.\n'
                              f'{allowed_values=}')
+
         self.send_text_config(f'MCAC={number_of_channel};', save_to_mem=True)
 
     def set_gain(self, gain, save_to_mem=True):
@@ -251,21 +253,22 @@ class AmptekCdTe123:
 
         Parameters
         ----------
-        gain : float,
-        Acquisition gain, will be rounded to 3 decimal before
-        sending to the detector.
+        gain : float
+            Acquisition gain, will be rounded to 3 decimal before
+            sending to the detector.
         save_to_mem : bool, optional
-        True to save the config to detector memory. The default is True.
+            True to save the config to detector memory. The default is True.
 
         Returns
         -------
         None.
 
         """
-        if not self.min_allowed_gain <= gain <= self.max_allowed_gain:
+        min_gain = AmptekCdTe123.min_allowed_gain
+        max_gain = AmptekCdTe123.max_allowed_gain
+        if not min_gain <= gain <= max_gain:
             raise ValueError(
-                'Gain out of allowed range: '
-                f'{[self.min_allowed_gain, self.max_allowed_gain]}')
+                f'Gain out of allowed range: {[min_gain, max_gain]}')
 
         self.send_text_config(f'GAIN={gain:.3f};', save_to_mem)
 
