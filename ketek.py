@@ -64,6 +64,28 @@ class KetekAXASM:
 
         # return ret_code
 
+    def save_system(self, filename):
+        """
+        Wrap xiaSaveSystem.
+
+        Saves the current system configuration to the specified file and
+        with the specified format.
+        """
+        filename = self.to_bytes(filename)
+        ret_code = self.HANDEL.xiaSaveSystem(b'handel_ini', filename)
+
+    def load_system(self, filename):
+        """
+        Wrap xiaLoadSystem.
+
+        Loads a configuration file. Since only one type is supported
+        (handel_ini), it is typically more convenient to call xiaInit(),
+        which both initializes the library and loads a handel_ini file,
+        instead of xiaInitHandel() and xiaLoadSystem.
+        """
+        filename = self.to_bytes(filename)
+        ret_code = self.HANDEL.xiaLoadSystem(b'handel_ini', filename)
+
     def get_num_detectors(self):
         """
         Wrap xiaGetNumDetectors.
