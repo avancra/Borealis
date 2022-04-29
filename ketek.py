@@ -9,6 +9,8 @@ import ctypes as ct
 from ctypes import byref
 from pathlib import Path
 
+import numpy as np
+
 
 class KetekAXASM:
     """Class to operate KETEK detector AXAS-M."""
@@ -153,6 +155,79 @@ class KetekAXASM:
 
         return runtime.value
 
+    def get_run_input_count_rate(self, channel):
+        """Wrap xiaGetRunData with input_count_rate."""
+        input_cr = ct.c_double()
+        ret_code = self.HANDEL.xiaGetRunData(
+            channel, b'input_count_rate', byref(input_cr))
+
+        return input_cr.value
+
+    def get_run_output_count_rate(self, channel):
+        """Wrap xiaGetRunData with output_count_rate."""
+        output_cr = ct.c_double()
+        ret_code = self.HANDEL.xiaGetRunData(
+            channel, b'output_count_rate', byref(output_cr))
+
+        return output_cr.value
+
+    def is_run_active(self, channel):
+        """Wrap xiaGetRunData with run_active."""
+        is_active = ct.c_ushort()
+        ret_code = self.HANDEL.xiaGetRunData(
+            channel, b'run_active', byref(is_active))
+
+        return is_active.value
+
+    def get_spectrum_length(self, channel):
+        """Wrap xiaGetRunData with mca_length."""
+        spe_length = ct.c_ulong()
+        ret_code = self.HANDEL.xiaGetRunData(
+            channel, b'mca_length', byref(spe_length))
+
+        return spe_length.value
+
+    def get_spectrum(self, channel):
+        """Wrap xiaGetRunData with mca."""
+        spe_length = self.get_spectrum_length(channel)
+        spectrum = np.empty(spe_length, dtype='uint32')
+        spectrum_ct = spectrum.ctypes.data_as(ct.POINTER(ct.c_uint32))
+        ret_code = self.HANDEL.xiaGetRunData(
+            channel, b'mca', spectrum_ct)
+
+        return spectrum
+
+    def get_run_event_counts(self, channel):
+        """Wrap xiaGetRunData with events_in_run."""
+        counts = ct.c_ulong()
+        ret_code = self.HANDEL.xiaGetRunData(
+            channel, b'events_in_run', byref(counts))
+
+        return counts.value
+
+    def get_run_trigger_counts(self, channel):
+        """Wrap xiaGetRunData with triggers."""
+        counts = ct.c_ulong()
+        ret_code = self.HANDEL.xiaGetRunData(
+            channel, b'triggers', byref(counts))
+
+        return counts.value
+
+    def get_all_run_stats(self, channel):
+        """Wrap xiaGetRunData with all_statistics."""
+        all_stats_ct = (ct.c_double * 6)()
+        ret_code = self.HANDEL.xiaGetRunData(
+            channel, b'all_statistics', byref(all_stats_ct))
+
+        all_stats = {'livetime': all_stats_ct[0],
+                     'runtime': all_stats_ct[1],
+                     'triggers': all_stats_ct[2],
+                     'events': all_stats_ct[3],
+                     'ICR': all_stats_ct[4],
+                     'OCR': all_stats_ct[5]}
+
+        return all_stats
+
     def stop_xia(self):
         """
         Wrap xiaExit.
@@ -199,18 +274,20 @@ class KetekAXASM:
 
 if __name__ == '__main__':
     from time import sleep
+    from matplotlib import pyplot as plt
     dev = KetekAXASM()
-    print(dev.initialise(
-        (Path(__file__).parent / "examples/KETEK_DPP2_usb2.ini").as_posix()))
-    print(dev.set_logging('stderr', 'info'))
-    print(dev.start_system())
+    dev.initialise(
+        (Path(__file__).parent / "examples/KETEK_DPP2_usb2.ini").as_posix())
+    dev.set_logging('stderr', 'error')
+    dev.start_system()
     print(dev.get_detectors())
     print(dev.get_detector_nb_of_channels('ketek1'))
     print(dev.get_detector_gain('ketek1'))
     print(dev.get_detector_polarity('ketek1'))
-    print(dev.start_run())
-    sleep(10)
-    print(dev.stop_run())
-    print(dev.get_run_livetime(0))
-    print(dev.get_run_runtime(0))
-    print(dev.stop_xia())
+    dev.start_run()
+    sleep(5)
+    dev.stop_run()
+    print(dev.get_all_run_stats(0))
+    spe = dev.get_spectrum(0)
+    plt.plot(spe)
+    dev.stop_xia()
