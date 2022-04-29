@@ -11,6 +11,8 @@ from pathlib import Path
 
 import numpy as np
 
+from ketek_error import check_error
+
 
 class KetekAXASM:
     """Class to operate KETEK detector AXAS-M."""
@@ -34,8 +36,7 @@ class KetekAXASM:
 
         """
         ret_code = self.HANDEL.xiaInit(self.to_bytes(path))
-
-        # return ret_code
+        check_error(ret_code)
 
     def start_system(self):
         """
@@ -62,7 +63,7 @@ class KetekAXASM:
         """
         ret_code = self.HANDEL.xiaStartSystem()
 
-        # return ret_code
+        check_error(ret_code)
 
     def save_system(self, filename):
         """
@@ -73,6 +74,8 @@ class KetekAXASM:
         """
         filename = self.to_bytes(filename)
         ret_code = self.HANDEL.xiaSaveSystem(b'handel_ini', filename)
+
+        check_error(ret_code)
 
     def load_system(self, filename):
         """
@@ -86,6 +89,8 @@ class KetekAXASM:
         filename = self.to_bytes(filename)
         ret_code = self.HANDEL.xiaLoadSystem(b'handel_ini', filename)
 
+        check_error(ret_code)
+
     def get_num_detectors(self):
         """
         Wrap xiaGetNumDetectors.
@@ -94,6 +99,8 @@ class KetekAXASM:
         """
         n_det = ct.c_uint()
         ret_code = self.HANDEL.xiaGetNumDetectors(byref(n_det))
+
+        check_error(ret_code)
 
         return n_det.value
 
@@ -109,6 +116,8 @@ class KetekAXASM:
         det_names = arr_type(*[b' '*self.MAXALIAS_LEN]*n_dets)
         ret_code = self.HANDEL.xiaGetDetectors(byref(det_names))
 
+        check_error(ret_code)
+
         det_names = [name.decode() for name in det_names]
 
         return tuple(det_names)
@@ -118,6 +127,7 @@ class KetekAXASM:
         noc = ct.c_uint()
         ret_code = self.HANDEL.xiaGetDetectorItem(
             self.to_bytes(alias), b'number_of_channels', byref(noc))
+        check_error(ret_code)
 
         return noc.value
 
@@ -127,6 +137,7 @@ class KetekAXASM:
         name = f'channel{channel}_gain'
         ret_code = self.HANDEL.xiaGetDetectorItem(
             self.to_bytes(alias), self.to_bytes(name), byref(gain))
+        check_error(ret_code)
 
         return gain.value
 
@@ -136,6 +147,7 @@ class KetekAXASM:
         name = f'channel{channel}_polarity'
         ret_code = self.HANDEL.xiaGetDetectorItem(
             self.to_bytes(alias), self.to_bytes(name), polarity)
+        check_error(ret_code)
 
         return polarity.decode()
 
@@ -146,6 +158,7 @@ class KetekAXASM:
         value = ct.c_double(value)
         ret_code = self.HANDEL.xiaSetAcquisitionValues(
             channel, self.to_bytes(name), value)
+        check_error(ret_code)
 
         return value.value
 
@@ -153,19 +166,24 @@ class KetekAXASM:
         """Wrap xiaStartRun."""
         if channel is None:
             channel = -1  # All channels
+
         ret_code = self.HANDEL.xiaStartRun(channel, resume)
+        check_error(ret_code)
 
     def stop_run(self, channel=None):
         """Wrap xiaStopRun."""
         if channel is None:
             channel = -1  # All channels
+
         ret_code = self.HANDEL.xiaStopRun(channel)
+        check_error(ret_code)
 
     def get_run_livetime(self, channel):
         """"""
         livetime = ct.c_double()
         ret_code = self.HANDEL.xiaGetRunData(
             channel, b'livetime', byref(livetime))
+        check_error(ret_code)
 
         return livetime.value
 
@@ -174,6 +192,7 @@ class KetekAXASM:
         runtime = ct.c_double()
         ret_code = self.HANDEL.xiaGetRunData(
             channel, b'runtime', byref(runtime))
+        check_error(ret_code)
 
         return runtime.value
 
@@ -182,6 +201,7 @@ class KetekAXASM:
         input_cr = ct.c_double()
         ret_code = self.HANDEL.xiaGetRunData(
             channel, b'input_count_rate', byref(input_cr))
+        check_error(ret_code)
 
         return input_cr.value
 
@@ -190,6 +210,7 @@ class KetekAXASM:
         output_cr = ct.c_double()
         ret_code = self.HANDEL.xiaGetRunData(
             channel, b'output_count_rate', byref(output_cr))
+        check_error(ret_code)
 
         return output_cr.value
 
@@ -198,6 +219,7 @@ class KetekAXASM:
         is_active = ct.c_ushort()
         ret_code = self.HANDEL.xiaGetRunData(
             channel, b'run_active', byref(is_active))
+        check_error(ret_code)
 
         return is_active.value
 
@@ -206,6 +228,7 @@ class KetekAXASM:
         spe_length = ct.c_ulong()
         ret_code = self.HANDEL.xiaGetRunData(
             channel, b'mca_length', byref(spe_length))
+        check_error(ret_code)
 
         return spe_length.value
 
@@ -216,6 +239,7 @@ class KetekAXASM:
         spectrum_ct = spectrum.ctypes.data_as(ct.POINTER(ct.c_uint32))
         ret_code = self.HANDEL.xiaGetRunData(
             channel, b'mca', spectrum_ct)
+        check_error(ret_code)
 
         return spectrum
 
@@ -224,6 +248,7 @@ class KetekAXASM:
         counts = ct.c_ulong()
         ret_code = self.HANDEL.xiaGetRunData(
             channel, b'events_in_run', byref(counts))
+        check_error(ret_code)
 
         return counts.value
 
@@ -232,6 +257,7 @@ class KetekAXASM:
         counts = ct.c_ulong()
         ret_code = self.HANDEL.xiaGetRunData(
             channel, b'triggers', byref(counts))
+        check_error(ret_code)
 
         return counts.value
 
@@ -240,6 +266,7 @@ class KetekAXASM:
         all_stats_ct = (ct.c_double * 6)()
         ret_code = self.HANDEL.xiaGetRunData(
             channel, b'all_statistics', byref(all_stats_ct))
+        check_error(ret_code)
 
         all_stats = {'livetime': all_stats_ct[0],
                      'runtime': all_stats_ct[1],
@@ -258,6 +285,7 @@ class KetekAXASM:
 
         """
         ret_code = self.HANDEL.xiaExit()
+        check_error(ret_code)
 
     def set_logging(self, output='stdout', level='error'):
         """
@@ -283,8 +311,9 @@ class KetekAXASM:
                       'warning': 2,
                       'error': 1}
         ret_code = self.HANDEL.xiaSetLogOutput(self.to_bytes(output))
+        check_error(ret_code)
         ret_code = self.HANDEL.xiaSetLogLevel(log_levels[level])
-
+        check_error(ret_code)
 
     @staticmethod
     def to_bytes(arg):
