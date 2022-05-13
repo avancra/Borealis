@@ -28,11 +28,11 @@ class KetekAXASM(Detector):
 
     def acquisition(self, acquisition_time):
         """Start an acquisition and return corresponding Spectrum object."""
-        dev._start_run()
+        self._start_run()
         sleep(acquisition_time)
-        dev._stop_run()
+        self._stop_run()
 
-        return dev._get_spectrum()
+        return self._get_spectrum()
 
     def initialise(self):
         """Initialise the detector."""
