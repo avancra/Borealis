@@ -26,8 +26,6 @@ class AmptekCdTe123(Detector):
 
     def __init__(self):
         self._device = None
-        self._config = None
-        self._interface = None
         self._endpoint_in = None
         self._endpoint_out = None
 
@@ -36,31 +34,28 @@ class AmptekCdTe123(Detector):
 
     def initialise(self):
         """Initialise the detector."""
-
-    def _open_device(self):
-        """Open and configure _device."""
         self._device = usb.core.find(idVendor=self.vendor_id,
                                      idProduct=self.product_id)
         if self._device is None:
             raise ValueError('_device not found')
 
         self._device.set_configuration()
-        self._config = self._device.get_active_configuration()
-        self._interface = self._config[(0, 0)]
+        config = self._device.get_active_configuration()
+        interface = config[(0, 0)]
         self._endpoint_out = usb.util.find_descriptor(
-            self._interface,
+            interface,
             custom_match=lambda e:
                 usb.util.endpoint_direction(e.bEndpointAddress)
                 == usb.util.ENDPOINT_OUT)
 
         self._endpoint_in = usb.util.find_descriptor(
-            self._interface,
+            interface,
             custom_match=lambda e:
                 usb.util.endpoint_direction(e.bEndpointAddress)
                 == usb.util.ENDPOINT_IN)
 
-    def _close_device(self):
-        """Close connection to _device and free resources."""
+    def stop(self):
+        """Close the connection to the detector and free resources."""
         usb.util.dispose_resources(self._device)
 
     def _write(self, msg):
@@ -149,7 +144,7 @@ class AmptekCdTe123(Detector):
         msg += f'{cmd_length:04X}'
         msg += config_cmd.encode().hex().upper()
 
-        chksum = self.calculate_checksum(msg)
+        chksum = self._calculate_checksum(msg)
         msg += chksum
 
         self._write(msg)
@@ -160,7 +155,7 @@ class AmptekCdTe123(Detector):
 
     def _reset_configuration(self):
         """Reset the Configuration to defaults."""
-        self.send_text_config('RESC=Y;', save_to_mem=True)
+        self._send_text_config('RESC=Y;', save_to_mem=True)
 
     def _set_acquisition_time(self, acq_time, save_to_mem=True):
         """
@@ -183,7 +178,7 @@ class AmptekCdTe123(Detector):
             raise ValueError('Acquisition time out of allowed range: '
                              f'{[0, AmptekCdTe123.max_allowed_acq_time]}.')
 
-        self.send_text_config(f'PRET={acq_time:.1f};PREC=OFF;', save_to_mem)
+        self._send_text_config(f'PRET={acq_time:.1f};PREC=OFF;', save_to_mem)
 
     def _set_acquisition_counts(self, acq_counts, save_to_mem=True):
         """
@@ -208,7 +203,7 @@ class AmptekCdTe123(Detector):
             raise ValueError('Acquisition counts out of allowed range: '
                              f'{[0, AmptekCdTe123.max_allowed_acq_counts]}.')
 
-        self.send_text_config(f'PRET=OFF;PREC={acq_counts};', save_to_mem)
+        self._send_text_config(f'PRET=OFF;PREC={acq_counts};', save_to_mem)
 
     def _set_acquisition_time_counts(self, acq_time, acq_counts,
                                      save_to_mem=True):
@@ -241,7 +236,7 @@ class AmptekCdTe123(Detector):
             raise ValueError('Acquisition time out of allowed range: '
                              f'{[0, AmptekCdTe123.max_allowed_acq_time]}.')
 
-        self.send_text_config(f'PRET={acq_time:.1f};PREC={acq_counts};',
+        self._send_text_config(f'PRET={acq_time:.1f};PREC={acq_counts};',
                               save_to_mem)
 
     def _set_mca_channel(self, number_of_channel):
@@ -252,7 +247,7 @@ class AmptekCdTe123(Detector):
             raise ValueError('Wrong number of MCA channels.\n'
                              f'{allowed_values=}')
 
-        self.send_text_config(f'MCAC={number_of_channel};', save_to_mem=True)
+        self._send_text_config(f'MCAC={number_of_channel};', save_to_mem=True)
 
     def _set_gain(self, gain, save_to_mem=True):
         """
@@ -277,7 +272,7 @@ class AmptekCdTe123(Detector):
             raise ValueError(
                 f'Gain out of allowed range: {[min_gain, max_gain]}')
 
-        self.send_text_config(f'GAIN={gain:.3f};', save_to_mem)
+        self._send_text_config(f'GAIN={gain:.3f};', save_to_mem)
 
     @staticmethod
     def _from_raw_spectrun(answer, num_chan=2048):
@@ -326,7 +321,7 @@ class AmptekCdTe123(Detector):
             True if checksums match, False otherwise.
 
         """
-        checksum = AmptekCdTe123.calculate_checksum(packet[:-4])
+        checksum = AmptekCdTe123._calculate_checksum(packet[:-4])
         return checksum == packet[-4:]
 
 
@@ -351,7 +346,7 @@ if __name__ == '__main__':
     import traceback
     ACK_OK = b'\xF5\xFA\xFF\x00\x00\x00\xFD\x12'
     dev = AmptekCdTe123()
-    dev._open_device()
+    dev.initialise()
     stat = dev._get_status()
     print(stat._raw)
     print(stat.status)
@@ -367,4 +362,4 @@ if __name__ == '__main__':
     except Exception:
         traceback.print_exc()
 
-    dev.close_device()
+    dev.stop()

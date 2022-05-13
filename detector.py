@@ -36,6 +36,10 @@ class Detector(ABC):
     def initialise(self):
         """ABC method for detector initialisation. (derived must override)."""
 
+    @abstractmethod
+    def stop(self):
+        """ABC method for stoping detector. (derived must override)."""
+
     # @property
     # @abstractproperty
     # def alias(self):

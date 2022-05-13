@@ -22,8 +22,8 @@ class KetekAXASM(Detector):
         (Path(__file__).parent / "lib/handel/handel.dll").as_posix())
     MAXALIAS_LEN = 80
 
-    def __init__(self):
-        self.detector = None
+    def __init__(self, ini_filepath):
+        self._ini_file = self._validate_ini(ini_filepath)
         self._chan_no = 0
 
     def acquisition(self, acquisition_time):
@@ -36,6 +36,31 @@ class KetekAXASM(Detector):
 
     def initialise(self):
         """Initialise the detector."""
+        self._initialise(self._ini_file)
+        self._start_system()
+
+    def stop(self):
+        """
+        Close the connection to the detector and free resources.
+
+        Wrap xiaExit.
+        Disconnect from the hardware and clean up Handel’s internals.
+
+        """
+        ret_code = self.HANDEL.xiaExit()
+        check_error(ret_code)
+
+    @staticmethod
+    def _validate_ini(ini_filepath):
+        """Check that ini_filepath is a valid and existing filepath."""
+        try:
+            assert Path(ini_filepath).exists()
+        except TypeError:
+            raise ValueError('Wrong ini file name.')
+        except AssertionError:
+            raise ValueError("The ini file doesn't exist.")
+
+        return ini_filepath
 
     def _initialise(self, path):
         """
@@ -284,16 +309,6 @@ class KetekAXASM(Detector):
 
         return all_stats
 
-    def _stop_xia(self):
-        """
-        Wrap xiaExit.
-
-        Disconnect from the hardware and clean up Handel’s internals.
-
-        """
-        ret_code = self.HANDEL.xiaExit()
-        check_error(ret_code)
-
     def _set_logging(self, output='stdout', level='error'):
         """
         Wrap xiaSetLogOutput and xiaSetLogLevel.
@@ -333,9 +348,9 @@ class KetekAXASM(Detector):
 if __name__ == '__main__':
     from time import sleep
     from matplotlib import pyplot as plt
-    dev = KetekAXASM()
-    dev._initialise(
+    dev = KetekAXASM(
         (Path(__file__).parent / "examples/KETEK_DPP2_usb2.ini").as_posix())
+    dev.initialise()
     dev._set_logging('stderr', 'error')
     dev._start_system()
     print(dev._get_detectors())
@@ -345,4 +360,4 @@ if __name__ == '__main__':
     spe = dev.acquisition(1)
     print(dev._get_all_run_stats())
     plt.plot(spe)
-    dev._stop_xia()
+    dev.stop()
