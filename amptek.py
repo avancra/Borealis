@@ -11,8 +11,10 @@ import usb.core
 import usb.util
 import numpy as np
 
+from detector import Detector
 
-class AmptekCdTe123:
+
+class AmptekCdTe123(Detector):
     """Interface for CdTe X-123 detector from Amptek."""
 
     vendor_id = 0x10C4
@@ -22,23 +24,28 @@ class AmptekCdTe123:
     min_allowed_gain = 0.750
     max_allowed_gain = 250
 
-
     def __init__(self):
-        self.device = None
+        self._device = None
         self._config = None
         self._interface = None
         self._endpoint_in = None
         self._endpoint_out = None
 
-    def open_device(self):
-        """Open and configure device."""
-        self.device = usb.core.find(idVendor=self.vendor_id,
-                                    idProduct=self.product_id)
-        if self.device is None:
-            raise ValueError('Device not found')
+    def acquisition(self, acquisition_time):
+        """Start an acquisition and return corresponding Spectrum object."""
 
-        self.device.set_configuration()
-        self._config = self.device.get_active_configuration()
+    def initialise(self):
+        """Initialise the detector."""
+
+    def _open_device(self):
+        """Open and configure _device."""
+        self._device = usb.core.find(idVendor=self.vendor_id,
+                                     idProduct=self.product_id)
+        if self._device is None:
+            raise ValueError('_device not found')
+
+        self._device.set_configuration()
+        self._config = self._device.get_active_configuration()
         self._interface = self._config[(0, 0)]
         self._endpoint_out = usb.util.find_descriptor(
             self._interface,
@@ -52,31 +59,31 @@ class AmptekCdTe123:
                 usb.util.endpoint_direction(e.bEndpointAddress)
                 == usb.util.ENDPOINT_IN)
 
-    def close_device(self):
-        """Close connection to device and free resources."""
-        usb.util.dispose_resources(self.device)
+    def _close_device(self):
+        """Close connection to _device and free resources."""
+        usb.util.dispose_resources(self._device)
 
     def _write(self, msg):
-        """Write a message to the device."""
-        answer = self.device.write(self._endpoint_out.bEndpointAddress,
-                                   bytes.fromhex(msg))
+        """Write a message to the _device."""
+        answer = self._device.write(self._endpoint_out.bEndpointAddress,
+                                    bytes.fromhex(msg))
         print(f'{answer=}')
         return answer
 
     def _read(self, buffer_size):
-        """Read message from the device and return buffer."""
-        answer = self.device.read(self._endpoint_in.bEndpointAddress,
-                                  buffer_size)
+        """Read message from the _device and return buffer."""
+        answer = self._device.read(self._endpoint_in.bEndpointAddress,
+                                   buffer_size)
         return answer
 
-    def get_status(self):
+    def _get_status(self):
         """Send a status request and return status information."""
         self._write('F5FA01010000FE0F')
         status = Status(self._read(8000))
 
         return status
 
-    def get_spectrum(self, clear=False):
+    def _get_spectrum(self, clear=False):
         """Send a spectrum request and return spectrum."""
         if clear:
             self._write('F5FA02020000FE0D')
@@ -87,7 +94,7 @@ class AmptekCdTe123:
 
         return spectrum
 
-    def get_spectrum_status(self, clear=False):
+    def _get_spectrum_status(self, clear=False):
         """Send a spectrum & status request and return spectrum & status."""
         if clear:
             self._write('F5FA02040000FE0B')
@@ -98,19 +105,19 @@ class AmptekCdTe123:
 
         return spectrum_status
 
-    def clear_spectrum(self):
+    def _clear_spectrum(self):
         """Send a clear spectrum request."""
         self._write('F5FAF0010000FD20')
 
-    def enable_mca(self):
+    def _enable_mca(self):
         """Enable MCA."""
         self._write('F5FAF0020000FD1F')
 
-    def disable_mca(self):
+    def _disable_mca(self):
         """Disable MCA."""
         self._write('F5FAF0030000FD1E')
 
-    def send_text_config(self, config_cmd, save_to_mem=True):
+    def _send_text_config(self, config_cmd, save_to_mem=True):
         """
         Send a text fonfiguration command (ASCII commands).
 
@@ -151,11 +158,11 @@ class AmptekCdTe123:
         print(resp.tobytes())
         # TODO: check response, log or raise error accordingly
 
-    def reset_configuration(self):
+    def _reset_configuration(self):
         """Reset the Configuration to defaults."""
         self.send_text_config('RESC=Y;', save_to_mem=True)
 
-    def set_acquisition_time(self, acq_time, save_to_mem=True):
+    def _set_acquisition_time(self, acq_time, save_to_mem=True):
         """
         Preset Acquisition Time, without any preset counts.
 
@@ -178,7 +185,7 @@ class AmptekCdTe123:
 
         self.send_text_config(f'PRET={acq_time:.1f};PREC=OFF;', save_to_mem)
 
-    def set_acquisition_counts(self, acq_counts, save_to_mem=True):
+    def _set_acquisition_counts(self, acq_counts, save_to_mem=True):
         """
         Preset Acquisition Counts, without any preset time.
 
@@ -203,8 +210,8 @@ class AmptekCdTe123:
 
         self.send_text_config(f'PRET=OFF;PREC={acq_counts};', save_to_mem)
 
-    def set_acquisition_time_counts(self, acq_time, acq_counts,
-                                    save_to_mem=True):
+    def _set_acquisition_time_counts(self, acq_time, acq_counts,
+                                     save_to_mem=True):
         """
         Preset Acquisition Time and Counts.
 
@@ -237,7 +244,7 @@ class AmptekCdTe123:
         self.send_text_config(f'PRET={acq_time:.1f};PREC={acq_counts};',
                               save_to_mem)
 
-    def set_mca_channel(self, number_of_channel):
+    def _set_mca_channel(self, number_of_channel):
         """Select Number of MCA Channels."""
         allowed_values = [256, 512, 1024, 2048, 4096, 8192]
 
@@ -247,7 +254,7 @@ class AmptekCdTe123:
 
         self.send_text_config(f'MCAC={number_of_channel};', save_to_mem=True)
 
-    def set_gain(self, gain, save_to_mem=True):
+    def _set_gain(self, gain, save_to_mem=True):
         """
         Set the total gain.
 
@@ -273,7 +280,7 @@ class AmptekCdTe123:
         self.send_text_config(f'GAIN={gain:.3f};', save_to_mem)
 
     @staticmethod
-    def from_raw_spectrun(answer, num_chan=2048):
+    def _from_raw_spectrun(answer, num_chan=2048):
         """Extract spectrum from response packet."""
         raw = np.array(answer[6:-2])
         raw = np.reshape(raw, (num_chan, 3))
@@ -282,7 +289,7 @@ class AmptekCdTe123:
         return spectrum
 
     @staticmethod
-    def calculate_checksum(packet):
+    def _calculate_checksum(packet):
         """
         Calculate checksum of a string packet.
 
@@ -304,7 +311,7 @@ class AmptekCdTe123:
         return f'{checksum:04X}'
 
     @staticmethod
-    def verify_checksum(packet):
+    def _verify_checksum(packet):
         """
         Verify the checksum of a string message.
 
@@ -344,19 +351,19 @@ if __name__ == '__main__':
     import traceback
     ACK_OK = b'\xF5\xFA\xFF\x00\x00\x00\xFD\x12'
     dev = AmptekCdTe123()
-    dev.open_device()
-    stat = dev.get_status()
+    dev._open_device()
+    stat = dev._get_status()
     print(stat._raw)
     print(stat.status)
     print(stat.serial_number)
 
     try:
-        dev.get_spectrum()
+        dev._get_spectrum()
     except Exception:
         traceback.print_exc()
 
     try:
-        dev.set_acquisition_time_counts(42, 666, save_to_mem=False)
+        dev._set_acquisition_time_counts(42, 666, save_to_mem=False)
     except Exception:
         traceback.print_exc()
 

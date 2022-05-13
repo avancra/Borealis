@@ -3,7 +3,7 @@
 Created on Fri Apr 29 14:15:23 2022.
 
 Ketek error handling.
-From https://gitlab.esrf.fr/bliss/python-handel/-/tree/master
+From https://gitlab.esrf.fr/bliss/python-handel/
 
 @author: A. Vancraeyenest
 """

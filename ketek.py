@@ -12,9 +12,10 @@ from pathlib import Path
 import numpy as np
 
 from ketek_error import check_error
+from detector import Detector
 
 
-class KetekAXASM:
+class KetekAXASM(Detector):
     """Class to operate KETEK detector AXAS-M."""
 
     HANDEL = ct.CDLL(
@@ -24,7 +25,13 @@ class KetekAXASM:
     def __init__(self):
         self.detector = None
 
-    def initialise(self, path):
+    def acquisition(self, acquisition_time):
+        """Start an acquisition and return corresponding Spectrum object."""
+
+    def initialise(self):
+        """Initialise the detector."""
+
+    def _initialise(self, path):
         """
         Wrap xiaInit.
 
@@ -35,10 +42,10 @@ class KetekAXASM:
         using the other Handel routines.
 
         """
-        ret_code = self.HANDEL.xiaInit(self.to_bytes(path))
+        ret_code = self.HANDEL.xiaInit(self._to_bytes(path))
         check_error(ret_code)
 
-    def start_system(self):
+    def _start_system(self):
         """
         Wrap xiaStartSystem.
 
@@ -65,19 +72,19 @@ class KetekAXASM:
 
         check_error(ret_code)
 
-    def save_system(self, filename):
+    def _save_system(self, filename):
         """
         Wrap xiaSaveSystem.
 
         Saves the current system configuration to the specified file and
         with the specified format.
         """
-        filename = self.to_bytes(filename)
+        filename = self._to_bytes(filename)
         ret_code = self.HANDEL.xiaSaveSystem(b'handel_ini', filename)
 
         check_error(ret_code)
 
-    def load_system(self, filename):
+    def _load_system(self, filename):
         """
         Wrap xiaLoadSystem.
 
@@ -86,12 +93,12 @@ class KetekAXASM:
         which both initializes the library and loads a handel_ini file,
         instead of xiaInitHandel() and xiaLoadSystem.
         """
-        filename = self.to_bytes(filename)
+        filename = self._to_bytes(filename)
         ret_code = self.HANDEL.xiaLoadSystem(b'handel_ini', filename)
 
         check_error(ret_code)
 
-    def get_num_detectors(self):
+    def _get_num_detectors(self):
         """
         Wrap xiaGetNumDetectors.
 
@@ -104,7 +111,7 @@ class KetekAXASM:
 
         return n_det.value
 
-    def get_detectors(self):
+    def _get_detectors(self):
         """
         Wrap xiaGetDetectors.
 
@@ -122,47 +129,47 @@ class KetekAXASM:
 
         return tuple(det_names)
 
-    def get_detector_nb_of_channels(self, alias):
+    def _get_detector_nb_of_channels(self, alias):
         """Wrap xiaGetDetectorItem with name='number_of_channel'."""
         noc = ct.c_uint()
         ret_code = self.HANDEL.xiaGetDetectorItem(
-            self.to_bytes(alias), b'number_of_channels', byref(noc))
+            self._to_bytes(alias), b'number_of_channels', byref(noc))
         check_error(ret_code)
 
         return noc.value
 
-    def get_detector_gain(self, alias, channel=0):
+    def _get_detector_gain(self, alias, channel=0):
         """Wrap xiaGetDetectorItem with name='channel{channel}_gain'."""
         gain = ct.c_double()
         name = f'channel{channel}_gain'
         ret_code = self.HANDEL.xiaGetDetectorItem(
-            self.to_bytes(alias), self.to_bytes(name), byref(gain))
+            self._to_bytes(alias), self._to_bytes(name), byref(gain))
         check_error(ret_code)
 
         return gain.value
 
-    def get_detector_polarity(self, alias, channel=0):
+    def _get_detector_polarity(self, alias, channel=0):
         """Wrap xiaGetDetectorItem with name='channel{channel}_polarity'."""
         polarity = b' '*3
         name = f'channel{channel}_polarity'
         ret_code = self.HANDEL.xiaGetDetectorItem(
-            self.to_bytes(alias), self.to_bytes(name), polarity)
+            self._to_bytes(alias), self._to_bytes(name), polarity)
         check_error(ret_code)
 
         return polarity.decode()
 
-    def set_acquisition_values(self, name, value, channel=None):
+    def _set_acquisition_values(self, name, value, channel=None):
         """"""
         if channel is None:
             channel = -1  # All channels
         value = ct.c_double(value)
         ret_code = self.HANDEL.xiaSetAcquisitionValues(
-            channel, self.to_bytes(name), value)
+            channel, self._to_bytes(name), value)
         check_error(ret_code)
 
         return value.value
 
-    def start_run(self, channel=None, resume=False):
+    def _start_run(self, channel=None, resume=False):
         """Wrap xiaStartRun."""
         if channel is None:
             channel = -1  # All channels
@@ -170,7 +177,7 @@ class KetekAXASM:
         ret_code = self.HANDEL.xiaStartRun(channel, resume)
         check_error(ret_code)
 
-    def stop_run(self, channel=None):
+    def _stop_run(self, channel=None):
         """Wrap xiaStopRun."""
         if channel is None:
             channel = -1  # All channels
@@ -178,7 +185,7 @@ class KetekAXASM:
         ret_code = self.HANDEL.xiaStopRun(channel)
         check_error(ret_code)
 
-    def get_run_livetime(self, channel):
+    def _get_run_livetime(self, channel):
         """"""
         livetime = ct.c_double()
         ret_code = self.HANDEL.xiaGetRunData(
@@ -187,7 +194,7 @@ class KetekAXASM:
 
         return livetime.value
 
-    def get_run_runtime(self, channel):
+    def _get_run_runtime(self, channel):
         """"""
         runtime = ct.c_double()
         ret_code = self.HANDEL.xiaGetRunData(
@@ -196,7 +203,7 @@ class KetekAXASM:
 
         return runtime.value
 
-    def get_run_input_count_rate(self, channel):
+    def _get_run_input_count_rate(self, channel):
         """Wrap xiaGetRunData with input_count_rate."""
         input_cr = ct.c_double()
         ret_code = self.HANDEL.xiaGetRunData(
@@ -205,7 +212,7 @@ class KetekAXASM:
 
         return input_cr.value
 
-    def get_run_output_count_rate(self, channel):
+    def _get_run_output_count_rate(self, channel):
         """Wrap xiaGetRunData with output_count_rate."""
         output_cr = ct.c_double()
         ret_code = self.HANDEL.xiaGetRunData(
@@ -214,7 +221,7 @@ class KetekAXASM:
 
         return output_cr.value
 
-    def is_run_active(self, channel):
+    def _is_run_active(self, channel):
         """Wrap xiaGetRunData with run_active."""
         is_active = ct.c_ushort()
         ret_code = self.HANDEL.xiaGetRunData(
@@ -223,7 +230,7 @@ class KetekAXASM:
 
         return is_active.value
 
-    def get_spectrum_length(self, channel):
+    def _get_spectrum_length(self, channel):
         """Wrap xiaGetRunData with mca_length."""
         spe_length = ct.c_ulong()
         ret_code = self.HANDEL.xiaGetRunData(
@@ -232,7 +239,7 @@ class KetekAXASM:
 
         return spe_length.value
 
-    def get_spectrum(self, channel):
+    def _get_spectrum(self, channel):
         """Wrap xiaGetRunData with mca."""
         spe_length = self.get_spectrum_length(channel)
         spectrum = np.empty(spe_length, dtype='uint32')
@@ -243,7 +250,7 @@ class KetekAXASM:
 
         return spectrum
 
-    def get_run_event_counts(self, channel):
+    def _get_run_event_counts(self, channel):
         """Wrap xiaGetRunData with events_in_run."""
         counts = ct.c_ulong()
         ret_code = self.HANDEL.xiaGetRunData(
@@ -252,7 +259,7 @@ class KetekAXASM:
 
         return counts.value
 
-    def get_run_trigger_counts(self, channel):
+    def _get_run_trigger_counts(self, channel):
         """Wrap xiaGetRunData with triggers."""
         counts = ct.c_ulong()
         ret_code = self.HANDEL.xiaGetRunData(
@@ -261,7 +268,7 @@ class KetekAXASM:
 
         return counts.value
 
-    def get_all_run_stats(self, channel):
+    def _get_all_run_stats(self, channel):
         """Wrap xiaGetRunData with all_statistics."""
         all_stats_ct = (ct.c_double * 6)()
         ret_code = self.HANDEL.xiaGetRunData(
@@ -277,7 +284,7 @@ class KetekAXASM:
 
         return all_stats
 
-    def stop_xia(self):
+    def _stop_xia(self):
         """
         Wrap xiaExit.
 
@@ -287,7 +294,7 @@ class KetekAXASM:
         ret_code = self.HANDEL.xiaExit()
         check_error(ret_code)
 
-    def set_logging(self, output='stdout', level='error'):
+    def _set_logging(self, output='stdout', level='error'):
         """
         Wrap xiaSetLogOutput and xiaSetLogLevel.
 
@@ -310,13 +317,13 @@ class KetekAXASM:
                       'info': 3,
                       'warning': 2,
                       'error': 1}
-        ret_code = self.HANDEL.xiaSetLogOutput(self.to_bytes(output))
+        ret_code = self.HANDEL.xiaSetLogOutput(self._to_bytes(output))
         check_error(ret_code)
         ret_code = self.HANDEL.xiaSetLogLevel(log_levels[level])
         check_error(ret_code)
 
     @staticmethod
-    def to_bytes(arg):
+    def _to_bytes(arg):
         """Return arg to bytes."""
         if isinstance(arg, bytes):
             return arg
@@ -327,18 +334,18 @@ if __name__ == '__main__':
     from time import sleep
     from matplotlib import pyplot as plt
     dev = KetekAXASM()
-    dev.initialise(
+    dev._initialise(
         (Path(__file__).parent / "examples/KETEK_DPP2_usb2.ini").as_posix())
-    dev.set_logging('stderr', 'error')
-    dev.start_system()
-    print(dev.get_detectors())
-    print(dev.get_detector_nb_of_channels('ketek1'))
-    print(dev.get_detector_gain('ketek1'))
-    print(dev.get_detector_polarity('ketek1'))
-    dev.start_run()
+    dev._set_logging('stderr', 'error')
+    dev._start_system()
+    print(dev._get_detectors())
+    print(dev._get_detector_nb_of_channels('ketek1'))
+    print(dev._get_detector_gain('ketek1'))
+    print(dev._get_detector_polarity('ketek1'))
+    dev._start_run()
     sleep(5)
-    dev.stop_run()
-    print(dev.get_all_run_stats(0))
-    spe = dev.get_spectrum(0)
+    dev._stop_run()
+    print(dev._get_all_run_stats(0))
+    spe = dev._get_spectrum(0)
     plt.plot(spe)
-    dev.stop_xia()
+    dev._stop_xia()
