@@ -4,10 +4,10 @@ Created on Sat Jan  8 12:54:49 2022.
 
 @author: A. Vancraeyenest
 """
-
 import ctypes as ct
 from ctypes import byref
 from pathlib import Path
+from time import sleep
 
 import numpy as np
 
@@ -38,6 +38,7 @@ class KetekAXASM(Detector):
         """Initialise the detector."""
         self._initialise(self._ini_file)
         self._start_system()
+        print('Detector Ketek successfully initialised')
 
     def stop(self):
         """

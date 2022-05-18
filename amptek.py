@@ -62,6 +62,8 @@ class AmptekCdTe123(Detector):
                 usb.util.endpoint_direction(e.bEndpointAddress)
                 == usb.util.ENDPOINT_IN)
 
+        print('Detector Amptek successfully initialised')
+
     def stop(self):
         """Close the connection to the detector and free resources."""
         usb.util.dispose_resources(self._device)
