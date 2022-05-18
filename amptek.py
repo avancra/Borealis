@@ -31,6 +31,14 @@ class AmptekCdTe123(Detector):
 
     def acquisition(self, acquisition_time):
         """Start an acquisition and return corresponding Spectrum object."""
+        self._clear_spectrum()
+        self._set_acquisition_time(acquisition_time, save_to_mem=False)
+        self._enable_mca()
+        sleep(acquisition_time*1.1)
+        self._disable_mca()
+        raw_spe = self._get_spectrum()
+        spe = self._from_raw_spectrum(raw_spe, num_chan=2048)
+        return spe
 
     def initialise(self):
         """Initialise the detector."""
@@ -67,6 +75,7 @@ class AmptekCdTe123(Detector):
 
     def _read(self, buffer_size):
         """Read message from the _device and return buffer."""
+        sleep(0.001)
         answer = self._device.read(self._endpoint_in.bEndpointAddress,
                                    buffer_size)
         return answer
@@ -103,14 +112,20 @@ class AmptekCdTe123(Detector):
     def _clear_spectrum(self):
         """Send a clear spectrum request."""
         self._write('F5FAF0010000FD20')
+        resp = self._read(8000)
+        print(resp.tobytes())
 
     def _enable_mca(self):
         """Enable MCA."""
         self._write('F5FAF0020000FD1F')
+        resp = self._read(8000)
+        print(resp.tobytes())
 
     def _disable_mca(self):
         """Disable MCA."""
         self._write('F5FAF0030000FD1E')
+        resp = self._read(8000)
+        print(resp.tobytes())
 
     def _send_text_config(self, config_cmd, save_to_mem=True):
         """
@@ -275,7 +290,7 @@ class AmptekCdTe123(Detector):
         self._send_text_config(f'GAIN={gain:.3f};', save_to_mem)
 
     @staticmethod
-    def _from_raw_spectrun(answer, num_chan=2048):
+    def _from_raw_spectrum(answer, num_chan=2048):
         """Extract spectrum from response packet."""
         raw = np.array(answer[6:-2])
         raw = np.reshape(raw, (num_chan, 3))
@@ -344,21 +359,20 @@ class Status:
 
 if __name__ == '__main__':
     import traceback
+    from time import sleep
+    from matplotlib import pyplot as plt
     ACK_OK = b'\xF5\xFA\xFF\x00\x00\x00\xFD\x12'
     dev = AmptekCdTe123()
     dev.initialise()
-    stat = dev._get_status()
-    print(stat._raw)
-    print(stat.status)
-    print(stat.serial_number)
-
+    print('init')
+    # stat = dev._get_status()
+    # print(stat._raw)
+    # print(stat.status)
+    # print(stat.serial_number)
     try:
-        dev._get_spectrum()
-    except Exception:
-        traceback.print_exc()
+        spe = dev.acquisition(5)
+        plt.plot(spe)
 
-    try:
-        dev._set_acquisition_time_counts(42, 666, save_to_mem=False)
     except Exception:
         traceback.print_exc()
 
