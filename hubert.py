@@ -8,8 +8,10 @@ Created on Tue Jan 10 21:17:12 2023.
 """
 import socket
 
+from controller import Controller
 
-class HubertSMC:
+
+class HubertSMC(Controller):
     """Class to communicate with Hubert controller."""
 
     def __init__(self):
