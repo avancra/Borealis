@@ -116,3 +116,10 @@ class Motor():
         print(f'{self.motor_name} at: \n'
               f'dial: {self.current_position} \n'
               f'user: {self.current_position + self.offset}')
+
+    def set_position_to_zero(self):
+        """Set motor current position to 0."""
+        self.ctrl.set_zero(self.motor_id)
+        print(f'{self.motor_name} position set to 0. \n'
+              f'Initial value was {self.current_position}.')
+        self.current_position = self.get_motor_position()

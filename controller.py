@@ -59,6 +59,21 @@ class Controller(ABC):
 
         """
 
+    @abstractmethod
+    def set_zero(self, axis_id):
+        """
+        ABC method to set the axis position to zero (derived must override).
+
+        Parameters
+        ----------
+        axis_id : int
+            Axis ID as used by the comtroller.
+
+        Returns
+        -------
+        None
+
+        """
 
 
     # @property

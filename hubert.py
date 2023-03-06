@@ -35,16 +35,16 @@ class HubertSMC(Controller):
         print(f'{msg=}')
         return msg
 
-    def move(self, motor_id, position=0):
-        """Send instruction to move a motor."""
-        self._socket._write(f'goto{motor_id}:{position}')
+    def move(self, axis_id, position=0):
+        """Send instruction to move an axis."""
+        self._socket._write(f'goto{axis_id}:{position}')
 
     def get_axis_position(self, axis_id=""):
         """Get controller position."""
         self._write(f'?p{axis_id}')
         pos = self._read()
         positions = self.decode_position(pos)
-        if axis_id is not None:
+        if axis_id:
             return positions[axis_id]
         else:
             #TODO! Generate the results for all motors (where_all functions)
@@ -59,6 +59,14 @@ class HubertSMC(Controller):
             positions[axis_id] = float(posit)
         return positions
 
+    def set_zero(self, axis_id=""):
+        """Set axis position to 0."""
+        self._write(f'zero{axis_id}')
+        #TODO! Consider log message when setting axis to 0.
+        # if axis_id:
+        #     print(f'Axis {axis_id} position set to 0.')
+        # else:
+        #     print('All axis position set to 0.')
 
 if __name__ == "__main__":
     sock = HubertSMC()
