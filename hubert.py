@@ -39,10 +39,25 @@ class HubertSMC(Controller):
         """Send instruction to move a motor."""
         self._socket._write(f'goto{motor_id}:{position}')
 
-    def get_motor_position(self, motor_id):
-        """Get motor position."""
-        self._socket._write(f'?p{motor_id}')
-        self._read()
+    def get_axis_position(self, axis_id=""):
+        """Get controller position."""
+        self._write(f'?p{axis_id}')
+        pos = self._read()
+        positions = self.decode_position(pos)
+        if axis_id is not None:
+            return positions[axis_id]
+        else:
+            #TODO! Generate the results for all motors (where_all functions)
+            pass
+
+    @staticmethod
+    def decode_position(pos):
+        """Decode position message."""
+        positions = {}
+        for item in pos.decode().strip(";\r\n").split(";"):
+            axis_id, posit = item.split(":")
+            positions[axis_id] = float(posit)
+        return positions
 
 
 if __name__ == "__main__":
