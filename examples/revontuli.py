@@ -25,17 +25,15 @@ spectro = {
 class RevTheta(b.pseudo_motor.Theta):
 
     def get_src_x(theta):
-        return cos*sin 
+        return cos*sin
 
     def get_src_y(theta):
         return ...
-    
+
     def get_src_pos(theta):
         return pos_y, pos_x
 
-    @staticmethod
-    def torad(theta):
-        return pi*theta/180
+
 
 
 theta = RevTheta(spectro, radius=500)
@@ -45,7 +43,7 @@ energy = b.pseudo_motor.Energy(theta, d_hkl=2.4)
 
 _____________________________
 
-pseudo_motor.py 
+pseudo_motor.py
 
 class Theta(ABC):
 
@@ -56,9 +54,9 @@ class Theta(ABC):
         ...
 
     def mvabs(pos):
-        if self._det_y is not None:            
+        if self._det_y is not None:
             self.det_y.move(self.get_src_x(pos))
-        if self._src_x is not None:            
+        if self._src_x is not None:
             self.det_y.move(self.get_src_x(pos))
         ...
 
@@ -68,8 +66,10 @@ class Theta(ABC):
 
     def get_src_x(pos):
         return 0
-        
 
+    @staticmethod
+    def torad(theta):
+        return pi*theta/180
 
 ________________________
 

@@ -25,7 +25,7 @@ class Controller(ABC):
     #    """ABC method for closing the connection to the controller. (derived must override)."""
 
     @abstractmethod
-    def move(self, axis_id, position=0):
+    def move_axis(self, axis_id, position=0):
         """
         ABC method for moving a single axis (derived must override).
 
@@ -60,7 +60,7 @@ class Controller(ABC):
         """
 
     @abstractmethod
-    def set_zero(self, axis_id):
+    def set_axis_to_zero(self, axis_id):
         """
         ABC method to set the axis position to zero (derived must override).
 
@@ -75,6 +75,21 @@ class Controller(ABC):
 
         """
 
+    @abstractmethod
+    def get_axis_status(self, axis_id):
+        """
+        ABC method to get the axis status (derived must override).
+
+        Parameters
+        ----------
+        axis_id : int
+            Axis ID as used by the comtroller.
+
+        Returns
+        -------
+        None
+
+        """
 
     # @property
     # @abstractproperty
