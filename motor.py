@@ -4,8 +4,6 @@ Created on Mon Mar  6 10:50:29 2023.
 
 @author: René Bes
 """
-from time import sleep
-
 
 class Motor():
     """Motor generic class."""
@@ -15,10 +13,10 @@ class Motor():
         self.motor_id = motor_id
         self.offset = motor_offset
         self.ctrl = controller
-        self.current_position = self.get_motor_position()
+        self.current_position = self.ctrl.get_axis_position(self.motor_id)
         #TODO! self.limits =
 
-    def get_motor_position(self):
+    def position(self):
         """
         Get motor dial position from controller.
 
@@ -28,6 +26,9 @@ class Motor():
             Motor position (dial) as retrieved from controller.
 
         """
+        print(f'{self.motor_name} at: \n'
+              f'dial: {self.current_position} \n'
+              f'user: {self.current_position + self.offset}')
         return self.ctrl.get_axis_position(self.motor_id)
 
     def amove(self, new_position):
@@ -45,9 +46,9 @@ class Motor():
 
         """
         dial = new_position - self.offset
-        self.ctrl.move(self.motor_id, dial)
-        self.is_in_position(dial)
-        self.current_position = self.get_motor_position()
+        self.ctrl.move_axis(self.motor_id, dial)
+        self.ctrl.is_in_position(dial)
+        self.current_position = self.ctrl.get_axis_position(self.motor_id)
 
     def rmove(self, rel_position):
         """
@@ -64,62 +65,13 @@ class Motor():
 
         """
         dial = self.current_position + rel_position
-        self.ctrl.move(self.motor_id, dial)
-        self.is_in_position(dial)
-        self.current_position = self.get_motor_position()
+        self.ctrl.move_axis(self.motor_id, dial)
+        self.ctrl.is_in_position(dial)
+        self.current_position = self.ctrl.get_axis_position(self.motor_id)
 
-    def is_in_position(self, target, timeout=60):
-        """
-        Check that the motor has reached its target position.
-
-        Parameters
-        ----------
-        target : float
-            Position (dial) the motor must reach.
-        timeout : float, optional
-            Time limit for the motor movement in seconds.
-            The default is 60 seconds.
-
-        Raises
-        ------
-        TimeoutError
-            Error when motor does not reach its target position in due time.
-
-        Returns
-        -------
-        None.
-
-        """
-        waited=0
-        sleep_for = 0.1  # sec
-        while True:
-            current = self.ctrl.get_axis_position(self.motor_id)
-            if target == round(current, 3):
-                print(f'Motor {self.motor_id} at {current}')
-                break
-            sleep(sleep_for)
-            waited += sleep_for
-
-            if waited > timeout:
-                raise TimeoutError(
-                    f"Motor never reached position (current is {current})")
-
-    def where(self):
-        """
-        Print the current dial and user positions.
-
-        Returns
-        -------
-        None.
-
-        """
-        print(f'{self.motor_name} at: \n'
-              f'dial: {self.current_position} \n'
-              f'user: {self.current_position + self.offset}')
-
-    def set_position_to_zero(self):
+    def set_to_zero(self):
         """Set motor current position to 0."""
-        self.ctrl.set_zero(self.motor_id)
+        self.ctrl.set_axis_to_zero(self.motor_id)
         print(f'{self.motor_name} position set to 0. \n'
               f'Initial value was {self.current_position}.')
-        self.current_position = self.get_motor_position()
+        self.current_position = self.ctrl.get_axis_position(self.motor_id)
