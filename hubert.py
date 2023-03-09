@@ -22,34 +22,38 @@ class HubertSMC(Controller):
         """Initialise the connection to the device."""
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.connect((ip_adress, port))
+        msg = self._read().decode().strip('\r\n')
+        print(f'Controller Hubert {msg} successfully initialised')
 
     def _write(self, msg):
         """Write a message to the socket."""
         msg = bytes(f'{msg}\r\n', "utf-8")
-        print(f'{msg=}')
-        sent = self._socket.send(msg)
-        print(f'{sent=}')
+        #print(f'{msg=}')
+        self._socket.send(msg)
 
     def _read(self, msg_length=2048):
         """Receive message from the socket and return answer."""
         msg = self._socket.recv(msg_length)
-        print(f'{msg=}')
+        #print(f'{msg=}')
         return msg
 
     def move_axis(self, axis_id, target=0):
         """Send instruction to move an axis to a target position."""
-        self._socket._write(f'goto{axis_id}:{target}')
+        self._write(f'goto{axis_id}:{target}')
         self.is_in_position(axis_id, target)
 
-    def get_axis_position(self, axis_id=""):
+    def get_axis_position(self, axis_id):
         """Get the axis dial position."""
-        self._write(f'?p{axis_id}')
-        pos = self._read()
-        positions = self.decode_position(pos)
-        if axis_id:
-            return positions[axis_id]
-        else:
+        if axis_id == 0:
+            self._write('?p')
+            pos = self._read()
+            positions = self.decode_position(pos)
             return positions
+        else:
+            self._write(f'?p{axis_id}')
+            pos = self._read()
+            positions = self.decode_position(pos)
+            return positions[f'{axis_id}']
 
     def set_axis_to_zero(self, axis_id=""):
         """Set axis position to 0."""
