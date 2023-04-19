@@ -9,7 +9,7 @@ Created on Tue Jan 10 21:17:12 2023.
 import socket
 
 from time import sleep
-from controller import Controller
+from borealis.controller import Controller
 
 
 class HubertSMC(Controller):

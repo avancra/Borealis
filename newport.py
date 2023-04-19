@@ -11,7 +11,7 @@ import clr
 clr.AddReference("Newport.XPS.CommandInterface")
 import CommandInterfaceXPS as xps
 
-from controller import Controller
+from borealis.controller import Controller
 
 
 class NewportXPS(Controller):

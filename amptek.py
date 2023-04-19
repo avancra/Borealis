@@ -11,7 +11,7 @@ import usb.core
 import usb.util
 import numpy as np
 
-from detector import Detector
+from borealis.detector import Detector
 
 
 class AmptekCdTe123(Detector):

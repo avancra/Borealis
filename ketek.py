@@ -11,8 +11,8 @@ from time import sleep
 
 import numpy as np
 
-from ketek_error import check_error
-from detector import Detector
+from borealis.ketek_error import check_error
+from borealis.detector import Detector
 
 
 class KetekAXASM(Detector):

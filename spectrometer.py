@@ -8,8 +8,8 @@ from pathlib import Path
 
 import yaml
 
-from ketek import KetekAXASM
-from amptek import AmptekCdTe123
+from borealis.ketek import KetekAXASM
+from borealis.amptek import AmptekCdTe123
 
 
 class Spectrometer:
