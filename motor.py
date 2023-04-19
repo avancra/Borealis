@@ -5,6 +5,7 @@ Created on Mon Mar  6 10:50:29 2023.
 @author: René Bes
 """
 
+
 class Motor():
     """Motor generic class."""
 
@@ -75,3 +76,30 @@ class Motor():
         print(f'{self.motor_name} position set to 0. \n'
               f'Initial value was {self.current_position}.')
         self.current_position = self.ctrl.get_axis_position(self.motor_id)
+
+    def scan(start, stop, step, det=None, acq_time=None):
+        """
+        Scan, with or without acquisition. Acquisition requires det and acq_time.
+
+        Parameters
+        ----------
+        start : float
+        stop : float
+        step : float
+        det : borealis.Detector
+        acq_time : float
+
+        Returns
+        -------
+        spectra : ndarray
+        """
+        spectra = []
+        for position in np.arange(start, stop, step):
+            self.amove(position)
+            if det is not None:
+                spectrum = det.acquisition(acq_time)
+                spectra.append(spectrum)
+
+        return np.array(spectra)
+
+        
