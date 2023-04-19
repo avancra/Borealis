@@ -4,6 +4,9 @@ Created on Mon Mar  6 10:50:29 2023.
 
 @author: René Bes
 """
+import time
+
+import numpy as np
 
 
 class Motor():
@@ -87,7 +90,9 @@ class Motor():
         stop : float
         step : float
         det : borealis.Detector
+            if not None, acquisition is done at each motor position.
         acq_time : float
+            if not None, btu det is None, will sleep for this time.
 
         Returns
         -------
@@ -97,8 +102,11 @@ class Motor():
         for position in np.arange(start, stop, step):
             self.amove(position)
             if det is not None:
+                assert acq_time is not None
                 spectrum = det.acquisition(acq_time)
                 spectra.append(spectrum)
+            elif acq_time is not None:
+                time.sleep(acq_time)
 
         return np.array(spectra)
 
