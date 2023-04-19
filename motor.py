@@ -51,7 +51,7 @@ class Motor():
         """
         dial = new_position - self.offset
         self.ctrl.move_axis(self.motor_id, dial)
-        self.ctrl.is_in_position(dial)
+        self.ctrl.is_in_position(self.motor_id, dial)
         self.current_position = self.ctrl.get_axis_position(self.motor_id)
 
     def rmove(self, rel_position):
@@ -70,7 +70,7 @@ class Motor():
         """
         dial = self.current_position + rel_position
         self.ctrl.move_axis(self.motor_id, dial)
-        self.ctrl.is_in_position(dial)
+        self.ctrl.is_in_position(self.motor_id, dial)
         self.current_position = self.ctrl.get_axis_position(self.motor_id)
 
     def set_to_zero(self):
@@ -80,7 +80,7 @@ class Motor():
               f'Initial value was {self.current_position}.')
         self.current_position = self.ctrl.get_axis_position(self.motor_id)
 
-    def scan(start, stop, step, det=None, acq_time=None):
+    def scan(self, start, stop, step, det=None, acq_time=None):
         """
         Scan, with or without acquisition. Acquisition requires det and acq_time.
 

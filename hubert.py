@@ -90,7 +90,7 @@ class HubertSMC(Controller):
         sleep_for = 0.1  # sec
         while True:
             current = self.get_axis_position(axis_id)
-            if target == round(current, 3):
+            if round(target, 3) == round(current, 3):
                 # print(f'Axis {axis_id} at {current}')
                 break
             sleep(sleep_for)
