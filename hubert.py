@@ -7,8 +7,9 @@ Created on Tue Jan 10 21:17:12 2023.
 @author: A. Vancraeyenest
 """
 import socket
+import pytest
+import time 
 
-from time import sleep
 from borealis.controller import Controller
 
 
@@ -86,19 +87,21 @@ class HubertSMC(Controller):
         None.
 
         """
-        waited=0
         sleep_for = 0.1  # sec
+        start_time = time.time()
         while True:
             current = self.get_axis_position(axis_id)
-            if round(target, 3) == round(current, 3):
+            if current == pytest.approx(target, abs=5e-4):
                 # print(f'Axis {axis_id} at {current}')
                 break
-            sleep(sleep_for)
-            waited += sleep_for
 
-            if waited > timeout:
+            # TODO : check limit switch activated
+
+            if (time.time() - start_time) > timeout:
                 raise TimeoutError(
                     f"Axis never reached target position. Stopped at {current})")
+
+            time.sleep(sleep_for)
 
     def is_axis_ready(self, axis_id):
         """Check that a given axis is ready (idle)."""
