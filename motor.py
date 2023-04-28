@@ -124,6 +124,7 @@ class Motor():
         spectra = []
         for position in np.arange(start, stop, step):
             self.amove(position)
+            # wait in position
             if det is not None:
                 assert acq_time is not None
                 spectrum = det.acquisition(acq_time)

@@ -8,7 +8,8 @@ Created on Tue Jan 10 21:17:12 2023.
 """
 import socket
 import pytest
-import time 
+import time
+from typing import Union
 
 from borealis.controller import Controller
 
@@ -18,6 +19,7 @@ class HubertSMC(Controller):
 
     def __init__(self):
         self._socket = None
+        self._statuses = {}
 
     def initialise(self, ip_adress, port=1234):
         """Initialise the connection to the device."""
@@ -43,8 +45,15 @@ class HubertSMC(Controller):
         self._write(f'goto{axis_id}:{target}')
         self.is_in_position(axis_id, target)
 
+    def _get_axis_string(axis_id : Union[int, None]) -> str:
+        if axis_id is None:
+            return ""
+
+        return str(axis_id)
+
     def get_axis_position(self, axis_id):
         """Get the axis dial position."""
+        # TODO: change to is None if all axis
         if axis_id == 0:
             self._write('?p')
             pos = self._read()

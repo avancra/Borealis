@@ -19,7 +19,7 @@ class PseudoMotor():
         motors : list[Motor]
             List of Motor objects.
         geometry : list[fct]
-            List of conversion functions (e.g. lambda (x,y): x), one for each motor. 
+            List of conversion functions (e.g. lambda (x,y): x), one for each motor.
         detector
             Instance of Detector.
         """
@@ -30,6 +30,10 @@ class PseudoMotor():
         assert len(self._motors) == len(self._conversion_laws)
 
     def amove(self, pos):
+        # TODO: Check if motors ready to move
+        # while not all(mt.is_ready for mt in self._motors):
+            # wait
+            # check timeout
         for idx, motor in enumerate(self._motors):
             motor_pos = self._conversion_laws[idx](pos)
             motor.amove(motor_pos)
@@ -38,6 +42,7 @@ class PseudoMotor():
         spectra = []
         for position in np.arange(start, stop, step):
             self.amove(position)
+            # wait all in position
             if self._detector is not None:
                 assert acq_time is not None
                 spectrum = self._detector.acquisition(acq_time)
