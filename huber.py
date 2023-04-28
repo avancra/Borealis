@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Hubert controller SMC.
+Huber controller SMC.
 
 Created on Tue Jan 10 21:17:12 2023.
 
@@ -8,13 +8,13 @@ Created on Tue Jan 10 21:17:12 2023.
 """
 import socket
 import pytest
-import time 
+import time
 
 from borealis.controller import Controller
 
 
-class HubertSMC(Controller):
-    """Class to communicate with Hubert controller."""
+class HuberSMC(Controller):
+    """Class to communicate with Huber controller."""
 
     def __init__(self):
         self._socket = None
@@ -24,7 +24,7 @@ class HubertSMC(Controller):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.connect((ip_adress, port))
         msg = self._read().decode().strip('\r\n')
-        print(f'Controller Hubert {msg} successfully initialised')
+        print(f'Controller Huber {msg} successfully initialised')
 
     def _write(self, msg):
         """Write a message to the socket."""
@@ -184,7 +184,7 @@ class HubertSMC(Controller):
 
 
 if __name__ == "__main__":
-    sock = HubertSMC()
+    sock = HuberSMC()
     sock.initialise("192.168.2.2", 1234)
     sock._read()
     sock._write("?")
