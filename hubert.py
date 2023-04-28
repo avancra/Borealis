@@ -92,10 +92,10 @@ class HubertSMC(Controller):
         while True:
             current = self.get_axis_position(axis_id)
             if current == pytest.approx(target, abs=5e-4):
-                # print(f'Axis {axis_id} at {current}')
                 break
 
-            # TODO : check limit switch activated
+            if not self.is_limit_switch_activated(axis_id):
+                break
 
             if (time.time() - start_time) > timeout:
                 raise TimeoutError(
@@ -106,13 +106,10 @@ class HubertSMC(Controller):
     def is_axis_ready(self, axis_id):
         """Check that a given axis is ready (idle)."""
         status = self.get_axis_status(axis_id)['axis ready']
-        if status == '1':
-            return True
-        else:
-            return False
+        return status == '1'
 
     def get_axis_error(self, axis_id):
-        """Get error message from a given axis"""
+        """Get error message from a given axis."""
         status = self.get_axis_status(axis_id)
         self.clean_axis_error(axis_id)
         return (status['error number'], status['error message'])
@@ -127,7 +124,7 @@ class HubertSMC(Controller):
 
 
     def clean_axis_error(self, axis_id=""):
-        """Clean axis related errors"""
+        """Clean axis related errors."""
         self._write(f'cerr{axis_id}')
 
     def is_limit_switch_activated(self, axis_id):

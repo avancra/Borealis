@@ -17,8 +17,24 @@ class Motor():
         self.motor_id = motor_id
         self.offset = motor_offset
         self.ctrl = controller
-        self.current_position = self.ctrl.get_axis_position(self.motor_id)
+        self._dial_position = self.ctrl.get_axis_position(self.motor_id)
+        self._user_position = self.dial_position + self.offset
+        self._is_ready = False
         #TODO! self.limits =
+
+    @property
+    def dial_position(self):
+        # TODO: add logging
+        return self.ctrl.get_axis_position(self.motor_id)
+
+    @property
+    def user_position(self):
+        # TODO: add logging
+        return self.dial_position + self.offset
+
+    @property
+    def is_ready(self):
+        return self.ctrl.is_axis_ready(self.motor_id)
 
     def position(self):
         """
@@ -26,16 +42,14 @@ class Motor():
 
         Returns
         -------
-        Float
-            Motor position (dial) as retrieved from controller.
+        str
 
         """
-        print(f'{self.motor_name} at: \n'
-              f'dial: {self.current_position} \n'
-              f'user: {self.current_position + self.offset}')
-        return self.ctrl.get_axis_position(self.motor_id)
+        return (f'{self.motor_name} at: \n'
+                f'\t dial:  {self.dial_position} \n'
+                f'\t user: {self.user_position}')
 
-    def amove(self, new_position):
+    def amove(self, user_position):
         """
         Move the motor to a new position (user) in absolute scale.
 
@@ -49,10 +63,15 @@ class Motor():
         None.
 
         """
-        dial = new_position - self.offset
+        dial = user_position - self.offset
+
+        if self.ctrl.is_axis_ready(self.motor_id) is False:
+            # TODO: Tranform into logging
+            print(f'{self.motor_name} not ready yet (i.e. not idle).')
+            return
+
         self.ctrl.move_axis(self.motor_id, dial)
         self.ctrl.is_in_position(self.motor_id, dial)
-        self.current_position = self.ctrl.get_axis_position(self.motor_id)
 
     def rmove(self, rel_position):
         """
@@ -68,17 +87,21 @@ class Motor():
         None.
 
         """
-        dial = self.current_position + rel_position
+        dial = self.dial_position + rel_position
+        if self.ctrl.is_axis_ready(self.motor_id) is False:
+            # TODO: Tranform into
+            print(f'{self.motor_name} not ready yet (i.e. not idle).')
+            return
+
         self.ctrl.move_axis(self.motor_id, dial)
         self.ctrl.is_in_position(self.motor_id, dial)
-        self.current_position = self.ctrl.get_axis_position(self.motor_id)
 
+    # TODO: rename to set_home/set_zero
     def set_to_zero(self):
         """Set motor current position to 0."""
         self.ctrl.set_axis_to_zero(self.motor_id)
         print(f'{self.motor_name} position set to 0. \n'
-              f'Initial value was {self.current_position}.')
-        self.current_position = self.ctrl.get_axis_position(self.motor_id)
+              f'Initial value was {self.dial_position}.')
 
     def scan(self, start, stop, step, det=None, acq_time=None):
         """
@@ -109,5 +132,3 @@ class Motor():
                 time.sleep(acq_time)
 
         return np.array(spectra)
-
-        
