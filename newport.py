@@ -22,16 +22,27 @@ class NewportXPS(Controller):
 
     def initialise(self, ip_adress, port=5001, timeout=1000):
         """Initialise the connection to the device."""
-        ans = self._xps.OpenInstrument("192.168.0.254", port, timeout)
+        ans = self._xps.OpenInstrument(ip_adress, port, timeout)
+        # print(f'Controller Newport {ans} successfully initialised')
         return ans
 
     def close(self):
         self._xps.CloseInstrument()
 
-    def move_axis(self, axis_id, position=0):
-        """
+    def version(self):
+        result, version, err_str = self._xps.FirmwareVersionGet("", "")
+        print(result, version, err_str)
+        # answer = self._xps.FirmwareVersionGet("", "")
+        # print(f"{answer=}")
+        if result == 0:
+            print(f"XPS firmware version: {version}")
+        else:
+            print(f"Error calling the version command: {err_str}")
 
-        """
+    def move_axis(self, axis_id : str, position : float = 0.):
+        """Send instruction to move an axis to a target position."""
+        answer = self._xps.GroupMoveAbsolute("", axis_id, 1, position)
+        print(f"{answer=}")
 
     def get_axis_position(self, axis_id):
         """
@@ -39,7 +50,7 @@ class NewportXPS(Controller):
 
         Parameters
         ----------
-        axis_id : int
+        axis_id : str
             Axis ID as used by the comtroller.
 
         Returns
@@ -48,6 +59,11 @@ class NewportXPS(Controller):
             Current position (dial) of the axis.
 
         """
+        answer = self._xps.GroupPositionCurrentGet("", axis_id, 1, 0.)
+        print(f"{answer=}")
+
+        # return position
+
 
     def set_axis_to_zero(self, axis_id):
         """
@@ -81,5 +97,10 @@ class NewportXPS(Controller):
 
 if __name__ == "__main__":
     ctrl = NewportXPS()
-    print(ctrl.initialise("192.168.0.254"))
+    ip_adress = "..."
+    print(ctrl.initialise(ip_adress))
+    print(ctrl.version())
+    axis_id = "..."
+    # print(ctrl.get_axis_position(axis_id))
+    # print(ctrl.move_axis(axis_id, 10.))
     print(ctrl.close())
