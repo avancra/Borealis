@@ -98,9 +98,33 @@ class NewportXPS(Controller):
 if __name__ == "__main__":
     ctrl = NewportXPS()
     ip_adress = "..."
+    print("***")
     print(ctrl.initialise(ip_adress))
-    print(ctrl.version())
-    axis_id = "..."
+    try:
+        print("***")
+        # following 2 commandes should give same output
+        print(ctrl.version())
+        print("***")
+        print(ctrl._xps.FirmwareVersionGet())
+        print("***")
+
+        # 1-motor group
+        axis_id = "tubex"
+        print(ctrl._xps.GroupInitialize(axis_id))
+        print("***")
+        print(ctrl._xps.GroupHomeSearch(axis_id))
+        print("***")
+        print(ctrl._xps.GroupPositionCurrentGet(axis_id, [], 1, ""))
+        answer, positions, err_str = ctrl._xps.GroupPositionCurrentGet(axis_id, [], 1)
+        positions = [pos for pos in positions]
+        print(f"{positions=}")
+        print("***")
+        print(ctrl._xps.GroupMoveAbsolute(axis_id, [10.0, ], 1))
+    except Exception:
+        ctrl._xps.KillAll()
+        ctrl.close()
+        raise
+
     # print(ctrl.get_axis_position(axis_id))
     # print(ctrl.move_axis(axis_id, 10.))
     print(ctrl.close())
