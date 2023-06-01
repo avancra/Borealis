@@ -60,6 +60,48 @@ class Controller(ABC):
         """
 
     @abstractmethod
+    def is_axis_ready(self, axis_id):
+        """
+        ABC method to check that a given axis is ready, i.e. idle (derived must override).
+
+        Parameters
+        ----------
+        axis_id : int
+            Axis ID as used by the comtroller.
+
+        Returns
+        -------
+        position : bool
+            True if axis is idle, False is busy or in error state.
+
+        """
+
+    # TODO: rename due to misleading is_in_position make think that one expects a bool as return, like is_axis_ready
+    @abstractmethod
+    def is_in_position(self, axis_id, target, timeout=60):
+        """
+        ABC method to check that the axis has reached its target position.
+
+        Parameters
+        ----------
+        target : float
+            Position (dial) the axis must reach.
+        timeout : float, optional
+            Time limit for the axis movement to be done, in seconds.
+            The default is 60 seconds.
+
+        Raises
+        ------
+        TimeoutError
+            Error when axis does not reach its target position in due time.
+
+        Returns
+        -------
+        None.
+
+        """
+
+    @abstractmethod
     def set_axis_to_zero(self, axis_id):
         """
         ABC method to set the axis position to zero (derived must override).
@@ -75,21 +117,21 @@ class Controller(ABC):
 
         """
 
-    @abstractmethod
-    def get_axis_status(self, axis_id):
-        """
-        ABC method to get the axis status (derived must override).
+    # @abstractmethod
+    # def get_axis_status(self, axis_id):
+    #     """
+    #     ABC method to get the axis status (derived must override).
 
-        Parameters
-        ----------
-        axis_id : int
-            Axis ID as used by the comtroller.
+    #     Parameters
+    #     ----------
+    #     axis_id : int
+    #         Axis ID as used by the comtroller.
 
-        Returns
-        -------
-        None
+    #     Returns
+    #     -------
+    #     None
 
-        """
+    #     """
 
     # @property
     # @abstractproperty
