@@ -20,6 +20,8 @@ class NewportXPS(Controller):
     def __init__(self):
         self._xps = xps.XPS()
 
+    # -------------  Overiden methods ------------- #
+
     def initialise(self, ip_adress, port=5001, timeout=1000):
         """Initialise the connection to the device."""
         ans = self._xps.OpenInstrument(ip_adress, port, timeout)
@@ -27,22 +29,13 @@ class NewportXPS(Controller):
         return ans
 
     def close(self):
-        self._xps.CloseInstrument()
+        self._xps.KillAll()  # Kill all axis
+        self._xps.CloseInstrument()  # close connection to the instrument
 
-    def version(self):
-        result, version, err_str = self._xps.FirmwareVersionGet("", "")
-        print(result, version, err_str)
-        # answer = self._xps.FirmwareVersionGet("", "")
-        # print(f"{answer=}")
-        if result == 0:
-            print(f"XPS firmware version: {version}")
-        else:
-            print(f"Error calling the version command: {err_str}")
-
-    def move_axis(self, axis_id : str, position : float = 0.):
+    def move_axis(self, axis_id : str, target : float = 0.):
         """Send instruction to move an axis to a target position."""
-        answer = self._xps.GroupMoveAbsolute("", axis_id, 1, position)
-        print(f"{answer=}")
+        answer = self._xps.GroupMoveAbsolute(axis_id, [target, ], 1)
+        self.is_in_position(axis_id, target)
 
     def get_axis_position(self, axis_id):
         """
@@ -59,41 +52,35 @@ class NewportXPS(Controller):
             Current position (dial) of the axis.
 
         """
-        answer = self._xps.GroupPositionCurrentGet("", axis_id, 1, 0.)
-        print(f"{answer=}")
+        answer, positions, err_str = ctrl._xps.GroupPositionCurrentGet(axis_id, [], 1)
+        positions = [pos for pos in positions]
 
-        # return position
+        return positions[0]
 
+    def is_axis_ready(self, axis_id):
+        """Check that a given axis is ready (idle)."""
+        raise NotImplementedError
 
     def set_axis_to_zero(self, axis_id):
-        """
-        ABC method to set the axis position to zero (derived must override).
+        """Set the axis position to zero."""
+        raise NotImplementedError
 
-        Parameters
-        ----------
-        axis_id : int
-            Axis ID as used by the comtroller.
+    def is_limit_switch_activated(self, axis_id):
+        """Check if limit switch is active."""
+        raise NotImplementedError
 
-        Returns
-        -------
-        None
+    # -------------  Own methods ------------- #
 
-        """
+    def version(self):
+        result, version, err_str = self._xps.FirmwareVersionGet("", "")
+        print(result, version, err_str)
+        # answer = self._xps.FirmwareVersionGet("", "")
+        # print(f"{answer=}")
+        if result == 0:
+            print(f"XPS firmware version: {version}")
+        else:
+            print(f"Error calling the version command: {err_str}")
 
-    def get_axis_status(self, axis_id):
-        """
-        ABC method to get the axis status (derived must override).
-
-        Parameters
-        ----------
-        axis_id : int
-            Axis ID as used by the comtroller.
-
-        Returns
-        -------
-        None
-
-        """
 
 if __name__ == "__main__":
     ctrl = NewportXPS()
@@ -114,17 +101,18 @@ if __name__ == "__main__":
         print("***")
         print(ctrl._xps.GroupHomeSearch(axis_id))
         print("***")
-        print(ctrl._xps.GroupPositionCurrentGet(axis_id, [], 1, ""))
-        answer, positions, err_str = ctrl._xps.GroupPositionCurrentGet(axis_id, [], 1)
-        positions = [pos for pos in positions]
-        print(f"{positions=}")
+        # print(ctrl._xps.GroupPositionCurrentGet(axis_id, [], 1, ""))
+        # answer, positions, err_str = ctrl._xps.GroupPositionCurrentGet(axis_id, [], 1)
+        # positions = [pos for pos in positions]
+        # print(f"{positions=}")
+        # print("***")
+        # print(ctrl._xps.GroupMoveAbsolute(axis_id, [10.0, ], 1))
+        print(ctrl.move_axis(axis_id, 50.))
         print("***")
-        print(ctrl._xps.GroupMoveAbsolute(axis_id, [10.0, ], 1))
+        print(ctrl.get_axis_position(axis_id))
     except Exception:
-        ctrl._xps.KillAll()
         ctrl.close()
         raise
+    else:
+        ctrl.close()
 
-    # print(ctrl.get_axis_position(axis_id))
-    # print(ctrl.move_axis(axis_id, 10.))
-    print(ctrl.close())

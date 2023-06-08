@@ -5,6 +5,9 @@ Created on Thu February 9 14:48:59 2023.
 @author: A. Vancraeyenest
 """
 from abc import ABC, abstractmethod, abstractproperty
+from time import sleep
+
+import pytest
 
 
 class Controller(ABC):
@@ -19,15 +22,19 @@ class Controller(ABC):
     @abstractmethod
     def initialise(self):
         """ABC method for controller initialisation. (derived must override)."""
+        raise NotImplementedError
 
     #@abstractmethod
-    #def close_connection(self):
+    #def close(self):
     #    """ABC method for closing the connection to the controller. (derived must override)."""
 
     @abstractmethod
-    def move_axis(self, axis_id, position=0):
+    def move_axis(self, axis_id, target=0):
         """
         ABC method for moving a single axis (derived must override).
+
+        This method should move the axis and wait that the axis had reached the target
+        by calling self.is_in_position(axis_id, target)
 
         Parameters
         ----------
@@ -41,6 +48,7 @@ class Controller(ABC):
         None
 
         """
+        raise NotImplementedError
 
     @abstractmethod
     def get_axis_position(self, axis_id):
@@ -58,6 +66,7 @@ class Controller(ABC):
             Current position (dial) of the axis.
 
         """
+        raise NotImplementedError
 
     @abstractmethod
     def is_axis_ready(self, axis_id):
@@ -75,12 +84,46 @@ class Controller(ABC):
             True if axis is idle, False is busy or in error state.
 
         """
+        raise NotImplementedError
+
+    @abstractmethod
+    def is_limit_switch_activated(self, axis_id):
+        """
+        ABC method to check if the limit switch is active (derived must override).
+
+        Parameters
+        ----------
+        axis_id : int
+            Axis ID as used by the comtroller.
+
+        Returns
+        -------
+        bool
+
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def set_axis_to_zero(self, axis_id):
+        """
+        ABC method to set the axis position to zero (derived must override).
+
+        Parameters
+        ----------
+        axis_id : int
+            Axis ID as used by the comtroller.
+
+        Returns
+        -------
+        None
+
+        """
+        raise NotImplementedError
 
     # TODO: rename due to misleading is_in_position make think that one expects a bool as return, like is_axis_ready
-    @abstractmethod
     def is_in_position(self, axis_id, target, timeout=60):
         """
-        ABC method to check that the axis has reached its target position.
+        Check that the axis has reached its target position.
 
         Parameters
         ----------
@@ -100,22 +143,22 @@ class Controller(ABC):
         None.
 
         """
+        sleep_for = 0.1  # sec
+        start_time = time.time()
+        while True:
+            current = self.get_axis_position(axis_id)
+            if current == pytest.approx(target, abs=5e-4):
+                break
 
-    @abstractmethod
-    def set_axis_to_zero(self, axis_id):
-        """
-        ABC method to set the axis position to zero (derived must override).
+            if not self.is_limit_switch_activated(axis_id):
+                break
 
-        Parameters
-        ----------
-        axis_id : int
-            Axis ID as used by the comtroller.
+            if (time.time() - start_time) > timeout:
+                raise TimeoutError(
+                    f"Axis never reached target position. Stopped at {current})")
 
-        Returns
-        -------
-        None
+            time.sleep(sleep_for)
 
-        """
 
     # @abstractmethod
     # def get_axis_status(self, axis_id):
