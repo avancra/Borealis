@@ -6,7 +6,7 @@ Created on Wed Mar 15 16:42:03 2023.
 """
 
 import sys
-sys.path.append(r"C:\Windows\Microsoft.NET\assembly\GAC_64\Newport.XPS.CommandInterface\v4.0_2.0.0.1__9a267756cf640dcf")
+sys.path.append(r"C:\Windows\Microsoft.NET\assembly\GAC_64\Newport.XPS.CommandInterface\v4.0_2.3.0.0__9a267756cf640dcf")
 import clr
 clr.AddReference("Newport.XPS.CommandInterface")
 import CommandInterfaceXPS as xps
