@@ -36,7 +36,7 @@ class PseudoMotor():
 
     def scan(self, start, stop, step, acq_time):
         spectra = []
-        for position in np.arange(start, stop, step):
+        for position in np.arange(start, stop, step, dtype=np.float32):
             self.amove(position)
             if self._detector is not None:
                 assert acq_time is not None

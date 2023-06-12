@@ -52,7 +52,7 @@ class NewportXPS(Controller):
             Current position (dial) of the axis.
 
         """
-        answer, positions, err_str = ctrl._xps.GroupPositionCurrentGet(axis_id, [], 1)
+        answer, positions, err_str = self._xps.GroupPositionCurrentGet(axis_id, [], 1)
         positions = [pos for pos in positions]
 
         return positions[0]
