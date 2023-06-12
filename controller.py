@@ -5,7 +5,7 @@ Created on Thu February 9 14:48:59 2023.
 @author: A. Vancraeyenest
 """
 from abc import ABC, abstractmethod, abstractproperty
-from time import sleep
+import time
 
 import pytest
 

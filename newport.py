@@ -59,7 +59,7 @@ class NewportXPS(Controller):
 
     def is_axis_ready(self, axis_id):
         """Check that a given axis is ready (idle)."""
-        raise NotImplementedError
+        return True
 
     def set_axis_to_zero(self, axis_id):
         """Set the axis position to zero."""
@@ -67,7 +67,7 @@ class NewportXPS(Controller):
 
     def is_limit_switch_activated(self, axis_id):
         """Check if limit switch is active."""
-        raise NotImplementedError
+        return False
 
     # -------------  Own methods ------------- #
 

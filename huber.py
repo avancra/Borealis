@@ -7,8 +7,6 @@ Created on Tue Jan 10 21:17:12 2023.
 @author: A. Vancraeyenest
 """
 import socket
-import pytest
-import time
 
 from borealis.controller import Controller
 
