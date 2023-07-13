@@ -6,9 +6,12 @@ Created on Tue Jan 10 21:17:12 2023.
 
 @author: A. Vancraeyenest
 """
+import logging
 import socket
 
 from borealis.controller import Controller
+
+logger = logging.getLogger(__name__)
 
 
 class HuberSMC(Controller):
@@ -23,8 +26,10 @@ class HuberSMC(Controller):
         """Initialise the connection to the device."""
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.connect((ip_adress, port))
+        logger.debug("Socket connection open on port %d at IP address %s", port, ip_adress)
         msg = self._read().decode().strip('\r\n')
         print(f'Controller Huber {msg} successfully initialised')
+        logger.info("Controller Huber %s successfully initialised", msg)
 
     def move_axis(self, axis_id, target=0):
         """Move an axis to a target position."""
