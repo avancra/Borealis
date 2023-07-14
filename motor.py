@@ -5,9 +5,11 @@ Created on Mon Mar  6 10:50:29 2023.
 @author: René Bes
 """
 import time
+import logging
 
 import numpy as np
 
+logger = logging.getLogger(__name__)
 
 class Motor():
     """Motor generic class."""
@@ -38,16 +40,16 @@ class Motor():
 
     def position(self):
         """
-        Get motor dial position from controller.
+        Get motor dial / user positions from controller.
 
         Returns
         -------
         str
 
         """
-        return (f'{self.motor_name} at: \n'
-                f'\t dial:  {self.dial_position} \n'
-                f'\t user: {self.user_position}')
+        logger.info("%s at %f (dial) \t %f (user). ",
+                    self.motor_name, self.dial_position, self.user_position)
+        return self.dial_position, self.user_position
 
     def amove(self, user_position):
         """
@@ -64,14 +66,15 @@ class Motor():
 
         """
         dial = user_position - self.offset
-
+        # ??? should we use below the is_ready property instead
         if self.ctrl.is_axis_ready(self.motor_id) is False:
-            # TODO: Tranform into logging
-            print(f'{self.motor_name} not ready yet (i.e. not idle).')
+            # TODO: Add the fact that command/movement is aborted when axis not ready.
+            logger.warning("%s not ready yet (i.e. not idle).", self.motor_name)
             return
 
         self.ctrl.move_axis(self.motor_id, dial)
         self.ctrl.is_in_position(self.motor_id, dial)
+        logger.info("%s moved to %f.", self.motor_name, self.user_position)
 
     def rmove(self, rel_position):
         """
@@ -88,20 +91,23 @@ class Motor():
 
         """
         dial = self.dial_position + rel_position
+        # ??? should we use below the is_ready property instead
         if self.ctrl.is_axis_ready(self.motor_id) is False:
-            # TODO: Tranform into
-            print(f'{self.motor_name} not ready yet (i.e. not idle).')
+            # TODO: Add the fact that command/movement is aborted when axis not ready.
+            logger.warning("%s not ready yet (i.e. not idle).", self.motor_name)
             return
 
         self.ctrl.move_axis(self.motor_id, dial)
         self.ctrl.is_in_position(self.motor_id, dial)
+        logger.info("%s moved to %f.", self.motor_name, self.user_position)
 
     # TODO: rename to set_home/set_zero
     def set_to_zero(self):
         """Set motor current position to 0."""
         self.ctrl.set_axis_to_zero(self.motor_id)
-        print(f'{self.motor_name} position set to 0. \n'
-              f'Initial value was {self.dial_position}.')
+        logger.warning("Dial position of %s reset to 0.\n"
+                       "Initial dial value was %f.",
+                       self.motor_name, self.dial_position)
 
     def scan(self, start, stop, step, det=None, acq_time=None):
         """
