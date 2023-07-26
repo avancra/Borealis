@@ -17,22 +17,19 @@ logger = logging.getLogger(__name__)
 class HuberSMC(Controller):
     """Class to communicate with Huber controller."""
 
-    def __init__(self):
-        self._socket = None
-
-    # -------------  Overiden methods ------------- #
-
-    def initialise(self, ip_adress, port=1234):
+    def __init__(self, ip_address, port=1234):
         """Initialise the connection to the device."""
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._socket.connect((ip_adress, port))
+        self._socket.connect((ip_address, port))
         logger.debug("Socket connection open on port %d at IP address %s",
-                     port, ip_adress)
+                     port, ip_address)
+
         msg = self._read().decode().strip('\r\n')
         self._ctrl_name = f'Huber {msg}'
         logger.info("%s successfully initialised",
                     self._ctrl_name)
 
+    # -------------  Overridden methods ------------- #
     def move_axis(self, axis_id, target=0):
         """Move an axis to a target position."""
         self._write(f'goto{axis_id}:{target}')
@@ -170,8 +167,7 @@ class HuberSMC(Controller):
 
 
 if __name__ == "__main__":
-    sock = HuberSMC()
-    sock.initialise("192.168.2.2", 1234)
+    sock = HuberSMC("192.168.2.2", 1234)
     sock._read()
     sock._write("?")
     sock._read()

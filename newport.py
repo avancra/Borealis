@@ -17,17 +17,13 @@ from borealis.controller import Controller
 class NewportXPS(Controller):
     """Class to communicate with Newport controller."""
 
-    def __init__(self):
+    def __init__(self, ip_address, port=5001, timeout=1000):
+        """Initialise the connection to the device."""
         self._xps = xps.XPS()
+        ans = self._xps.OpenInstrument(ip_address, port, timeout)
+        # print(f'Controller Newport {ans} successfully initialised')
 
     # -------------  Overiden methods ------------- #
-
-    def initialise(self, ip_adress, port=5001, timeout=1000):
-        """Initialise the connection to the device."""
-        ans = self._xps.OpenInstrument(ip_adress, port, timeout)
-        # print(f'Controller Newport {ans} successfully initialised')
-        return ans
-
     def close(self):
         self._xps.KillAll()  # Kill all axis
         self._xps.CloseInstrument()  # close connection to the instrument
@@ -83,10 +79,9 @@ class NewportXPS(Controller):
 
 
 if __name__ == "__main__":
-    ctrl = NewportXPS()
-    ip_adress = "..."
+    ip_address = "..."
+    ctrl = NewportXPS(ip_address)
     print("***")
-    print(ctrl.initialise(ip_adress))
     try:
         print("***")
         # following 2 commandes should give same output

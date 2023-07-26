@@ -20,9 +20,8 @@ class Controller(ABC):
     """
 
     @abstractmethod
-    def initialise(self):
+    def __init__(self, *args, **kwargs):
         """ABC method for controller initialisation. (derived must override)."""
-        raise NotImplementedError
 
     #@abstractmethod
     #def close(self):
