@@ -16,6 +16,10 @@ class Detector(ABC):
     """
 
     @abstractmethod
+    def __init__(self):
+        """ABC method for detector initialisation. (derived must override)."""
+
+    @abstractmethod
     def acquisition(self, acquisition_time):
         """
         ABC method for acquisition (derived must override).
@@ -31,10 +35,6 @@ class Detector(ABC):
             Spectrum object.
 
         """
-
-    @abstractmethod
-    def initialise(self):
-        """ABC method for detector initialisation. (derived must override)."""
 
     @abstractmethod
     def stop(self):

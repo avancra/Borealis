@@ -23,8 +23,12 @@ class KetekAXASM(Detector):
     MAXALIAS_LEN = 80
 
     def __init__(self, ini_filepath):
+        """Initialise the detector."""
         self._ini_file = self._validate_ini(ini_filepath)
         self._chan_no = 0
+        self._initialise(self._ini_file)
+        self._start_system()
+        print('Detector Ketek successfully initialised')
 
     def acquisition(self, acquisition_time):
         """Start an acquisition and return corresponding Spectrum object."""
@@ -33,12 +37,6 @@ class KetekAXASM(Detector):
         self._stop_run()
 
         return self._get_spectrum()
-
-    def initialise(self):
-        """Initialise the detector."""
-        self._initialise(self._ini_file)
-        self._start_system()
-        print('Detector Ketek successfully initialised')
 
     def stop(self):
         """
@@ -351,7 +349,6 @@ if __name__ == '__main__':
     from matplotlib import pyplot as plt
     dev = KetekAXASM(
         (Path(__file__).parent / "examples/KETEK_DPP2_usb2.ini").as_posix())
-    dev.initialise()
     dev._set_logging('stderr', 'error')
     dev._start_system()
     print(dev._get_detectors())

@@ -25,22 +25,6 @@ class AmptekCdTe123(Detector):
     max_allowed_gain = 250
 
     def __init__(self):
-        self._device = None
-        self._endpoint_in = None
-        self._endpoint_out = None
-
-    def acquisition(self, acquisition_time):
-        """Start an acquisition and return corresponding Spectrum object."""
-        self._clear_spectrum()
-        self._set_acquisition_time(acquisition_time, save_to_mem=False)
-        self._enable_mca()
-        sleep(acquisition_time*1.1)
-        self._disable_mca()
-        raw_spe = self._get_spectrum()
-        spe = self._from_raw_spectrum(raw_spe, num_chan=2048)
-        return spe
-
-    def initialise(self):
         """Initialise the detector."""
         self._device = usb.core.find(idVendor=self.vendor_id,
                                      idProduct=self.product_id)
@@ -63,6 +47,17 @@ class AmptekCdTe123(Detector):
                 == usb.util.ENDPOINT_IN)
 
         print('Detector Amptek successfully initialised')
+
+    def acquisition(self, acquisition_time):
+        """Start an acquisition and return corresponding Spectrum object."""
+        self._clear_spectrum()
+        self._set_acquisition_time(acquisition_time, save_to_mem=False)
+        self._enable_mca()
+        sleep(acquisition_time*1.1)
+        self._disable_mca()
+        raw_spe = self._get_spectrum()
+        spe = self._from_raw_spectrum(raw_spe, num_chan=2048)
+        return spe
 
     def stop(self):
         """Close the connection to the detector and free resources."""
@@ -365,7 +360,6 @@ if __name__ == '__main__':
     from matplotlib import pyplot as plt
     ACK_OK = b'\xF5\xFA\xFF\x00\x00\x00\xFD\x12'
     dev = AmptekCdTe123()
-    dev.initialise()
     print('init')
     # stat = dev._get_status()
     # print(stat._raw)
