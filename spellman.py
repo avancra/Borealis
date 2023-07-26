@@ -29,27 +29,28 @@ class Spellman_uX50P50():
     FIL_LIMIT = 1.7
     FIL_RAMP_TIME = 2000
 
-    def __init__(self):
-        self._socket = None
-        self.software_version = ''
-        self.model_number = ''
-        self.hardware_version = ''
-
-    def initialise(self, ip_adress, port=50001):
+    def __init__(self, ip_address, port=50001):
         """Initialise the connection to the device."""
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._socket.connect((ip_adress, port))
+        self._socket.connect((ip_address, port))
+        # TODO: catch possible errors from _send()
         self.software_version = self._send('23,')[1]
         self.hardware_version = self._send('24,')[1]
         self.model_number = self._send('26,')[1]
-        # TODO: handle errors of progamming the filament ramp time, prehat and limits
-        val = int(round(1000 * self.FIL_PREHEAT / self.D2A_FIL))
-        self._send(f'12,{val},')
-        val = int(round(1000 * self.FIL_LIMIT / self.D2A_FIL))
-        self._send(f'13,{val},')
-        self._send(f'47,1,{self.FIL_RAMP_TIME},')
+        self.set_filament_default_values(preheat=self.FIL_PREHEAT,
+                                         limit=self.FIL_LIMIT,
+                                         ramp_time=self.FIL_RAMP_TIME)
         # TODO Logging the successful initialisation of the device
         print(f'Spellman {self.model_number} successfully initialised')
+
+    def set_filament_default_values(self, preheat, limit, ramp_time):
+        """Set default values for filament."""
+        # TODO: handle errors of progamming the filament ramp time, prehat and limits
+        val = int(round(1000 * preheat / self.D2A_FIL))
+        self._send(f'12,{val},')
+        val = int(round(1000 * limit / self.D2A_FIL))
+        self._send(f'13,{val},')
+        self._send(f'47,1,{ramp_time},')
 
     def open_shutter(self):
         ans = self._send('99,1,')
