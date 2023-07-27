@@ -14,20 +14,20 @@ logger = logging.getLogger(__name__)
 class Motor():
     """Motor generic class."""
 
-    def __init__(self, motor_name, motor_id, motor_offset, controller):
-        self.motor_name = motor_name
+    def __init__(self, alias, motor_id, motor_offset, controller):
+        self.motor_name = alias
         self.motor_id = motor_id
         self.offset = motor_offset
-        self.ctrl = controller
-        self._dial_position = self.ctrl.get_axis_position(self.motor_id)
+        self._controller = controller
+        self._dial_position = self._controller.get_axis_position(self.motor_id)
         self._user_position = self.dial_position + self.offset
-        self._is_ready = False
+        self._is_ready = self._controller.is_axis_ready(self.motor_id)
         #TODO! self.limits =
 
     @property
     def dial_position(self):
         # TODO: add logging
-        return self.ctrl.get_axis_position(self.motor_id)
+        return self._controller.get_axis_position(self.motor_id)
 
     @property
     def user_position(self):
@@ -36,7 +36,7 @@ class Motor():
 
     @property
     def is_ready(self):
-        return self.ctrl.is_axis_ready(self.motor_id)
+        return self._controller.is_axis_ready(self.motor_id)
 
     def position(self):
         """
@@ -50,6 +50,12 @@ class Motor():
         logger.info("%s at %f (dial) \t %f (user). ",
                     self.motor_name, self.dial_position, self.user_position)
         return self.dial_position, self.user_position
+
+    def _check_is_ready(self):
+        # TODO: change to MotorNotReady error once available
+        if self.is_ready is False:
+            logger.error("Command interrupted due to motor not ready yet (i.e. not idle).")
+            raise RuntimeError(f"Command interrupted due to motor not ready yet (i.e. not idle).")
 
     def amove(self, user_position):
         """
@@ -65,15 +71,12 @@ class Motor():
         None.
 
         """
-        dial = user_position - self.offset
-        # ??? should we use below the is_ready property instead
-        if self.ctrl.is_axis_ready(self.motor_id) is False:
-            # TODO: Add the fact that command/movement is aborted when axis not ready.
-            logger.warning("%s not ready yet (i.e. not idle).", self.motor_name)
-            return
+        self._check_is_ready()
 
-        self.ctrl.move_axis(self.motor_id, dial)
-        self.ctrl.is_in_position(self.motor_id, dial)
+        dial = user_position - self.offset
+
+        self._controller.move_axis(self.motor_id, dial)
+        self._controller.is_in_position(self.motor_id, dial)
         logger.info("%s moved to %f.", self.motor_name, self.user_position)
 
     def rmove(self, rel_position):
@@ -90,24 +93,13 @@ class Motor():
         None.
 
         """
+        self._check_is_ready()
+
         dial = self.dial_position + rel_position
-        # ??? should we use below the is_ready property instead
-        if self.ctrl.is_axis_ready(self.motor_id) is False:
-            # TODO: Add the fact that command/movement is aborted when axis not ready.
-            logger.warning("%s not ready yet (i.e. not idle).", self.motor_name)
-            return
 
-        self.ctrl.move_axis(self.motor_id, dial)
-        self.ctrl.is_in_position(self.motor_id, dial)
+        self._controller.move_axis(self.motor_id, dial)
+        self._controller.is_in_position(self.motor_id, dial)
         logger.info("%s moved to %f.", self.motor_name, self.user_position)
-
-    # TODO: rename to set_home/set_zero
-    def set_to_zero(self):
-        """Set motor current position to 0."""
-        self.ctrl.set_axis_to_zero(self.motor_id)
-        logger.warning("Dial position of %s reset to 0.\n"
-                       "Initial dial value was %f.",
-                       self.motor_name, self.dial_position)
 
     def scan(self, start, stop, step, det=None, acq_time=None):
         """
@@ -127,14 +119,29 @@ class Motor():
         -------
         spectra : ndarray
         """
-        spectra = []
+        self._check_is_ready()
+
+        mcas = []
         for position in np.arange(start, stop, step, dtype=np.float32):
-            self.amove(position)
+            try:
+                self.amove(position)
+            except RuntimeError:  # TODO: change to MotorNotReady error once available
+                logger.error("Scan interrupted at position %f due to motor not being ready yet (i.e. not idle).", position)
+                raise RuntimeError(f"Scan interrupted at position {position} due to motor not being ready yet (i.e. not idle).")
+
             if det is not None:
                 assert acq_time is not None
                 spectrum = det.acquisition(acq_time)
-                spectra.append(spectrum)
+                mcas.append(spectrum)
             elif acq_time is not None:
                 time.sleep(acq_time)
 
-        return np.array(spectra)
+        return np.array(mcas)
+
+    # TODO: rename to set_home/set_zero
+    def set_to_zero(self):
+        """Set motor current position to 0."""
+        self._controller.set_axis_to_zero(self.motor_id)
+        logger.warning("Dial position of %s reset to 0.\n"
+                       "Initial dial value was %f.",
+                       self.motor_name, self.dial_position)
