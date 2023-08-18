@@ -9,6 +9,7 @@ from platformdirs import user_data_dir
 app_name = "Borealis"
 app_author = "C4XS"
 app_dir = Path(user_data_dir(app_name, app_author))
+app_dir.mkdir(parents=True, exist_ok=True)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

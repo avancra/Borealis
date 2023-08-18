@@ -61,7 +61,7 @@ class Spectrometer:
 
 
 if __name__ == '__main__':
-    spectro = Spectrometer.from_yaml_file('examples/spectro.yml')
+    spectro = Spectrometer.from_yaml_file('../examples/spectro.yml')
     # spectro = Spectrometer({'detectors': [{'type':'Amptek'}, ]})
 
     spe = spectro.start_acquisition(10)
