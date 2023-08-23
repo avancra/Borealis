@@ -33,7 +33,7 @@ class NewportXPS(Controller):
         answer = self._xps.GroupMoveAbsolute(axis_id, [target, ], 1)
         self.is_in_position(axis_id, target)
 
-    def get_axis_position(self, axis_id):
+    def get_axis_position(self, axis_id : str):
         """
         ABC method to retrieve position of a single axis (derived must override).
 
@@ -53,15 +53,15 @@ class NewportXPS(Controller):
 
         return positions[0]
 
-    def is_axis_ready(self, axis_id):
+    def is_axis_ready(self, axis_id : str):
         """Check that a given axis is ready (idle)."""
         return True
 
-    def set_axis_to_zero(self, axis_id):
+    def set_axis_to_zero(self, axis_id : str):
         """Set the axis position to zero."""
         raise NotImplementedError
 
-    def is_limit_switch_activated(self, axis_id):
+    def is_limit_switch_activated(self, axis_id : str):
         """Check if limit switch is active."""
         return False
 

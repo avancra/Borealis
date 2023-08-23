@@ -28,7 +28,7 @@ class Controller(ABC):
     #    """ABC method for closing the connection to the controller. (derived must override)."""
 
     @abstractmethod
-    def move_axis(self, axis_id, target=0):
+    def move_axis(self, axis_id : str, target : float = 0):
         """
         ABC method for moving a single axis (derived must override).
 
@@ -37,7 +37,7 @@ class Controller(ABC):
 
         Parameters
         ----------
-        axis_id : int
+        axis_id : str
             Axis ID as used by the controller.
         position : float
             Target position. Default to 0.
@@ -50,13 +50,13 @@ class Controller(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_axis_position(self, axis_id):
+    def get_axis_position(self, axis_id : str):
         """
         ABC method to retrieve position of a single axis (derived must override).
 
         Parameters
         ----------
-        axis_id : int
+        axis_id : str
             Axis ID as used by the comtroller.
 
         Returns
@@ -68,13 +68,13 @@ class Controller(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def is_axis_ready(self, axis_id):
+    def is_axis_ready(self, axis_id : str):
         """
         ABC method to check that a given axis is ready, i.e. idle (derived must override).
 
         Parameters
         ----------
-        axis_id : int
+        axis_id : str
             Axis ID as used by the comtroller.
 
         Returns
@@ -86,13 +86,13 @@ class Controller(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def is_limit_switch_activated(self, axis_id):
+    def is_limit_switch_activated(self, axis_id : str):
         """
         ABC method to check if the limit switch is active (derived must override).
 
         Parameters
         ----------
-        axis_id : int
+        axis_id : str
             Axis ID as used by the comtroller.
 
         Returns
@@ -103,13 +103,13 @@ class Controller(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def set_axis_to_zero(self, axis_id):
+    def set_axis_to_zero(self, axis_id : str):
         """
         ABC method to set the axis position to zero (derived must override).
 
         Parameters
         ----------
-        axis_id : int
+        axis_id : str
             Axis ID as used by the comtroller.
 
         Returns
@@ -120,7 +120,7 @@ class Controller(ABC):
         raise NotImplementedError
 
     # TODO: rename due to misleading is_in_position make think that one expects a bool as return, like is_axis_ready
-    def is_in_position(self, axis_id, target, timeout=60):
+    def is_in_position(self, axis_id : str, target : float, timeout=60):
         """
         Check that the axis has reached its target position.
 
@@ -161,13 +161,13 @@ class Controller(ABC):
 
 
     # @abstractmethod
-    # def get_axis_status(self, axis_id):
+    # def get_axis_status(self, axis_id : str):
     #     """
     #     ABC method to get the axis status (derived must override).
 
     #     Parameters
     #     ----------
-    #     axis_id : int
+    #     axis_id : str
     #         Axis ID as used by the comtroller.
 
     #     Returns
