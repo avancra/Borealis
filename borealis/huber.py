@@ -31,25 +31,17 @@ class HuberSMC(Controller):
 
     # -------------  Overridden methods ------------- #
     def move_axis(self, axis_id, target=0):
-        """Move an axis to a target position."""
+        """Move a single axis to a target position."""
         self._write(f'goto{axis_id}:{target}')
         self.is_in_position(axis_id, target)
         logger.debug("%s: Moving axis %d to %s.",
                      self._ctrl_name, axis_id, target)
 
     def get_axis_position(self, axis_id):
-        """Get the axis dial position."""
-        # ??? simplify this function since we only allow 1 axis to be queried at a time ?
-        if axis_id == 0:
-            self._write('?p')
-            pos = self._read()
-            positions = self.decode_position(pos)
-            return positions
-        else:
-            self._write(f'?p{axis_id}')
-            pos = self._read()
-            positions = self.decode_position(pos)
-            return positions[f'{axis_id}']
+        """Get the dial position for a single axis."""
+        self._write(f'?p{axis_id}')
+        pos = self._read()
+        return self.decode_axis_position(pos)
 
     def is_axis_ready(self, axis_id):
         """Check that a given axis is ready (idle)."""
@@ -70,12 +62,12 @@ class HuberSMC(Controller):
         else:
             if status['limit switch status'] == '1':
                 # print('Limit switch [-] activated')
-                logger.debug("%s: Limit switch [-] of axis %d activated .",
-                             self._ctrl_name, axis_id)
+                logger.info("%s: Limit switch [-] of axis %d activated .",
+                            self._ctrl_name, axis_id)
             elif status['limit switch status'] == '2':
-                logger.debug("%s: Limit switch [+] of axis %d activated .",
-                             self._ctrl_name, axis_id)
                 # print('Limit switch [+] activated')
+                logger.info("%s: Limit switch [+] of axis %d activated .",
+                            self._ctrl_name, axis_id)
             return True
 
     def set_axis_to_zero(self, axis_id=""):
@@ -89,13 +81,11 @@ class HuberSMC(Controller):
     def _write(self, msg):
         """Write a message to the socket."""
         msg = bytes(f'{msg}\r\n', "utf-8")
-        #print(f'{msg=}')
         self._socket.send(msg)
 
     def _read(self, msg_length=2048):
         """Receive message from the socket and return answer."""
         msg = self._socket.recv(msg_length)
-        #print(f'{msg=}')
         return msg
 
     def get_axis_error(self, axis_id):
@@ -121,50 +111,31 @@ class HuberSMC(Controller):
         logger.debug("%s: Error cleared for axis %d.",
                      self._ctrl_name, axis_id)
 
-
-    def get_axis_status(self, axis_id=""):
+    def get_axis_status(self, axis_id):
         self._write(f'?status{axis_id}')
         stat = self._read()
-        status = self.decode_status(stat)
-        if axis_id:
-            return status[axis_id]
-        else:
-            return status
-
-    @staticmethod
-    def decode_position(pos):
-        """Decode position message."""
-        positions = {}
-        for item in pos.decode().strip(";\r\n").split(";"):
-            axis_id, posit = item.split(":")
-            positions[axis_id] = float(posit)
-        return positions
-
-    @staticmethod
-    def decode_status(sta):
-        """Decode status message."""
-        status = {}
-        for item in sta.decode().split("\r\n"):
-            axis_id, st = item.split(":")
-            status[axis_id] = {'error number': st[1],
-                               'error message': st[2],
-                               'position': st[3],
-                               'encoder position': st[4],
-                               'limit switch status': st[5],
-                               'home position status': st[6],
-                               'reference position status': st[7],
-                               'axis ready': st[8] }
+        status = self.decode_axis_status(stat)
         return status
 
-    # @staticmethod
-    # def decode_error(err):
-    #     """Decode error message"""
-    #     error =  {}
-    #     for item in err.decode().strip("\r\n"):
-    #         axis_id, er = item.split(":")
-    #         error[axis_id] = er
-    #     return error
+    @staticmethod
+    def decode_axis_position(pos_msg):
+        """Decode single axis position message."""
+        pos = pos_msg.decode().strip(";\r\n").split(":")
+        return float(pos[1])
 
+    @staticmethod
+    def decode_axis_status(sta_msg):
+        """Decode single axis status message."""
+        sta = sta_msg.decode().strip("\r\n").split(":")
+        status = {'error number': sta[1],
+                  'error message': sta[2],
+                  'position': sta[3],
+                  'encoder position': sta[4],
+                  'limit switch status': sta[5],
+                  'home position status': sta[6],
+                  'reference position status': sta[7],
+                  'axis ready': sta[8] }
+        return status
 
 if __name__ == "__main__":
     sock = HuberSMC("192.168.2.2", 1234)
@@ -174,5 +145,5 @@ if __name__ == "__main__":
     sock._write("?p")
     sock._read()
     sock.get_motor_position(9)
-    sock.move(9, 8.42)
-    sock.get_motor_position(9)
+    sock.move_axis(9, 8.42)
+    sock.get_axis_position(9)
