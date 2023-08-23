@@ -77,7 +77,7 @@ class Motor():
 
         self._controller.move_axis(self.motor_id, dial)
         self._controller.is_in_position(self.motor_id, dial)
-        logger.info("%s moved to %f.", self.motor_name, self.user_position)
+        logger.debug("%s moved to %f.", self.motor_name, self.user_position)
 
     def rmove(self, rel_position):
         """
@@ -99,7 +99,7 @@ class Motor():
 
         self._controller.move_axis(self.motor_id, dial)
         self._controller.is_in_position(self.motor_id, dial)
-        logger.info("%s moved to %f.", self.motor_name, self.user_position)
+        logger.debug("%s moved to %f.", self.motor_name, self.user_position)
 
     def scan(self, start, stop, step, det=None, acq_time=None):
         """

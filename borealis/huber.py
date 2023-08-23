@@ -34,7 +34,7 @@ class HuberSMC(Controller):
         """Move a single axis to a target position."""
         self._write(f'goto{axis_id}:{target}')
         self.is_in_position(axis_id, target)
-        logger.debug("%s: Moving axis %d to %s.",
+        logger.debug("%s: Moving axis %s to %f (dial).",
                      self._ctrl_name, axis_id, target)
 
     def get_axis_position(self, axis_id : str):
@@ -47,10 +47,10 @@ class HuberSMC(Controller):
         """Check that a given axis is ready (idle)."""
         status = self.get_axis_status(axis_id)['axis ready']
         if status == '1':
-            logger.debug("%s: axis %d ready (i.e. idle).",
+            logger.debug("%s: axis %s ready (i.e. idle).",
                          self._ctrl_name, axis_id)
         else:
-            logger.debug("%s: axis %d not ready yet (i.e. not idle).",
+            logger.debug("%s: axis %s not ready yet (i.e. not idle).",
                          self._ctrl_name, axis_id)
         return status == '1'
 
@@ -62,19 +62,18 @@ class HuberSMC(Controller):
         else:
             if status['limit switch status'] == '1':
                 # print('Limit switch [-] activated')
-                logger.info("%s: Limit switch [-] of axis %d activated .",
+                logger.info("%s: Limit switch [-] of axis %s activated.",
                             self._ctrl_name, axis_id)
             elif status['limit switch status'] == '2':
                 # print('Limit switch [+] activated')
-                logger.info("%s: Limit switch [+] of axis %d activated .",
+                logger.info("%s: Limit switch [+] of axis %s activated.",
                             self._ctrl_name, axis_id)
             return True
 
     def set_axis_to_zero(self, axis_id : str):
         """Set axis position to 0."""
-        assert isinstance(axis_id, str)
         self._write(f'zero{axis_id}')
-        logger.debug("%s: Axis %d position set to 0 (home).",
+        logger.debug("%s: Axis %s position set to 0 (home).",
                      self._ctrl_name, axis_id)
 
     # -------------  Own methods ------------- #
@@ -93,7 +92,7 @@ class HuberSMC(Controller):
         """Get error message from a given axis."""
         status = self.get_axis_status(axis_id)
         self.clean_axis_error(axis_id)
-        logger.debug("%s: Axis %d error: %d %s",
+        logger.debug("%s: Axis %s error: %s %s",
                      self._ctrl_name, axis_id,
                      status['error number'], status['error message'])
         return (status['error number'], status['error message'])
@@ -101,7 +100,7 @@ class HuberSMC(Controller):
     def clean_axis_error(self, axis_id : str):
         """Clean axis related errors."""
         self._write(f'cerr{axis_id}')
-        logger.debug("%s: Error cleared for axis %d.",
+        logger.debug("%s: Error cleared for axis %s.",
                      self._ctrl_name, axis_id)
 
     def get_axis_status(self, axis_id : str):
