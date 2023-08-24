@@ -76,7 +76,7 @@ class Motor():
         dial = user_position - self.offset
 
         self._controller.move_axis(self.motor_id, dial)
-        self._controller.is_in_position(self.motor_id, dial)
+        self._controller.wait_motion_end(self.motor_id, dial)
         logger.debug("%s moved to %f.", self.motor_name, self.user_position)
 
     def rmove(self, rel_position):
@@ -98,7 +98,7 @@ class Motor():
         dial = self.dial_position + rel_position
 
         self._controller.move_axis(self.motor_id, dial)
-        self._controller.is_in_position(self.motor_id, dial)
+        self._controller.wait_motion_end(self.motor_id, dial)
         logger.debug("%s moved to %f.", self.motor_name, self.user_position)
 
     def scan(self, start, stop, step, det=None, acq_time=None):

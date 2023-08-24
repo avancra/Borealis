@@ -79,8 +79,8 @@ class Controller(ABC):
 
         Returns
         -------
-        position : bool
-            True if axis is idle, False is busy or in error state.
+        bool
+            True if axis is idle, False if busy or in error state.
 
         """
         raise NotImplementedError
@@ -98,7 +98,7 @@ class Controller(ABC):
         Returns
         -------
         bool
-
+            True if limit switch activated, False if not.
         """
         raise NotImplementedError
 
@@ -119,8 +119,8 @@ class Controller(ABC):
         """
         raise NotImplementedError
 
-    # TODO: rename due to misleading is_in_position make think that one expects a bool as return, like is_axis_ready
-    def is_in_position(self, axis_id : str, target : float, timeout=60):
+
+    def wait_motion_end(self, axis_id : str, target : float, timeout=60):
         """
         Check that the axis has reached its target position.
 
@@ -151,7 +151,7 @@ class Controller(ABC):
 
             if self.is_limit_switch_activated(axis_id):
                 raise RuntimeError(
-                    f"Limit switch activated, move aborted)")
+                    f"Limit switch activated, move aborted")
 
             if (time.time() - start_time) > timeout:
                 raise TimeoutError(

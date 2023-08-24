@@ -10,6 +10,8 @@ sys.path.append(r"C:\Windows\Microsoft.NET\assembly\GAC_64\Newport.XPS.CommandIn
 import clr
 clr.AddReference("Newport.XPS.CommandInterface")
 import CommandInterfaceXPS as xps
+import logging
+logger = logging.getLogger(__name__)
 
 from borealis.controller import Controller
 
@@ -21,7 +23,10 @@ class NewportXPS(Controller):
         """Initialise the connection to the device."""
         self._xps = xps.XPS()
         ans = self._xps.OpenInstrument(ip_address, port, timeout)
-        # print(f'Controller Newport {ans} successfully initialised')
+        logger.debug("Opening connection on port %d at IP address %s",
+                     port, ip_address)
+        self._ctrl_name = f'Newport {ans}'
+        logger.info("%s successfully initialised", self._ctrl_name)
 
     # -------------  Overiden methods ------------- #
     def close(self):
@@ -31,7 +36,7 @@ class NewportXPS(Controller):
     def move_axis(self, axis_id : str, target : float = 0.):
         """Send instruction to move an axis to a target position."""
         answer = self._xps.GroupMoveAbsolute(axis_id, [target, ], 1)
-        self.is_in_position(axis_id, target)
+        self.wait_motion_end(axis_id, target)
 
     def get_axis_position(self, axis_id : str):
         """
@@ -110,4 +115,3 @@ if __name__ == "__main__":
         raise
     else:
         ctrl.close()
-

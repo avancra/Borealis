@@ -33,7 +33,7 @@ class HuberSMC(Controller):
     def move_axis(self, axis_id : str, target : float = 0):
         """Move a single axis to a target position."""
         self._write(f'goto{axis_id}:{target}')
-        self.is_in_position(axis_id, target)
+        self.wait_motion_end(axis_id, target)
         logger.debug("%s: Moving axis %s to %f (dial).",
                      self._ctrl_name, axis_id, target)
 
