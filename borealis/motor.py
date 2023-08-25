@@ -38,18 +38,17 @@ class Motor():
     def is_ready(self):
         return self._controller.is_axis_ready(self.motor_id)
 
-    def position(self):
+    def where(self):
         """
-        Get motor dial / user positions from controller.
+        Print motor dial / user positions from controller.
 
         Returns
         -------
         str
 
         """
-        logger.info("%s at %f (dial) \t %f (user). ",
-                    self.motor_name, self.dial_position, self.user_position)
-        return self.dial_position, self.user_position
+        print('{} at : {:6.2f} (dial) | {:6.2f} (user)'.format(self.motor_name, self.dial_position, self.user_position))
+
 
     def _check_is_ready(self):
         # TODO: change to MotorNotReady error once available
