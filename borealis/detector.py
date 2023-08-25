@@ -6,6 +6,8 @@ Created on Fri May 13 14:48:59 2022.
 """
 from abc import ABC, abstractmethod, abstractproperty
 
+from borealis import mca
+
 
 class Detector(ABC):
     """
@@ -15,12 +17,22 @@ class Detector(ABC):
 
     """
 
-    @abstractmethod
-    def __init__(self):
-        """ABC method for detector initialisation. (derived must override)."""
+    DET_TYPE = ""
 
     @abstractmethod
-    def acquisition(self, acquisition_time):
+    def __init__(self, alias: str = ""):
+        """
+        ABC method for detector initialisation. (derived must override).
+
+        Inherited class must call super().__init__(alias=<new_alias>) in their __init__()
+        or otherwise populate the alias and serial_number attributes themselves in the sub_class __init__ method.
+
+        """
+        self.alias = alias
+        self.serial_number = ''
+
+    @abstractmethod
+    def acquisition(self, acquisition_time: float) -> mca.MCA:
         """
         ABC method for acquisition (derived must override).
 
@@ -31,8 +43,8 @@ class Detector(ABC):
 
         Returns
         -------
-        spectrum : spectrum.Spectrum
-            Spectrum object.
+        mac : mca.MCA
+            MCA object with spectrum counts and metadata.
 
         """
 
@@ -40,12 +52,8 @@ class Detector(ABC):
     def stop(self):
         """ABC method for stoping detector. (derived must override)."""
 
-    # @property
-    # @abstractproperty
-    # def alias(self):
-    #     """ABC property for alias (derived must override)."""
-
-    # @alias.setter
-    # @abstractproperty
-    # def alias(self, new_value):
-    #     """ABC property for alias (derived must override)."""
+    def get_det_info(self):
+        """Return the detector info as dictionary (stored in the MCA metadata)."""
+        return {'serial_number': self.serial_number,
+                'alias': self.alias,
+                'type': self.DET_TYPE}

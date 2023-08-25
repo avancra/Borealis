@@ -15,15 +15,13 @@ def get_det_info():
 def get_metadata_dict(get_det_info):
     md_dict = {"runtime": 42.0,
                "livetime": 42.0,
-               "date": datetime.now(),
                "detector": get_det_info}
 
     return md_dict
 
 
 def test_metadata_constructor(get_det_info):
-    MCAMetadata(42., 42., get_det_info, datetime.now())
-    MCAMetadata(12.34, 43.21, get_det_info)
+    MCAMetadata(42., 42., get_det_info)
 
     with pytest.raises(TypeError):
         MCAMetadata()

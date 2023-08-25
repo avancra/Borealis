@@ -12,10 +12,13 @@ import usb.util
 import numpy as np
 
 from borealis.detector import Detector
+from borealis.mca import MCAMetadata, MCA
 
 
 class AmptekCdTe123(Detector):
     """Interface for CdTe X-123 detector from Amptek."""
+
+    DET_TYPE = 'Amptek-CdTe 123'
 
     vendor_id = 0x10C4
     product_id = 0x842A
@@ -24,8 +27,10 @@ class AmptekCdTe123(Detector):
     min_allowed_gain = 0.750
     max_allowed_gain = 250
 
-    def __init__(self):
+    def __init__(self, alias):
         """Initialise the detector."""
+        """Initialise the detector."""
+        super().__init__(alias)
         self._device = usb.core.find(idVendor=self.vendor_id,
                                      idProduct=self.product_id)
         if self._device is None:
@@ -46,6 +51,7 @@ class AmptekCdTe123(Detector):
                 usb.util.endpoint_direction(e.bEndpointAddress)
                 == usb.util.ENDPOINT_IN)
 
+        self.serial_number = self._get_serial_number()
         print('Detector Amptek successfully initialised')
 
     def acquisition(self, acquisition_time):
@@ -56,8 +62,13 @@ class AmptekCdTe123(Detector):
         sleep(acquisition_time*1.1)
         self._disable_mca()
         raw_spe = self._get_spectrum()
-        spe = self._from_raw_spectrum(raw_spe, num_chan=2048)
-        return spe
+        mca_counts = self._from_raw_spectrum(raw_spe, num_chan=2048)
+
+        mca_metadata = MCAMetadata(0., 0., self.get_det_info())
+        mca = MCA(mca_counts, mca_metadata)
+
+        return mca
+
 
     def stop(self):
         """Close the connection to the detector and free resources."""
@@ -76,6 +87,10 @@ class AmptekCdTe123(Detector):
         answer = self._device.read(self._endpoint_in.bEndpointAddress,
                                    buffer_size)
         return answer
+
+    def _get_serial_number(self):
+        # TODO: implement
+        return 'Dummy-S/N'
 
     def _get_status(self):
         """Send a status request and return status information."""

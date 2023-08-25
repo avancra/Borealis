@@ -13,21 +13,26 @@ import numpy as np
 
 from borealis.ketek_error import check_error
 from borealis.detector import Detector
+from borealis.mca import MCA, MCAMetadata
 
 
 class KetekAXASM(Detector):
     """Class to operate KETEK detector AXAS-M."""
 
+    DET_TYPE = "Ketek-AXAS M"
+
     HANDEL = ct.CDLL(
         (Path(__file__).parent / "lib/handel/handel.dll").as_posix())
     MAXALIAS_LEN = 80
 
-    def __init__(self, ini_filepath):
+    def __init__(self, alias, ini_filepath):
         """Initialise the detector."""
+        super().__init__(alias)
         self._ini_file = self._validate_ini(ini_filepath)
         self._chan_no = 0
         self._initialise(self._ini_file)
         self._start_system()
+        self.serial_number = self._get_serial_number()
         print('Detector Ketek successfully initialised')
 
     def acquisition(self, acquisition_time):
@@ -35,8 +40,13 @@ class KetekAXASM(Detector):
         self._start_run()
         sleep(acquisition_time)
         self._stop_run()
+        mca_counts = self._get_spectrum()
+        livetime, runtime = self._get_acq_times()
 
-        return self._get_spectrum()
+        mca_metadata = MCAMetadata(livetime, runtime, self.get_det_info())
+        mca = MCA(mca_counts, mca_metadata)
+
+        return mca
 
     def stop(self):
         """
@@ -101,6 +111,10 @@ class KetekAXASM(Detector):
         ret_code = self.HANDEL.xiaStartSystem()
 
         check_error(ret_code)
+
+    def _get_serial_number(self):
+        # TODO: implement
+        return 'Dummy-S/N'
 
     def _save_system(self, filename):
         """
@@ -273,6 +287,21 @@ class KetekAXASM(Detector):
         check_error(ret_code)
 
         return spectrum
+
+    def _get_acq_times(self):
+        """Wrap xiaGetRunData with runtime and livetime."""
+
+        runtime = ct.c_double()
+        ret_code = self.HANDEL.xiaGetRunData(
+            self._chan_no, b'runtime', byref(runtime))
+        check_error(ret_code)
+
+        livetime = ct.c_double()
+        ret_code = self.HANDEL.xiaGetRunData(
+            self._chan_no, b'runtime', byref(livetime))
+        check_error(ret_code)
+
+        return livetime.value, runtime.value
 
     def _get_run_event_counts(self):
         """Wrap xiaGetRunData with events_in_run."""
