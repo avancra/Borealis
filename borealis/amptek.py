@@ -89,8 +89,10 @@ class AmptekCdTe123(Detector):
         return answer
 
     def _get_serial_number(self):
-        # TODO: implement
-        return 'Dummy-S/N'
+        """Get the Serial number from the device."""
+        raw_status = self._get_status()
+        serial_number = Status(raw_status).serial_number
+        return serial_number
 
     def _get_status(self):
         """Send a status request and return status information."""
@@ -362,7 +364,7 @@ class Status:
         self._process_raw()
 
     def _process_raw(self):
-        """Decode the raw status byte into a human readable output."""
+        """Decode the raw status byte into a human-readable output."""
         self.serial_number = '{:06}'.format((self._raw[26]
                                              + self._raw[27]*2**8
                                              + self._raw[28]*2**16

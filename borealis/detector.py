@@ -17,7 +17,7 @@ class Detector(ABC):
 
     """
 
-    DET_TYPE = ""
+    DET_TYPE = "Undefined"
 
     @abstractmethod
     def __init__(self, alias: str = ""):
@@ -29,7 +29,7 @@ class Detector(ABC):
 
         """
         self.alias = alias
-        self.serial_number = ''
+        self.serial_number = 'Unknown'
 
     @abstractmethod
     def acquisition(self, acquisition_time: float) -> mca.MCA:

@@ -114,7 +114,10 @@ class KetekAXASM(Detector):
 
     def _get_serial_number(self):
         # TODO: implement
-        return 'Dummy-S/N'
+        serial_number = ct.create_string_buffer(16)
+        code = self.HANDEL.xiaBoardOperation(self._chan_no, b'get_serial_number', serial_number)
+
+        return serial_number.value
 
     def _save_system(self, filename):
         """
