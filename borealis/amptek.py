@@ -61,14 +61,15 @@ class AmptekCdTe123(Detector):
         self._enable_mca()
         sleep(acquisition_time*1.1)
         self._disable_mca()
-        raw_spe = self._get_spectrum()
-        mca_counts = self._from_raw_spectrum(raw_spe, num_chan=2048)
+        raw_spe_st = self._get_spectrum_status()
+        mca_counts = self._from_raw_spectrum(raw_spe_st, num_chan=2048)
+        status = Status.from_spectrum_status_packet(raw_spe_st, num_chan=2048)
 
-        mca_metadata = MCAMetadata(0., 0., self.get_det_info())
-        mca = MCA(mca_counts, mca_metadata)
+        # TODO: get the livetime
+        mca_metadata = MCAMetadata(status.acq_time, np.nan, self.get_det_info())
+        mca_obj = MCA(mca_counts, mca_metadata)
 
-        return mca
-
+        return mca_obj
 
     def stop(self):
         """Close the connection to the detector and free resources."""
@@ -90,14 +91,14 @@ class AmptekCdTe123(Detector):
 
     def _get_serial_number(self):
         """Get the Serial number from the device."""
-        raw_status = self._get_status()
-        serial_number = Status(raw_status).serial_number
-        return serial_number
+        status = self._get_status()
+
+        return status.serial_number
 
     def _get_status(self):
         """Send a status request and return status information."""
         self._write('F5FA01010000FE0F')
-        status = Status(self._read(8000))
+        status = Status.from_status_packet(self._read(8000))
 
         return status
 
@@ -355,12 +356,13 @@ class AmptekCdTe123(Detector):
 
 
 class Status:
-    """Status packet of AmptekCdTe123."""
+    """Status object for AmptekCdTe123."""
 
     def __init__(self, raw_status):
-        self._raw = raw_status[6:70]
-        self.status = raw_status[6:70].tobytes()
+        self._raw = raw_status
+        self.status = raw_status.tobytes()
         self.serial_number = ""
+        self.acq_time = 0.
         self._process_raw()
 
     def _process_raw(self):
@@ -370,21 +372,30 @@ class Status:
                                              + self._raw[28]*2**16
                                              + self._raw[29]*2**24))
 
+        self.acq_time = 1000 * self._raw[20] + 10 * (self._raw[21] + self._raw[22]*2**8 + self._raw[23]*2**16)
+
+    @classmethod
+    def from_spectrum_status_packet(cls, raw_spe, num_chan):
+        raw_status = raw_spe[3*num_chan+6:-2]
+        return cls(raw_status)
+
+    @classmethod
+    def from_status_packet(cls, stat_packet):
+        raw_status = stat_packet[6:70]
+        return cls(raw_status)
 
 if __name__ == '__main__':
     import traceback
     from time import sleep
-    from matplotlib import pyplot as plt
-    ACK_OK = b'\xF5\xFA\xFF\x00\x00\x00\xFD\x12'
+    # from matplotlib import pyplot as plt
     dev = AmptekCdTe123()
-    print('init')
-    # stat = dev._get_status()
-    # print(stat._raw)
-    # print(stat.status)
-    # print(stat.serial_number)
+    stat = dev._get_status()
+    print(stat._raw)
+    print(stat.status)
+    print(stat.serial_number)
     try:
-        spe = dev.acquisition(5)
-        plt.plot(spe)
+        mca = dev.acquisition(5)
+        # plt.plot(maca.counts)
 
     except Exception:
         traceback.print_exc()
