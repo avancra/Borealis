@@ -7,28 +7,27 @@ detectors:
 # Ketek : KETEK-AXASM, Ketek
 # Amptek : AmptekCdTe123, AmptekX123, Amptek
 
-    - alias: 'EXAF'
-      type: 'KETEK-AXASM'
+    - type: 'KETEK-AXASM'
+      alias: 'EXAF'
       ini_file: 'C:\Users\Aurelie\SoftDev\borealis\examples\KETEK_DPP2_usb2.ini'   
       
-    - alias: 'HiRes'
-      type: 'Amptek'
+    - type: 'Amptek'
+      alias: 'HiRes'
       ini_file: Null
-        
+
+controller:
+    type: huber
+    ip_address: '192.168.2.2'
+    port: 1234
+
 motors:
-    - alias: 'crystal_rot'
-      type: 'rotation'
-      
-    - alias: 'det_y'
-      type: 'translation'
-      
-    - alias: 'det_x'
-      type: 'translation'
-      
-pseudo_motors:
-    - alias: 'crystal'
-      motors: [crystal_rot, ] 
-      
-    - alias: 'detector'
-      motors: ['det_x', 'det_y']
+  - alias: 'Tube translation x'
+    motor_id: 2
+    motor_offset: -21
+
+  - alias: 'Tube translation y'
+    motor_id: 1
+    motor_offset: 38
+
+
      

@@ -20,9 +20,17 @@ from borealis.pseudo_motor import PseudoMotor
 
 
 ### CONFIG PARAMETERS ###
-tubex_channel = 2
-tubex_offset = -21
-tubex_name = "Tube translation x"
+_ctrler = HuberSMC("192.168.2.2", 1234)
+
+tubex_kwargs = {
+    'alias': "Tube translation x",
+    'motor_id': 2,
+    'motor_offset': -21,
+    'controller': _ctrler
+}
+# tubex_channel = 2
+# tubex_offset = -21
+# tubex_name = "Tube translation x"
 
 tubey_channel = 1
 tubey_offset = 38
@@ -73,9 +81,10 @@ def geo_tubey(bragg):
     
 ### INITIALIZATION OF MOTORS ####
 
-_ctrler = HuberSMC("192.168.2.2", 1234)
 
-tubex = Motor(tubex_name, tubex_channel, tubex_offset, _ctrler)
+# tubex = Motor(tubex_name, tubex_channel, tubex_offset, _ctrler)
+tubex = Motor(**tubex_kwargs)
+
 tubey = Motor(tubey_name, tubey_channel, tubey_offset, _ctrler)
 tuber = Motor(tuber_name, tuber_channel, tuber_offset, _ctrler)
 
