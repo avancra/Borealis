@@ -28,24 +28,24 @@ class NewportXPS(Controller):
         self._ctrl_name = f'Newport {ans}'
         logger.info("%s successfully initialised", self._ctrl_name)
 
-    # -------------  Overiden methods ------------- #
+    # -------------  Overridden methods ------------- #
     def close(self):
         self._xps.KillAll()  # Kill all axis
         self._xps.CloseInstrument()  # close connection to the instrument
 
-    def move_axis(self, axis_id : str, target : float = 0.):
+    def move_axis(self, axis_id: str, target: float = 0.):
         """Send instruction to move an axis to a target position."""
-        answer = self._xps.GroupMoveAbsolute(axis_id, [target, ], 1)
+        self._xps.GroupMoveAbsolute(axis_id, [target, ], 1)
         self.wait_motion_end(axis_id, target)
 
-    def get_axis_position(self, axis_id : str):
+    def get_axis_position(self, axis_id: str):
         """
         ABC method to retrieve position of a single axis (derived must override).
 
         Parameters
         ----------
         axis_id : str
-            Axis ID as used by the comtroller.
+            Axis ID as used by the controller.
 
         Returns
         -------
@@ -58,15 +58,15 @@ class NewportXPS(Controller):
 
         return positions[0]
 
-    def is_axis_ready(self, axis_id : str):
+    def is_axis_ready(self, axis_id: str):
         """Check that a given axis is ready (idle)."""
         return True
 
-    def set_axis_to_zero(self, axis_id : str):
+    def set_axis_to_zero(self, axis_id: str):
         """Set the axis position to zero."""
         raise NotImplementedError
 
-    def is_limit_switch_activated(self, axis_id : str):
+    def is_limit_switch_activated(self, axis_id: str):
         """Check if limit switch is active."""
         return False
 
@@ -84,22 +84,22 @@ class NewportXPS(Controller):
 
 
 if __name__ == "__main__":
-    ip_address = "..."
-    ctrl = NewportXPS(ip_address)
+    ip_add = "..."
+    ctrl = NewportXPS(ip_add)
     print("***")
     try:
         print("***")
-        # following 2 commandes should give same output
+        # following 2 commands should give same output
         print(ctrl.version())
         print("***")
         print(ctrl._xps.FirmwareVersionGet())
         print("***")
 
         # 1-motor group
-        axis_id = "tubex"
-        print(ctrl._xps.GroupInitialize(axis_id))
+        axis = "tubex"
+        print(ctrl._xps.GroupInitialize(axis))
         print("***")
-        print(ctrl._xps.GroupHomeSearch(axis_id))
+        print(ctrl._xps.GroupHomeSearch(axis))
         print("***")
         # print(ctrl._xps.GroupPositionCurrentGet(axis_id, [], 1, ""))
         # answer, positions, err_str = ctrl._xps.GroupPositionCurrentGet(axis_id, [], 1)
@@ -107,9 +107,9 @@ if __name__ == "__main__":
         # print(f"{positions=}")
         # print("***")
         # print(ctrl._xps.GroupMoveAbsolute(axis_id, [10.0, ], 1))
-        print(ctrl.move_axis(axis_id, 50.))
+        print(ctrl.move_axis(axis, 50.))
         print("***")
-        print(ctrl.get_axis_position(axis_id))
+        print(ctrl.get_axis_position(axis))
     except Exception:
         ctrl.close()
         raise

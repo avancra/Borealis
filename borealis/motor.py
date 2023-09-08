@@ -11,7 +11,8 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
-class Motor():
+
+class Motor:
     """Motor generic class."""
 
     def __init__(self, alias, motor_id, motor_offset, controller):
@@ -22,7 +23,7 @@ class Motor():
         self._dial_position = self._controller.get_axis_position(self.motor_id)
         self._user_position = self.dial_position + self.offset
         self._is_ready = self._controller.is_axis_ready(self.motor_id)
-        #TODO! self.limits =
+        # TODO! self.limits =
 
     @property
     def dial_position(self):
@@ -49,7 +50,6 @@ class Motor():
         """
         print('{} at : {:6.2f} (dial) | {:6.2f} (user)'.format(self.motor_name, self.dial_position, self.user_position))
 
-
     def _check_is_ready(self):
         # TODO: change to MotorNotReady error once available
         if self.is_ready is False:
@@ -62,7 +62,7 @@ class Motor():
 
         Parameters
         ----------
-        new_position : float
+        user_position : float
             New position (user) to move the motor to.
 
         Returns
@@ -125,8 +125,10 @@ class Motor():
             try:
                 self.amove(position)
             except RuntimeError:  # TODO: change to MotorNotReady error once available
-                logger.error("Scan interrupted at position %f due to motor not being ready yet (i.e. not idle).", position)
-                raise RuntimeError(f"Scan interrupted at position {position} due to motor not being ready yet (i.e. not idle).")
+                logger.error("Scan interrupted at position %f due to motor not being ready yet (i.e. not idle).",
+                             position)
+                raise RuntimeError(f"Scan interrupted at position {position} due "
+                                   f"to motor not being ready yet (i.e. not idle).")
 
             if det is not None:
                 assert acq_time is not None

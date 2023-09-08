@@ -96,8 +96,8 @@ class KetekAXASM(Detector):
         configuring the system with a configuration file
         (see Initializing Handel).
 
-        This routine also performs several validation steps to insure
-        that all of the configuration information required to run the
+        This routine also performs several validation steps to ensure
+        that all the configuration information required to run the
         system is present. Specifically, the firmware and detector
         information is validated by Handel while the module is verified
         by the Product Specific Layer. If an inconsistency is found,
@@ -115,7 +115,7 @@ class KetekAXASM(Detector):
     def _get_serial_number(self):
         # TODO: implement
         serial_number = ct.create_string_buffer(16)
-        code = self.HANDEL.xiaBoardOperation(self._chan_no, b'get_serial_number', serial_number)
+        self.HANDEL.xiaBoardOperation(self._chan_no, b'get_serial_number', serial_number)
 
         return serial_number.value
 
@@ -377,10 +377,8 @@ class KetekAXASM(Detector):
 
 
 if __name__ == '__main__':
-    from time import sleep
     from matplotlib import pyplot as plt
-    dev = KetekAXASM(
-        (Path(__file__).parent / "examples/KETEK_DPP2_usb2.ini").as_posix())
+    dev = KetekAXASM('ketek', (Path(__file__).parent / "examples/KETEK_DPP2_usb2.ini").as_posix())
     dev._set_logging('stderr', 'error')
     dev._start_system()
     print(dev._get_detectors())

@@ -11,6 +11,7 @@ def get_det_info():
             'alias': 'det',
             'type': 'ketek AXAS-M'}
 
+
 @pytest.fixture()
 def get_metadata_dict(get_det_info):
     md_dict = {"runtime": 42.0,

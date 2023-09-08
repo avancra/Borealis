@@ -1,5 +1,4 @@
 import logging
-from abc import ABC, abstractmethod, abstractproperty
 from typing import Union
 import time
 
@@ -11,7 +10,7 @@ from borealis.detector import Detector
 LOGGER = logging.getLogger(__name__)
 
 
-class PseudoMotor():
+class PseudoMotor:
     """Class for a basic pseudo-motor, meaning a collection of Motor objects plus 0 or 1 detector."""
 
     def __init__(self, motors: list[Motor], geometries: list, detector: Union[Detector, None] = None) -> None:
@@ -62,8 +61,11 @@ class PseudoMotor():
             try:
                 self.amove(position)
             except RuntimeError:  # TODO: change to MotorNotReady error once available
-                LOGGER.error("Scan interrupted at position %f due to motor not being ready yet (i.e. not idle).", position)
-                raise RuntimeError(f"Scan interrupted at position {position} due to motor not being ready yet (i.e. not idle).")
+                LOGGER.error(
+                    "Scan interrupted at position %f due to motor not being ready yet (i.e. not idle).",
+                    position)
+                raise RuntimeError(f"Scan interrupted at position {position} "
+                                   f"due to motor not being ready yet (i.e. not idle).")
 
             if self._detector is not None:
                 assert acq_time is not None

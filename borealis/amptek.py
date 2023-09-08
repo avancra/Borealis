@@ -144,7 +144,7 @@ class AmptekCdTe123(Detector):
 
     def _send_text_config(self, config_cmd, save_to_mem=True):
         """
-        Send a text fonfiguration command (ASCII commands).
+        Send a text configuration command (ASCII commands).
 
         Parameters
         ----------
@@ -267,7 +267,7 @@ class AmptekCdTe123(Detector):
                              f'{[0, AmptekCdTe123.max_allowed_acq_time]}.')
 
         self._send_text_config(f'PRET={acq_time:.1f};PREC={acq_counts};',
-                              save_to_mem)
+                               save_to_mem)
 
     def _set_mca_channel(self, number_of_channel):
         """Select Number of MCA Channels."""
@@ -384,11 +384,12 @@ class Status:
         raw_status = stat_packet[6:70]
         return cls(raw_status)
 
+
 if __name__ == '__main__':
     import traceback
     from time import sleep
     # from matplotlib import pyplot as plt
-    dev = AmptekCdTe123()
+    dev = AmptekCdTe123('amptek')
     stat = dev._get_status()
     print(stat._raw)
     print(stat.status)

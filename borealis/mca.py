@@ -3,8 +3,8 @@ import logging
 
 import numpy as np
 
-
 LOGGER = logging.getLogger(__name__)
+
 
 class MCAMetadata:
 
@@ -32,6 +32,7 @@ class MCAMetadata:
         return cls(runtime=md_dict['runtime'],
                    livetime=md_dict['livetime'],
                    det_info=md_dict['detector'])
+
 
 class MCA:
 

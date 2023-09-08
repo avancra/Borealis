@@ -30,20 +30,20 @@ class HuberSMC(Controller):
                     self._ctrl_name)
 
     # -------------  Overridden methods ------------- #
-    def move_axis(self, axis_id : str, target : float = 0):
+    def move_axis(self, axis_id: str, target: float = 0):
         """Move a single axis to a target position."""
         self._write(f'goto{axis_id}:{target}')
         self.wait_motion_end(axis_id, target)
         logger.debug("%s: Moving axis %s to %f (dial).",
                      self._ctrl_name, axis_id, target)
 
-    def get_axis_position(self, axis_id : str):
+    def get_axis_position(self, axis_id: str):
         """Get the dial position for a single axis."""
         self._write(f'?p{axis_id}')
         pos = self._read()
         return self.decode_axis_position(pos)
 
-    def is_axis_ready(self, axis_id : str):
+    def is_axis_ready(self, axis_id: str):
         """Check that a given axis is ready (idle)."""
         status = self.get_axis_status(axis_id)['axis ready']
         if status == '1':
@@ -54,7 +54,7 @@ class HuberSMC(Controller):
                          self._ctrl_name, axis_id)
         return status == '1'
 
-    def is_limit_switch_activated(self, axis_id : str):
+    def is_limit_switch_activated(self, axis_id: str):
         """Check if limit switch is active for a given axis."""
         status = self.get_axis_status(axis_id)
         if status['limit switch status'] == '0':
@@ -70,7 +70,7 @@ class HuberSMC(Controller):
                             self._ctrl_name, axis_id)
             return True
 
-    def set_axis_to_zero(self, axis_id : str):
+    def set_axis_to_zero(self, axis_id: str):
         """Set axis position to 0."""
         self._write(f'zero{axis_id}')
         logger.debug("%s: Axis %s position set to 0 (home).",
@@ -88,22 +88,22 @@ class HuberSMC(Controller):
         msg = self._socket.recv(msg_length)
         return msg
 
-    def get_axis_error(self, axis_id : str):
+    def get_axis_error(self, axis_id: str):
         """Get error message from a given axis."""
         status = self.get_axis_status(axis_id)
         self.clean_axis_error(axis_id)
         logger.debug("%s: Axis %s error: %s %s",
                      self._ctrl_name, axis_id,
                      status['error number'], status['error message'])
-        return (status['error number'], status['error message'])
+        return status['error number'], status['error message']
 
-    def clean_axis_error(self, axis_id : str):
+    def clean_axis_error(self, axis_id: str):
         """Clean axis related errors."""
         self._write(f'cerr{axis_id}')
         logger.debug("%s: Error cleared for axis %s.",
                      self._ctrl_name, axis_id)
 
-    def get_axis_status(self, axis_id : str):
+    def get_axis_status(self, axis_id: str):
         self._write(f'?status{axis_id}')
         stat = self._read()
         status = self.decode_axis_status(stat)
@@ -126,8 +126,9 @@ class HuberSMC(Controller):
                   'limit switch status': sta[5],
                   'home position status': sta[6],
                   'reference position status': sta[7],
-                  'axis ready': sta[8] }
+                  'axis ready': sta[8]}
         return status
+
 
 if __name__ == "__main__":
     sock = HuberSMC("192.168.2.2", 1234)
@@ -136,6 +137,6 @@ if __name__ == "__main__":
     sock._read()
     sock._write("?p")
     sock._read()
-    sock.get_motor_position(9)
-    sock.move_axis(9, 8.42)
-    sock.get_axis_position(9)
+    sock.get_axis_position('9')
+    sock.move_axis('9', 8.42)
+    sock.get_axis_position('9')

@@ -4,7 +4,7 @@ Created on Thu February 9 14:48:59 2023.
 
 @author: A. Vancraeyenest
 """
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 import time
 
 import pytest
@@ -23,12 +23,12 @@ class Controller(ABC):
     def __init__(self, *args, **kwargs):
         """ABC method for controller initialisation. (derived must override)."""
 
-    #@abstractmethod
-    #def close(self):
-    #    """ABC method for closing the connection to the controller. (derived must override)."""
+    # @abstractmethod
+    # def close(self):
+    #     """ABC method for closing the connection to the controller. (derived must override)."""
 
     @abstractmethod
-    def move_axis(self, axis_id : str, target : float = 0):
+    def move_axis(self, axis_id: str, target: float = 0):
         """
         ABC method for moving a single axis (derived must override).
 
@@ -39,7 +39,7 @@ class Controller(ABC):
         ----------
         axis_id : str
             Axis ID as used by the controller.
-        position : float
+        target : float
             Target position. Default to 0.
 
         Returns
@@ -50,14 +50,14 @@ class Controller(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_axis_position(self, axis_id : str):
+    def get_axis_position(self, axis_id: str):
         """
         ABC method to retrieve position of a single axis (derived must override).
 
         Parameters
         ----------
         axis_id : str
-            Axis ID as used by the comtroller.
+            Axis ID as used by the controller.
 
         Returns
         -------
@@ -68,14 +68,14 @@ class Controller(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def is_axis_ready(self, axis_id : str):
+    def is_axis_ready(self, axis_id: str):
         """
         ABC method to check that a given axis is ready, i.e. idle (derived must override).
 
         Parameters
         ----------
         axis_id : str
-            Axis ID as used by the comtroller.
+            Axis ID as used by the controller.
 
         Returns
         -------
@@ -86,14 +86,14 @@ class Controller(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def is_limit_switch_activated(self, axis_id : str):
+    def is_limit_switch_activated(self, axis_id: str):
         """
         ABC method to check if the limit switch is active (derived must override).
 
         Parameters
         ----------
         axis_id : str
-            Axis ID as used by the comtroller.
+            Axis ID as used by the controller.
 
         Returns
         -------
@@ -103,14 +103,14 @@ class Controller(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def set_axis_to_zero(self, axis_id : str):
+    def set_axis_to_zero(self, axis_id: str):
         """
         ABC method to set the axis position to zero (derived must override).
 
         Parameters
         ----------
         axis_id : str
-            Axis ID as used by the comtroller.
+            Axis ID as used by the controller.
 
         Returns
         -------
@@ -119,13 +119,14 @@ class Controller(ABC):
         """
         raise NotImplementedError
 
-
-    def wait_motion_end(self, axis_id : str, target : float, timeout=60):
+    def wait_motion_end(self, axis_id: str, target: float, timeout: float = 60):
         """
         Check that the axis has reached its target position.
 
         Parameters
         ----------
+        axis_id : str
+            axis ID as registered in the controller object
         target : float
             Position (dial) the axis must reach.
         timeout : float, optional
@@ -159,7 +160,6 @@ class Controller(ABC):
 
             time.sleep(sleep_for)
 
-
     # @abstractmethod
     # def get_axis_status(self, axis_id : str):
     #     """
@@ -168,7 +168,7 @@ class Controller(ABC):
     #     Parameters
     #     ----------
     #     axis_id : str
-    #         Axis ID as used by the comtroller.
+    #         Axis ID as used by the controller.
 
     #     Returns
     #     -------

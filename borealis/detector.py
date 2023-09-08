@@ -4,7 +4,7 @@ Created on Fri May 13 14:48:59 2022.
 
 @author: A. Vancraeyenest
 """
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 
 from borealis import mca
 
@@ -50,7 +50,7 @@ class Detector(ABC):
 
     @abstractmethod
     def stop(self):
-        """ABC method for stoping detector. (derived must override)."""
+        """ABC method for stopping detector. (derived must override)."""
 
     def get_det_info(self):
         """Return the detector info as dictionary (stored in the MCA metadata)."""

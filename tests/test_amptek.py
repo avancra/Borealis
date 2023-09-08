@@ -2,6 +2,7 @@ import pytest
 
 from borealis.amptek import Status
 
+
 @pytest.mark.xfail(reason="missing status test value")
 def test_status():
     # TODO: get a real raw_status value
