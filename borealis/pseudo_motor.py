@@ -21,7 +21,7 @@ class PseudoMotor:
         motors : list[Motor]
             List of Motor objects.
         geometries : list[fct]
-            List of conversion functions (e.g. lambda (x,y): x), one for each motor. 
+            List of conversion functions (e.g. lambda (x,y): x), one for each motor.
         detector
             Instance of Detector.
         """
@@ -44,7 +44,19 @@ class PseudoMotor:
         # TODO: change to MotorNotReady error once available
         if self.is_ready is False:
             LOGGER.error("Command interrupted due to all motors not ready yet (i.e. not idle).")
-            raise RuntimeError(f"Command interrupted due to all motors not ready yet (i.e. not idle).")
+            raise RuntimeError("Command interrupted due to all motors not ready yet (i.e. not idle).")
+
+    def where_all(self):
+        """
+        Print individual motor dial / user positions.
+
+        Returns
+        -------
+        str
+
+        """
+        for motor in self._motors:
+            motor.where()
 
     def amove(self, pos):
         self._check_is_ready()
