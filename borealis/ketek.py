@@ -41,7 +41,7 @@ class KetekAXASM(Detector):
         sleep(acquisition_time)
         self._stop_run()
         mca_counts = self._get_spectrum()
-        livetime, runtime = self._get_acq_times()
+        livetime, runtime = 0, 0
 
         mca_metadata = MCAMetadata(livetime, runtime, self.get_det_info())
         mca = MCA(mca_counts, mca_metadata)
@@ -119,103 +119,6 @@ class KetekAXASM(Detector):
 
         return serial_number.value
 
-    def _save_system(self, filename):
-        """
-        Wrap xiaSaveSystem.
-
-        Saves the current system configuration to the specified file and
-        with the specified format.
-        """
-        filename = self._to_bytes(filename)
-        ret_code = self.HANDEL.xiaSaveSystem(b'handel_ini', filename)
-
-        check_error(ret_code)
-
-    def _load_system(self, filename):
-        """
-        Wrap xiaLoadSystem.
-
-        Loads a configuration file. Since only one type is supported
-        (handel_ini), it is typically more convenient to call xiaInit(),
-        which both initializes the library and loads a handel_ini file,
-        instead of xiaInitHandel() and xiaLoadSystem.
-        """
-        filename = self._to_bytes(filename)
-        ret_code = self.HANDEL.xiaLoadSystem(b'handel_ini', filename)
-
-        check_error(ret_code)
-
-    def _get_num_detectors(self):
-        """
-        Wrap xiaGetNumDetectors.
-
-        Return the number of detectors currently defined in the system.
-        """
-        n_det = ct.c_uint()
-        ret_code = self.HANDEL.xiaGetNumDetectors(byref(n_det))
-
-        check_error(ret_code)
-
-        return n_det.value
-
-    def _get_detectors(self):
-        """
-        Wrap xiaGetDetectors.
-
-        Return a list of aliases of the detectors defined in the system.
-
-        """
-        n_dets = self._get_num_detectors()
-        arr_type = ct.c_char_p * n_dets
-        det_names = arr_type(*[b' '*self.MAXALIAS_LEN]*n_dets)
-        ret_code = self.HANDEL.xiaGetDetectors(byref(det_names))
-
-        check_error(ret_code)
-
-        det_names = [name.decode() for name in det_names]
-
-        return tuple(det_names)
-
-    def _get_detector_nb_of_channels(self, alias):
-        """Wrap xiaGetDetectorItem with name='number_of_channel'."""
-        noc = ct.c_uint()
-        ret_code = self.HANDEL.xiaGetDetectorItem(
-            self._to_bytes(alias), b'number_of_channels', byref(noc))
-        check_error(ret_code)
-
-        return noc.value
-
-    def _get_detector_gain(self, alias):
-        """Wrap xiaGetDetectorItem with name='channel{channel}_gain'."""
-        gain = ct.c_double()
-        name = f'channel{self._chan_no}_gain'
-        ret_code = self.HANDEL.xiaGetDetectorItem(
-            self._to_bytes(alias), self._to_bytes(name), byref(gain))
-        check_error(ret_code)
-
-        return gain.value
-
-    def _get_detector_polarity(self, alias):
-        """Wrap xiaGetDetectorItem with name='channel{channel}_polarity'."""
-        polarity = b' '*3
-        name = f'channel{self._chan_no}_polarity'
-        ret_code = self.HANDEL.xiaGetDetectorItem(
-            self._to_bytes(alias), self._to_bytes(name), polarity)
-        check_error(ret_code)
-
-        return polarity.decode()
-
-    def _set_acquisition_values(self, name, value, channel=None):
-        """Warning: Not in used. Incomplete implementation."""
-        if channel is None:
-            channel = -1  # All channels
-        value = ct.c_double(value)
-        ret_code = self.HANDEL.xiaSetAcquisitionValues(
-            channel, self._to_bytes(name), value)
-        check_error(ret_code)
-
-        return value.value
-
     def _start_run(self, resume=False):
         """Wrap xiaStartRun."""
         ret_code = self.HANDEL.xiaStartRun(self._chan_no, resume)
@@ -225,51 +128,6 @@ class KetekAXASM(Detector):
         """Wrap xiaStopRun."""
         ret_code = self.HANDEL.xiaStopRun(self._chan_no)
         check_error(ret_code)
-
-    def _get_run_livetime(self):
-        """Report the acquisition livetime in seconds."""
-        livetime = ct.c_double()
-        ret_code = self.HANDEL.xiaGetRunData(
-            self._chan_no, b'livetime', byref(livetime))
-        check_error(ret_code)
-
-        return livetime.value
-
-    def _get_run_runtime(self):
-        """Report the acquisition runtime in seconds."""
-        runtime = ct.c_double()
-        ret_code = self.HANDEL.xiaGetRunData(
-            self._chan_no, b'runtime', byref(runtime))
-        check_error(ret_code)
-
-        return runtime.value
-
-    def _get_run_input_count_rate(self):
-        """Wrap xiaGetRunData with input_count_rate."""
-        input_cr = ct.c_double()
-        ret_code = self.HANDEL.xiaGetRunData(
-            self._chan_no, b'input_count_rate', byref(input_cr))
-        check_error(ret_code)
-
-        return input_cr.value
-
-    def _get_run_output_count_rate(self):
-        """Wrap xiaGetRunData with output_count_rate."""
-        output_cr = ct.c_double()
-        ret_code = self.HANDEL.xiaGetRunData(
-            self._chan_no, b'output_count_rate', byref(output_cr))
-        check_error(ret_code)
-
-        return output_cr.value
-
-    def _is_run_active(self):
-        """Wrap xiaGetRunData with run_active."""
-        is_active = ct.c_ushort()
-        ret_code = self.HANDEL.xiaGetRunData(
-            self._chan_no, b'run_active', byref(is_active))
-        check_error(ret_code)
-
-        return is_active.value
 
     def _get_spectrum_length(self):
         """Wrap xiaGetRunData with mca_length."""
@@ -291,82 +149,49 @@ class KetekAXASM(Detector):
 
         return spectrum
 
-    def _get_acq_times(self):
-        """Wrap xiaGetRunData with runtime and livetime."""
-
-        runtime = ct.c_double()
-        ret_code = self.HANDEL.xiaGetRunData(
-            self._chan_no, b'runtime', byref(runtime))
-        check_error(ret_code)
-
-        livetime = ct.c_double()
-        ret_code = self.HANDEL.xiaGetRunData(
-            self._chan_no, b'runtime', byref(livetime))
-        check_error(ret_code)
-
-        return livetime.value, runtime.value
-
-    def _get_run_event_counts(self):
-        """Wrap xiaGetRunData with events_in_run."""
-        counts = ct.c_ulong()
-        ret_code = self.HANDEL.xiaGetRunData(
-            self._chan_no, b'events_in_run', byref(counts))
-        check_error(ret_code)
-
-        return counts.value
-
-    def _get_run_trigger_counts(self):
-        """Wrap xiaGetRunData with triggers."""
-        counts = ct.c_ulong()
-        ret_code = self.HANDEL.xiaGetRunData(
-            self._chan_no, b'triggers', byref(counts))
-        check_error(ret_code)
-
-        return counts.value
-
-    def _get_all_run_stats(self):
-        """Wrap xiaGetRunData with all_statistics."""
-        all_stats_ct = (ct.c_double * 6)()
-        ret_code = self.HANDEL.xiaGetRunData(
-            self._chan_no, b'all_statistics', byref(all_stats_ct))
-        check_error(ret_code)
-
-        all_stats = {'livetime': all_stats_ct[0],
-                     'runtime': all_stats_ct[1],
-                     'triggers': all_stats_ct[2],
-                     'events': all_stats_ct[3],
-                     'ICR': all_stats_ct[4],
-                     'OCR': all_stats_ct[5]}
-
-        return all_stats
-
-    def _set_logging(self, output='stdout', level='error'):
-        """
-        Wrap xiaSetLogOutput and xiaSetLogLevel.
-
-        Set the logging output and level.
-
-        Parameters
-        ----------
-        output : str, optional
-            filename or 'stdout' or 'stderr'. The default is 'stdout'.
-        level : str, optional
-            level name, one of 'debug', 'info', 'warning', 'error'.
-            The default is 'error'.
-
-        Returns
-        -------
-        None.
-
-        """
-        log_levels = {'debug': 4,
-                      'info': 3,
-                      'warning': 2,
-                      'error': 1}
-        ret_code = self.HANDEL.xiaSetLogOutput(self._to_bytes(output))
-        check_error(ret_code)
-        ret_code = self.HANDEL.xiaSetLogLevel(log_levels[level])
-        check_error(ret_code)
+    # def _get_all_run_stats(self):
+    #     """Wrap xiaGetRunData with all_statistics."""
+    #     all_stats_ct = (ct.c_double * 6)()
+    #     ret_code = self.HANDEL.xiaGetRunData(
+    #         self._chan_no, b'all_statistics', byref(all_stats_ct))
+    #     check_error(ret_code)
+    #
+    #     all_stats = {'livetime': all_stats_ct[0],
+    #                  'runtime': all_stats_ct[1],
+    #                  'triggers': all_stats_ct[2],
+    #                  'events': all_stats_ct[3],
+    #                  'ICR': all_stats_ct[4],
+    #                  'OCR': all_stats_ct[5]}
+    #
+    #     return all_stats
+    #
+    # def _set_logging(self, output='stdout', level='error'):
+    #     """
+    #     Wrap xiaSetLogOutput and xiaSetLogLevel.
+    #
+    #     Set the logging output and level.
+    #
+    #     Parameters
+    #     ----------
+    #     output : str, optional
+    #         filename or 'stdout' or 'stderr'. The default is 'stdout'.
+    #     level : str, optional
+    #         level name, one of 'debug', 'info', 'warning', 'error'.
+    #         The default is 'error'.
+    #
+    #     Returns
+    #     -------
+    #     None.
+    #
+    #     """
+    #     log_levels = {'debug': 4,
+    #                   'info': 3,
+    #                   'warning': 2,
+    #                   'error': 1}
+    #     ret_code = self.HANDEL.xiaSetLogOutput(self._to_bytes(output))
+    #     check_error(ret_code)
+    #     ret_code = self.HANDEL.xiaSetLogLevel(log_levels[level])
+    #     check_error(ret_code)
 
     @staticmethod
     def _to_bytes(arg):
@@ -379,13 +204,9 @@ class KetekAXASM(Detector):
 if __name__ == '__main__':
     from matplotlib import pyplot as plt
     dev = KetekAXASM('ketek', (Path(__file__).parent / "examples/KETEK_DPP2_usb2.ini").as_posix())
-    dev._set_logging('stderr', 'error')
+    # dev._set_logging('stderr', 'error')
     dev._start_system()
-    print(dev._get_detectors())
-    print(dev._get_detector_nb_of_channels('ketek1'))
-    print(dev._get_detector_gain('ketek1'))
-    print(dev._get_detector_polarity('ketek1'))
     spe = dev.acquisition(1)
-    print(dev._get_all_run_stats())
+    # print(dev._get_all_run_stats())
     plt.plot(spe)
     dev.stop()
