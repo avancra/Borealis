@@ -8,9 +8,10 @@ LOGGER = logging.getLogger(__name__)
 
 class MCAMetadata:
 
-    def __init__(self, runtime: float, livetime: float, det_info: dict):
+    def __init__(self, runtime: float, input_cr: float, output_cr: float, det_info: dict):
         self.runtime = runtime
-        self.livetime = livetime
+        self.input_cr = input_cr
+        self.output_cr = output_cr
         self.acq_date = datetime.datetime.now()
         self.det_sn = det_info["serial_number"]
         self.det_alias = det_info["alias"]
@@ -24,13 +25,15 @@ class MCAMetadata:
 
         return {'date': self.acq_date,
                 'runtime': self.runtime,
-                'livetime': self.livetime,
+                'input_cr': self.input_cr,
+                'output_cr': self.output_cr,
                 'detector': det_info}
 
     @classmethod
     def from_dict(cls, md_dict):
         return cls(runtime=md_dict['runtime'],
-                   livetime=md_dict['livetime'],
+                   input_cr=md_dict['input_cr'],
+                   output_cr=md_dict['output_cr'],
                    det_info=md_dict['detector'])
 
 

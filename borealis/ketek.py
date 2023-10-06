@@ -41,9 +41,12 @@ class KetekAXASM(Detector):
         sleep(acquisition_time)
         self._stop_run()
         mca_counts = self._get_spectrum()
-        livetime, runtime = 0, 0
+        run_stat = self._get_all_run_stats()
 
-        mca_metadata = MCAMetadata(livetime, runtime, self.get_det_info())
+        mca_metadata = MCAMetadata(run_stat['runtime'],
+                                   run_stat['ICR'],
+                                   run_stat['OCR'],
+                                   self.get_det_info())
         mca = MCA(mca_counts, mca_metadata)
 
         return mca
@@ -149,21 +152,21 @@ class KetekAXASM(Detector):
 
         return spectrum
 
-    # def _get_all_run_stats(self):
-    #     """Wrap xiaGetRunData with all_statistics."""
-    #     all_stats_ct = (ct.c_double * 6)()
-    #     ret_code = self.HANDEL.xiaGetRunData(
-    #         self._chan_no, b'all_statistics', byref(all_stats_ct))
-    #     check_error(ret_code)
-    #
-    #     all_stats = {'livetime': all_stats_ct[0],
-    #                  'runtime': all_stats_ct[1],
-    #                  'triggers': all_stats_ct[2],
-    #                  'events': all_stats_ct[3],
-    #                  'ICR': all_stats_ct[4],
-    #                  'OCR': all_stats_ct[5]}
-    #
-    #     return all_stats
+    def _get_all_run_stats(self):
+        """Wrap xiaGetRunData with all_statistics."""
+        all_stats_ct = (ct.c_double * 6)()
+        ret_code = self.HANDEL.xiaGetRunData(
+            self._chan_no, b'all_statistics', byref(all_stats_ct))
+        check_error(ret_code)
+
+        all_stats = {'livetime': all_stats_ct[0],
+                     'runtime': all_stats_ct[1],
+                     'triggers': all_stats_ct[2],
+                     'events': all_stats_ct[3],
+                     'ICR': all_stats_ct[4],
+                     'OCR': all_stats_ct[5]}
+
+        return all_stats
     #
     # def _set_logging(self, output='stdout', level='error'):
     #     """

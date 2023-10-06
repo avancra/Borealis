@@ -15,14 +15,15 @@ def get_det_info():
 @pytest.fixture()
 def get_metadata_dict(get_det_info):
     md_dict = {"runtime": 42.0,
-               "livetime": 42.0,
+               "input_cr": 666.0,
+               "output_cr": 999.0,
                "detector": get_det_info}
 
     return md_dict
 
 
 def test_metadata_constructor(get_det_info):
-    MCAMetadata(42., 42., get_det_info)
+    MCAMetadata(runtime=12, input_cr=34, output_cr=56, det_info=get_det_info)
 
     with pytest.raises(TypeError):
         MCAMetadata()
@@ -39,7 +40,7 @@ def test_metadata_from_dict(get_metadata_dict):
 
 
 def test_metadata_date(get_det_info):
-    meta = MCAMetadata(12.34, 12.34, get_det_info)
+    meta = MCAMetadata(12.34, 56.78, 98.76, get_det_info)
     assert isinstance(meta.acq_date, datetime)
 
 
