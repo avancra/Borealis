@@ -63,7 +63,7 @@ class AmptekCdTe123(Detector):
         sleep(acquisition_time*1.1)
         self._disable_mca()
         raw_spe_st = self._get_spectrum_status()
-        mca_counts = self._from_raw_spectrum(raw_spe_st, num_chan=2048)
+        mca_counts = self._get_mca_counts(raw_spe_st, num_chan=2048, contain_status=True)
         status = Status.from_spectrum_status_packet(raw_spe_st, num_chan=2048)
 
         # TODO: get the livetime
@@ -306,9 +306,12 @@ class AmptekCdTe123(Detector):
         self._send_text_config(f'GAIN={gain:.3f};', save_to_mem)
 
     @staticmethod
-    def _from_raw_spectrum(answer, num_chan=2048):
+    def _get_mca_counts(answer, num_chan=2048, contain_status=False):
         """Extract spectrum from response packet."""
-        raw = np.array(answer[6:-2])
+        if contain_status:
+            raw = np.array(answer[6:6+3*num_chan])
+        else:
+            raw = np.array(answer[6:-2])
         raw = np.reshape(raw, (num_chan, 3))
         spectrum = raw[:, 0] + raw[:, 1]*2**8 + raw[:, 2]*2**16
 
