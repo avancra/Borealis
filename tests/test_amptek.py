@@ -29,4 +29,7 @@ def test_status(get_raw_status):
     assert status.serial_number == '022098'
     assert isinstance(status.realtime, (float, int))
     assert status.realtime == pytest.approx(10, abs=0.5)
-    print(status.realtime)
+    assert isinstance(status.acq_time, (float, int))
+    assert status.realtime == pytest.approx(10, abs=0.05)
+    assert isinstance(status.fast_count, (float, int))
+    assert isinstance(status.slow_count, (float, int))
