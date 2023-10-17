@@ -67,7 +67,7 @@ class AmptekCdTe123(Detector):
         status = Status.from_spectrum_status_packet(raw_spe_st, num_chan=2048)
 
         # TODO: get the livetime
-        mca_metadata = MCAMetadata(status.acq_time, np.nan, self.get_det_info())
+        mca_metadata = MCAMetadata(status.acq_time, np.nan, np.nan, self.get_det_info())
         mca_obj = MCA(mca_counts, mca_metadata)
 
         return mca_obj
