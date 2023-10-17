@@ -6,6 +6,7 @@ Created on Tue Mar 23 18:54:19 2021.
 """
 
 from operator import xor, and_
+from time import sleep
 
 import usb.core
 import usb.util
@@ -387,7 +388,6 @@ class Status:
 
 if __name__ == '__main__':
     import traceback
-    from time import sleep
     # from matplotlib import pyplot as plt
     dev = AmptekCdTe123('amptek')
     stat = dev._get_status()
