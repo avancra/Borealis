@@ -66,8 +66,7 @@ class AmptekCdTe123(Detector):
         mca_counts = self._get_mca_counts(raw_spe_st, num_chan=2048, contain_status=True)
         status = Status.from_spectrum_status_packet(raw_spe_st, num_chan=2048)
 
-        # TODO: get the livetime
-        mca_metadata = MCAMetadata(status.acq_time, np.nan, np.nan, self.get_det_info())
+        mca_metadata = MCAMetadata(status.realtime, np.nan, np.nan, self.get_det_info())
         mca_obj = MCA(mca_counts, mca_metadata)
 
         return mca_obj
@@ -366,7 +365,7 @@ class Status:
         self._raw = raw_status
         self.status = raw_status.tobytes()
         self.serial_number = ""
-        self.acq_time = 0.
+        self.realtime = 0.
         self._process_raw()
 
     def _process_raw(self):
@@ -376,7 +375,7 @@ class Status:
                                              + self._raw[28]*2**16
                                              + self._raw[29]*2**24))
 
-        self.acq_time = 1000 * self._raw[20] + 10 * (self._raw[21] + self._raw[22]*2**8 + self._raw[23]*2**16)
+        self.realtime = (self._raw[20] + self._raw[21]*2**8 + self._raw[22]*2**16 + self._raw[23]*2**24) / 1000
 
     @classmethod
     def from_spectrum_status_packet(cls, raw_spe, num_chan):
