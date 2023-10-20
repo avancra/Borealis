@@ -9,16 +9,21 @@ import logging
 
 import numpy as np
 
+from borealis.controller import Controller
+from borealis.detector import Detector
+
 logger = logging.getLogger(__name__)
 
 
 class Motor:
     """Motor generic class."""
 
-    def __init__(self, alias, motor_id, motor_offset, controller):
+    def __init__(self, alias: str, motor_id: str, motor_offset: float, controller: Controller,
+                 positive_direction: bool = True):
         self.motor_name = alias
         self.motor_id = motor_id
         self.offset = motor_offset
+        self._direction_coeff = -1 if positive_direction is False else 1
         self._controller = controller
         self._dial_position = self._controller.get_axis_position(self.motor_id)
         self._user_position = self.dial_position + self.offset
@@ -33,11 +38,15 @@ class Motor:
     @property
     def user_position(self):
         # TODO: add logging
-        return self.dial_position + self.offset
+        return self.dial_position * self._direction_coeff + self.offset
 
     @property
     def is_ready(self):
         return self._controller.is_axis_ready(self.motor_id)
+
+    @property
+    def movement_direction(self):
+        return "Pos(+)" if self._direction_coeff == 1 else "Neg(-)"
 
     def where(self):
         """
@@ -53,10 +62,10 @@ class Motor:
     def _check_is_ready(self):
         # TODO: change to MotorNotReady error once available
         if self.is_ready is False:
-            logger.error("Command interrupted due to motor not ready yet (i.e. not idle).")
-            raise RuntimeError(f"Command interrupted due to motor not ready yet (i.e. not idle).")
+            logger.error('Command interrupted due to motor not ready yet (i.e. not idle).')
+            raise RuntimeError('Command interrupted due to motor not ready yet (i.e. not idle).')
 
-    def amove(self, user_position):
+    def amove(self, user_position: float):
         """
         Move the motor to a new position (user) in absolute scale.
 
@@ -72,13 +81,13 @@ class Motor:
         """
         self._check_is_ready()
 
-        dial = user_position - self.offset
+        dial = (user_position - self.offset) / self._direction_coeff
 
         self._controller.move_axis(self.motor_id, dial)
         self._controller.wait_motion_end(self.motor_id, dial)
         logger.debug("%s moved to %f.", self.motor_name, self.user_position)
 
-    def rmove(self, rel_position):
+    def rmove(self, rel_position: float):
         """
         Move the motor by a relative position.
 
@@ -94,13 +103,13 @@ class Motor:
         """
         self._check_is_ready()
 
-        dial = self.dial_position + rel_position
+        dial = self.dial_position + rel_position * self._direction_coeff
 
         self._controller.move_axis(self.motor_id, dial)
         self._controller.wait_motion_end(self.motor_id, dial)
         logger.debug("%s moved to %f.", self.motor_name, self.user_position)
 
-    def scan(self, start, stop, step, det=None, acq_time=None):
+    def scan(self, start: float, stop: float, step: int, det: Detector = None, acq_time: float = None):
         """
         Scan, with or without acquisition. Acquisition requires det and acq_time.
 
