@@ -1,5 +1,6 @@
 import logging
 from typing import Union
+from __future__ import annotations
 import time
 
 import numpy as np
@@ -13,13 +14,13 @@ LOGGER = logging.getLogger(__name__)
 class PseudoMotor:
     """Class for a basic pseudo-motor, meaning a collection of Motor objects plus 0 or 1 detector."""
 
-    def __init__(self, motors: list[Motor], geometries: list, detector: Union[Detector, None] = None) -> None:
+    def __init__(self, motors: list[Motor, PseudoMotor], geometries: list, detector: Union[Detector, None] = None) -> None:
         """
 
         Parameters
         ----------
-        motors : list[Motor]
-            List of Motor objects.
+        motors : list[Motor, PseudoMotor]
+            List of Motor or PseudoMotor objects.
         geometries : list[fct]
             List of conversion functions (e.g. lambda (x,y): x), one for each motor.
         detector
