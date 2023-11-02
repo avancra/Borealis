@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import logging
 from typing import Union
-from __future__ import annotations
 import time
 
 import numpy as np
