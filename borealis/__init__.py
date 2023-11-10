@@ -31,11 +31,13 @@ logger.addHandler(file_hdlr)
 
 
 def handle_unhandled_exception(exc_type, exc_value, exc_traceback):
-    if issubclass(exc_type, Exception):
-        # Will call default excepthook
+
+    # Do not log keyboard interrupt
+    if issubclass(exc_type, KeyboardInterrupt):
         sys.__excepthook__(exc_type, exc_value, exc_traceback)
         return
-    # Create a critical level log message with info from the except hook.
+
+    # Create a ERROR level log message with info from the except hook.
     logger.error("Unhandled exception", exc_info=(exc_type, exc_value, exc_traceback))
 
 
