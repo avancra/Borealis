@@ -1,8 +1,9 @@
 import logging
 from logging.handlers import TimedRotatingFileHandler
+import sys
+
 from pathlib import Path
 from platformdirs import user_data_dir
-
 
 # default cross-platform directory for Borealis log and config files
 # On windows, it should be something like C:\\Users\\username\\AppData\\Local\\C4XS\\Borealis
@@ -27,5 +28,18 @@ file_hdlr.setLevel(logging.DEBUG)
 file_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 file_hdlr.setFormatter(stream_formatter)
 logger.addHandler(file_hdlr)
+
+
+def handle_unhandled_exception(exc_type, exc_value, exc_traceback):
+    if issubclass(exc_type, Exception):
+        # Will call default excepthook
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+    # Create a critical level log message with info from the except hook.
+    logger.error("Unhandled exception", exc_info=(exc_type, exc_value, exc_traceback))
+
+
+# Assign the excepthook to the handler
+sys.excepthook = handle_unhandled_exception
 
 logger.debug("\n\n  New Borealis session started \n")
