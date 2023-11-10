@@ -70,10 +70,10 @@ class Motor:
     def _check_soft_limits(self, dial):
         try:
             assert self._limit_neg < dial < self._limit_pos
-        except AssertionError:
+        except AssertionError as exc:
             LOGGER.error(
                 'SOFT LIMIT ERROR: the dial position %f is outside the available soft limit range',dial)
-            raise RuntimeError(f'SOFT LIMIT ERROR: the dial position {dial} is outside the available soft limit range')
+            raise RuntimeError(f'SOFT LIMIT ERROR: the dial position {dial} is outside the available soft limit range') from exc
 
     def amove(self, user_position: float):
         """
