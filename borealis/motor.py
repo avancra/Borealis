@@ -73,7 +73,7 @@ class Motor:
         except AssertionError as exc:
             LOGGER.exception(
                 'SOFT LIMIT ERROR: the dial position %f is outside the available soft limit range',dial)
-            raise RuntimeError(f'SOFT LIMIT ERROR: the dial position {dial} is outside the available soft limit range') from exc
+            raise RuntimeError(f'SOFT LIMIT ERROR: the dial position {dial} is outside the available soft limit range') from None
 
     def amove(self, user_position: float):
         """
@@ -146,9 +146,9 @@ class Motor:
         for position in np.arange(start, stop, step, dtype=np.float32):
             try:
                 self.amove(position)
-            except RuntimeError:  # TODO: check separately MotorNotReady and SoftLimitError errors once available
+            except RuntimeError as exc:  # TODO: check separately MotorNotReady and SoftLimitError errors once available
                 LOGGER.exception("Scan interrupted at position %f", position)
-                raise RuntimeError(f"Scan interrupted at position {position}")
+                raise RuntimeError(f"Scan interrupted at position {position}") from exc
 
             if det is not None:
                 assert acq_time is not None
