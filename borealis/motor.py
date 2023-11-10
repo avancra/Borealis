@@ -64,14 +64,14 @@ class Motor:
     def _check_is_ready(self):
         # TODO: change to MotorNotReady error once available
         if self.is_ready is False:
-            LOGGER.error('Command interrupted due to motor not ready yet (i.e. not idle).')
+            LOGGER.exception('Command interrupted due to motor not ready yet (i.e. not idle).')
             raise RuntimeError('Command interrupted due to motor not ready yet (i.e. not idle).')
 
     def _check_soft_limits(self, dial):
         try:
             assert self._limit_neg < dial < self._limit_pos
         except AssertionError as exc:
-            LOGGER.error(
+            LOGGER.exception(
                 'SOFT LIMIT ERROR: the dial position %f is outside the available soft limit range',dial)
             raise RuntimeError(f'SOFT LIMIT ERROR: the dial position {dial} is outside the available soft limit range') from exc
 
@@ -147,7 +147,7 @@ class Motor:
             try:
                 self.amove(position)
             except RuntimeError:  # TODO: check separately MotorNotReady and SoftLimitError errors once available
-                LOGGER.error("Scan interrupted at position %f", position)
+                LOGGER.exception("Scan interrupted at position %f", position)
                 raise RuntimeError(f"Scan interrupted at position {position}")
 
             if det is not None:
