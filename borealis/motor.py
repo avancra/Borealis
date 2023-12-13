@@ -162,7 +162,8 @@ class Motor:
     # TODO: rename to set_home/set_zero
     def set_to_zero(self):
         """Set motor current position to 0."""
+        current_position = self.dial_position
         self._controller.set_axis_to_zero(self.motor_id)
         LOGGER.warning("Dial position of %s reset to 0.\n"
                        "Initial dial value was %f.",
-                       self.motor_name, self.dial_position)
+                       self.motor_name, current_position)
