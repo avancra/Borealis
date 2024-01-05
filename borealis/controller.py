@@ -65,7 +65,7 @@ class Controller(ABC):
             Current position (dial) of the axis.
 
         """
-        raise NotImplementedError
+        # raise NotImplementedError
 
     @abstractmethod
     def is_axis_ready(self, axis_id: str):
@@ -83,7 +83,7 @@ class Controller(ABC):
             True if axis is idle, False if busy or in error state.
 
         """
-        raise NotImplementedError
+        # raise NotImplementedError
 
     @abstractmethod
     def is_limit_switch_activated(self, axis_id: str):
@@ -159,6 +159,30 @@ class Controller(ABC):
                     f"Axis never reached target position. Stopped at {current})")
 
             time.sleep(sleep_for)
+
+
+class Dummy(Controller):
+    """When in need for a controller but no access to a real device."""
+
+    def __init__(self):
+        pass
+
+    def move_axis(self, axis_id: str, target: float = 0):
+        pass
+
+    def get_axis_position(self, axis_id: str):
+        return 0
+
+    def is_axis_ready(self, axis_id: str):
+        return True
+
+    def is_limit_switch_activated(self, axis_id: str):
+        return False
+
+    def set_axis_to_zero(self, axis_id: str):
+        pass
+
+
 
     # @abstractmethod
     # def get_axis_status(self, axis_id : str):

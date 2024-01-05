@@ -12,6 +12,7 @@ import numpy as np
 
 from borealis.controller import Controller
 from borealis.detector import Detector
+from borealis.exceptions import SoftLimitError
 
 LOGGER = logging.getLogger(__name__)
 
@@ -20,14 +21,14 @@ class Motor:
     """Motor generic class."""
 
     def __init__(self, alias: str, motor_id: str, motor_offset: float, controller: Controller,
-                 positive_direction: bool = True, soft_limit_pos:  float = inf, soft_limit_neg: float = -inf):
+                 positive_direction: bool = True, soft_limit_low:  float = inf, soft_limit_high: float = -inf):
+        self._controller = controller
         self.motor_name = alias
         self.motor_id = motor_id
         self.offset = motor_offset
         self._direction_coeff = -1 if positive_direction is False else 1
-        self._limit_pos = soft_limit_pos
-        self._limit_neg = soft_limit_neg
-        self._controller = controller
+        self._limit_low = soft_limit_low
+        self._limit_high = soft_limit_high
         self._dial_position = self._controller.get_axis_position(self.motor_id)
         self._user_position = self.dial_position + self.offset
         self._is_ready = self._controller.is_axis_ready(self.motor_id)
@@ -67,13 +68,26 @@ class Motor:
             LOGGER.exception('Command interrupted due to motor not ready yet (i.e. not idle).')
             raise RuntimeError('Command interrupted due to motor not ready yet (i.e. not idle).')
 
-    def _check_soft_limits(self, dial):
+    def check_soft_limits(self, dial: float) -> None:
+        """
+        Check if dial value is within the limits (inclusive).
+
+        Parameters
+        ----------
+        dial : float
+            Target position in dial unit.
+
+        Raises
+        ------
+        SoftLimitError when dial is outside the allowed range.
+        """
         try:
-            assert self._limit_neg <= dial <= self._limit_pos
-        except AssertionError as exc:
-            LOGGER.exception(
-                'SOFT LIMIT ERROR: the dial position %f is outside the available soft limit range',dial)
-            raise RuntimeError(f'SOFT LIMIT ERROR: the dial position {dial} is outside the available soft limit range') from None
+            assert self._limit_low <= dial <= self._limit_high
+        except AssertionError:
+            LOGGER.error(
+                'SOFT LIMIT ERROR: %s - the dial position %.2f is outside the available soft limit range [%.2f : %.2f]',
+                self.motor_name.upper(), dial, self._limit_low, self._limit_high)
+            raise SoftLimitError(dial, self.motor_name, self._limit_low, self._limit_high)
 
     def amove(self, user_position: float):
         """
@@ -92,12 +106,11 @@ class Motor:
         self._check_is_ready()
 
         dial = (user_position - self.offset) / self._direction_coeff
-        self._check_soft_limits(dial)
+        self.check_soft_limits(dial)
 
         self._controller.move_axis(self.motor_id, dial)
         self._controller.wait_motion_end(self.motor_id, dial)
         LOGGER.debug("%s moved to %f.", self.motor_name, self.user_position)
-
 
     def rmove(self, rel_position: float):
         """
@@ -116,7 +129,7 @@ class Motor:
         self._check_is_ready()
 
         dial = self.dial_position + rel_position * self._direction_coeff
-        self._check_soft_limits(dial)
+        self.check_soft_limits(dial)
 
         self._controller.move_axis(self.motor_id, dial)
         self._controller.wait_motion_end(self.motor_id, dial)
@@ -160,7 +173,7 @@ class Motor:
         return np.array(mcas)
 
     # TODO: rename to set_home/set_zero
-    def set_to_zero(self):
+    def set_current_as_zero(self):
         """Set motor current position to 0."""
         current_position = self.dial_position
         self._controller.set_axis_to_zero(self.motor_id)

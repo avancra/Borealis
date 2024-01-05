@@ -60,8 +60,28 @@ class PseudoMotor:
         for motor in self._motors:
             motor.where()
 
+    def check_soft_limits(self, dial: float) -> None:
+        """
+        Check if dial value is within the limits (inclusive).
+
+        Parameters
+        ----------
+        dial : float
+            Target position in dial unit.
+
+        Raises
+        ------
+        SoftLimitError when dial is outside the allowed range.
+        """
+        LOGGER.debug("Checking all (pseudo)motor soft limits before amove...")
+        for idx, motor in enumerate(self._motors):
+            motor_pos = self._conversion_laws[idx](dial)
+            motor.check_soft_limits(motor_pos)
+            LOGGER.debug("Valid dial %.2f for (pseudo)motor %s", motor_pos, motor.motor_name)
+
     def amove(self, pos):
         self._check_is_ready()
+        self.check_soft_limits(pos)
 
         for idx, motor in enumerate(self._motors):
             motor_pos = self._conversion_laws[idx](pos)
