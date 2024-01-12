@@ -13,4 +13,15 @@ class SoftLimitError(BorealisException):
         super().__init__(message)
 
 
+class NotReadyError(BorealisException):
 
+    def __init__(self, alias):
+        message = (f'The device {alias.upper()} is not ready.')
+        super().__init__(message)
+
+
+class LimitSwitchError(BorealisException):
+
+    def __init__(self, alias):
+        message = (f'The limit switch for device {alias.upper()} is activated.')
+        super().__init__(message)

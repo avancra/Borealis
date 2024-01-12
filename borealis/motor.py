@@ -12,7 +12,7 @@ import numpy as np
 
 from borealis.controller import Controller
 from borealis.detector import Detector
-from borealis.exceptions import SoftLimitError
+from borealis.exceptions import SoftLimitError, NotReadyError
 
 LOGGER = logging.getLogger(__name__)
 
@@ -65,8 +65,8 @@ class Motor:
     def _check_is_ready(self):
         # TODO: change to MotorNotReady error once available
         if self.is_ready is False:
-            LOGGER.exception('Command interrupted due to motor not ready yet (i.e. not idle).')
-            raise RuntimeError('Command interrupted due to motor not ready yet (i.e. not idle).')
+            LOGGER.error('Command interrupted due to motor not ready yet (i.e. not idle).')
+            raise NotReadyError(self.motor_name)
 
     def check_soft_limits(self, dial: float) -> None:
         """
