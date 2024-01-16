@@ -4,10 +4,13 @@ Created on Thu February 9 14:48:59 2023.
 
 @author: A. Vancraeyenest
 """
+import logging
 from abc import ABC, abstractmethod
 import time
 
 import pytest
+
+LOGGER = logging.getLogger(__name__)
 
 
 class Controller(ABC):
@@ -165,6 +168,7 @@ class Dummy(Controller):
     """When in need for a controller but no access to a real device."""
 
     def __init__(self):
+        LOGGER.info('Dummy controller initialised')
         pass
 
     def move_axis(self, axis_id: str, target: float = 0):

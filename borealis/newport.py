@@ -11,7 +11,7 @@ import clr
 clr.AddReference("Newport.XPS.CommandInterface")
 import CommandInterfaceXPS as xps
 import logging
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 from borealis.controller import Controller
 
@@ -23,10 +23,10 @@ class NewportXPS(Controller):
         """Initialise the connection to the device."""
         self._xps = xps.XPS()
         ans = self._xps.OpenInstrument(ip_address, port, timeout)
-        logger.debug("Opening connection on port %d at IP address %s",
+        LOGGER.debug("Opening connection on port %d at IP address %s",
                      port, ip_address)
         self._ctrl_name = f'Newport {ans}'
-        logger.info("%s successfully initialised", self._ctrl_name)
+        LOGGER.info("%s successfully initialised", self._ctrl_name)
 
     # -------------  Overridden methods ------------- #
     def close(self):
