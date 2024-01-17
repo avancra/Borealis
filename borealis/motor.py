@@ -10,8 +10,8 @@ from math import inf
 
 import numpy as np
 
-from borealis.controller import Controller
-from borealis.detector import Detector
+from borealis.controller.controller_base import Controller
+from borealis.detector.detector_base import Detector
 from borealis.exceptions import SoftLimitError, NotReadyError
 
 LOGGER = logging.getLogger(__name__)
@@ -32,6 +32,11 @@ class Motor:
         self._dial_position = self._controller.get_axis_position(self.motor_id)
         self._user_position = self.dial_position + self.offset
         self._is_ready = self._controller.is_axis_ready(self.motor_id)
+
+    def log(self, level, msg, *args, **kwargs):
+        """Log a message with prepending the device's alias in front of the message."""
+        kwargs['stacklevel'] = 2
+        LOGGER.log(level, f'{self.motor_name}: {msg}', *args, **kwargs)
 
     @property
     def dial_position(self):
@@ -65,7 +70,8 @@ class Motor:
     def _check_is_ready(self):
         # TODO: change to MotorNotReady error once available
         if self.is_ready is False:
-            LOGGER.error('Command interrupted due to motor not ready yet (i.e. not idle).')
+            self.log(logging.ERROR, 'Command interrupted due to motor not ready yet (i.e. not idle).')
+            # LOGGER.error('Command interrupted due to motor not ready yet (i.e. not idle).')
             raise NotReadyError(self.motor_name)
 
     def check_soft_limits(self, dial: float) -> None:
@@ -84,9 +90,10 @@ class Motor:
         try:
             assert self._limit_low <= dial <= self._limit_high
         except AssertionError:
-            LOGGER.error(
-                'SOFT LIMIT ERROR: %s - the dial position %.2f is outside the available soft limit range [%.2f : %.2f]',
-                self.motor_name.upper(), dial, self._limit_low, self._limit_high)
+            self.log(logging.ERROR, 'Soft Limit Error: the dial position %.2f is outside the available soft limit range [%.2f : %.2f]', dial, self._limit_low, self._limit_high)
+            # LOGGER.error(
+            #     'SOFT LIMIT ERROR: %s - the dial position %.2f is outside the available soft limit range [%.2f : %.2f]',
+            #     self.motor_name.upper(), dial, self._limit_low, self._limit_high)
             raise SoftLimitError(dial, self.motor_name, self._limit_low, self._limit_high)
 
     def amove(self, user_position: float):
@@ -110,7 +117,8 @@ class Motor:
 
         self._controller.move_axis(self.motor_id, dial)
         self._controller.wait_motion_end(self.motor_id, dial)
-        LOGGER.debug("%s moved to %f.", self.motor_name, self.user_position)
+        self.log(logging.DEBUG, "moved to %.2f.", self.user_position)
+        # LOGGER.debug("%s moved to %f.", self.motor_name, self.user_position)
 
     def rmove(self, rel_position: float):
         """
@@ -133,7 +141,8 @@ class Motor:
 
         self._controller.move_axis(self.motor_id, dial)
         self._controller.wait_motion_end(self.motor_id, dial)
-        LOGGER.debug("%s moved to %f.", self.motor_name, self.user_position)
+        self.log(logging.DEBUG, "moved to %.2f.", self.user_position)
+        # LOGGER.debug("%s moved to %f.", self.motor_name, self.user_position)
 
     def scan(self, start: float, stop: float, step: int, det: Detector = None, acq_time: float = None):
         """
@@ -160,7 +169,7 @@ class Motor:
             try:
                 self.amove(position)
             except RuntimeError as exc:  # TODO: check separately MotorNotReady and SoftLimitError errors once available
-                LOGGER.exception("Scan interrupted at position %f", position)
+                LOGGER.exception("Scan interrupted at position %.2f", position)
                 raise RuntimeError(f"Scan interrupted at position {position}") from exc
 
             if det is not None:
@@ -177,6 +186,8 @@ class Motor:
         """Set motor current position to 0."""
         current_position = self.dial_position
         self._controller.set_axis_to_zero(self.motor_id)
-        LOGGER.warning("Dial position of %s reset to 0.\n"
-                       "Initial dial value was %f.",
-                       self.motor_name, current_position)
+        self.log(logging.WARNING, "Dial position reset to 0. Initial dial value was %.2f.",
+                 current_position)
+        # LOGGER.warning("Dial position of %s reset to 0.\n"
+        #                "Initial dial value was %f.",
+        #                self.motor_name, current_position)

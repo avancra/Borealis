@@ -11,8 +11,8 @@ from time import sleep
 
 import numpy as np
 
-from borealis.ketek_error import check_error
-from borealis.detector import Detector
+from borealis.detector.ketek_error import check_error
+from borealis.detector.detector_base import Detector
 from borealis.mca import MCA, MCAMetadata
 
 

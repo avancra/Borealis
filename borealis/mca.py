@@ -37,6 +37,12 @@ class MCAMetadata:
                    det_info=md_dict['detector'])
 
 
+    @classmethod
+    def dummy(cls):
+        """For testing purposes"""
+        return cls(1,10,10,{'serial_number': 'Unknown', 'alias': 'DummyDet', 'type': 'Dummy'})
+
+
 class MCA:
 
     def __init__(self, counts_array: np.ndarray, metadata: MCAMetadata):

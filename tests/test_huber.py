@@ -1,4 +1,4 @@
-from borealis.huber import HuberSMC
+from borealis.controller.huber import HuberSMC
 
 
 def test_decode_axis_status():

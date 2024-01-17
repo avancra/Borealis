@@ -13,7 +13,7 @@ import CommandInterfaceXPS as xps
 import logging
 LOGGER = logging.getLogger(__name__)
 
-from borealis.controller import Controller
+from borealis.controller.controller_base import Controller
 
 
 class NewportXPS(Controller):

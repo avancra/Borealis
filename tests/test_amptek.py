@@ -1,10 +1,9 @@
 import pickle
-from array import array
 from pathlib import Path
 
 import pytest
 
-from borealis.amptek import Status
+from borealis.detector.amptek import Status
 
 
 @pytest.fixture()

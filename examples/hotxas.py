@@ -2,7 +2,7 @@ import sys
 
 sys.path.append("C:\\LocalData\\HotXAS")
 
-from borealis.newport import NewportXPS
+from borealis.controller.newport import NewportXPS
 from borealis.motor import Motor 
 
 

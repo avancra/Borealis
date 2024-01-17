@@ -163,19 +163,26 @@ class Controller(ABC):
 
             time.sleep(sleep_for)
 
+    def log(self, level, msg, *args, **kwargs):
+        """Log a message with prepending the device's alias in front of the message."""
+        kwargs['stacklevel'] = 2
+        # LOGGER.log(level, f'{self.alias}: {msg}', *args, **kwargs)
+        LOGGER.log(level, f'Controller: {msg}', *args, **kwargs)
 
-class Dummy(Controller):
+
+class DummyCtrl(Controller):
     """When in need for a controller but no access to a real device."""
 
     def __init__(self):
+        self.position = 0
         LOGGER.info('Dummy controller initialised')
         pass
 
     def move_axis(self, axis_id: str, target: float = 0):
-        pass
+        self.position = target
 
     def get_axis_position(self, axis_id: str):
-        return 0
+        return self.position
 
     def is_axis_ready(self, axis_id: str):
         return True
@@ -186,30 +193,3 @@ class Dummy(Controller):
     def set_axis_to_zero(self, axis_id: str):
         pass
 
-
-
-    # @abstractmethod
-    # def get_axis_status(self, axis_id : str):
-    #     """
-    #     ABC method to get the axis status (derived must override).
-
-    #     Parameters
-    #     ----------
-    #     axis_id : str
-    #         Axis ID as used by the controller.
-
-    #     Returns
-    #     -------
-    #     None
-
-    #     """
-
-    # @property
-    # @abstractproperty
-    # def alias(self):
-    #     """ABC property for alias (derived must override)."""
-
-    # @alias.setter
-    # @abstractproperty
-    # def alias(self, new_value):
-    #     """ABC property for alias (derived must override)."""

@@ -7,7 +7,7 @@ import time
 import numpy as np
 
 from borealis.motor import Motor
-from borealis.detector import Detector
+from borealis.detector.detector_base import Detector
 
 LOGGER = logging.getLogger(__name__)
 

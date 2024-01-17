@@ -4,9 +4,14 @@ Created on Fri May 13 14:48:59 2022.
 
 @author: A. Vancraeyenest
 """
+import logging
 from abc import ABC, abstractmethod
 
+import numpy as np
+
 from borealis import mca
+
+LOGGER = logging.getLogger(__name__)
 
 
 class Detector(ABC):
@@ -51,6 +56,38 @@ class Detector(ABC):
     @abstractmethod
     def stop(self):
         """ABC method for stopping detector. (derived must override)."""
+
+    def get_det_info(self):
+        """Return the detector info as dictionary (stored in the MCA metadata)."""
+        return {'serial_number': self.serial_number,
+                'alias': self.alias,
+                'type': self.DET_TYPE}
+
+    def log(self, level, msg, *args, **kwargs):
+        """Log a message with prepending the device's alias in front of the message."""
+        kwargs['stacklevel'] = 2
+        LOGGER.log(level, f'{self.alias}: {msg}', *args, **kwargs)
+
+
+class DummyDet(Detector):
+    """When in need for a detector but no access to a real device."""
+
+    DET_TYPE = "Dummy"
+
+    def __init__(self, alias: str = "DummyDet"):
+        super().__init__(alias)
+        LOGGER.info('%s detector initialised.', self.alias)
+
+    def acquisition(self, acquisition_time: float) -> mca.MCA:
+        # this message logs the alais
+        self.log(logging.INFO, 'Log from Dummies! %s %.3f', 'Hi!', 0.225662455)
+        # This message doesn't add the alias
+        LOGGER.info('Another log from Dummy :)')
+
+        return mca.MCA(np.arange(10), mca.MCAMetadata.dummy())
+
+    def stop(self):
+        LOGGER.info('%s controller closed', self.alias)
 
     def get_det_info(self):
         """Return the detector info as dictionary (stored in the MCA metadata)."""

@@ -9,7 +9,7 @@ Created on Tue Jan 10 21:17:12 2023.
 import logging
 import socket
 
-from borealis.controller import Controller
+from borealis.controller.controller_base import Controller
 
 LOGGER = logging.getLogger(__name__)
 
@@ -25,9 +25,9 @@ class HuberSMC(Controller):
                      port, ip_address)
 
         msg = self._read().decode().strip('\r\n')
-        self._ctrl_name = f'Huber {msg}'
+        self._name = f'Huber {msg}'
         LOGGER.info("%s successfully initialised",
-                    self._ctrl_name)
+                    self._name)
 
     # -------------  Overridden methods ------------- #
     def move_axis(self, axis_id: str, target: float = 0):
@@ -35,7 +35,7 @@ class HuberSMC(Controller):
         self._write(f'goto{axis_id}:{target}')
         self.wait_motion_end(axis_id, target)
         LOGGER.debug("%s: Moving axis %s to %f (dial).",
-                     self._ctrl_name, axis_id, target)
+                     self._name, axis_id, target)
 
     def get_axis_position(self, axis_id: str):
         """Get the dial position for a single axis."""
@@ -48,10 +48,10 @@ class HuberSMC(Controller):
         status = self.get_axis_status(axis_id)['axis ready']
         if status == '1':
             LOGGER.debug("%s: axis %s ready (i.e. idle).",
-                         self._ctrl_name, axis_id)
+                         self._name, axis_id)
         else:
             LOGGER.debug("%s: axis %s not ready yet (i.e. not idle).",
-                         self._ctrl_name, axis_id)
+                         self._name, axis_id)
         return status == '1'
 
     def is_limit_switch_activated(self, axis_id: str):
@@ -63,18 +63,18 @@ class HuberSMC(Controller):
             if status['limit switch status'] == '1':
                 # print('Limit switch [-] activated')
                 LOGGER.info("%s: Limit switch [-] of axis %s activated.",
-                            self._ctrl_name, axis_id)
+                            self._name, axis_id)
             elif status['limit switch status'] == '2':
                 # print('Limit switch [+] activated')
                 LOGGER.info("%s: Limit switch [+] of axis %s activated.",
-                            self._ctrl_name, axis_id)
+                            self._name, axis_id)
             return True
 
     def set_axis_to_zero(self, axis_id: str):
         """Set axis position to 0."""
         self._write(f'zero{axis_id}')
         LOGGER.debug("%s: Axis %s position set to 0 (home).",
-                     self._ctrl_name, axis_id)
+                     self._name, axis_id)
 
     # -------------  Own methods ------------- #
 
@@ -93,7 +93,7 @@ class HuberSMC(Controller):
         status = self.get_axis_status(axis_id)
         self.clean_axis_error(axis_id)
         LOGGER.debug("%s: Axis %s error: %s %s",
-                     self._ctrl_name, axis_id,
+                     self._name, axis_id,
                      status['error number'], status['error message'])
         return status['error number'], status['error message']
 
@@ -101,7 +101,7 @@ class HuberSMC(Controller):
         """Clean axis related errors."""
         self._write(f'cerr{axis_id}')
         LOGGER.debug("%s: Error cleared for axis %s.",
-                     self._ctrl_name, axis_id)
+                     self._name, axis_id)
 
     def get_axis_status(self, axis_id: str):
         self._write(f'?status{axis_id}')

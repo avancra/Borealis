@@ -12,7 +12,7 @@ import usb.core
 import usb.util
 import numpy as np
 
-from borealis.detector import Detector
+from borealis.detector.detector_base import Detector
 from borealis.mca import MCAMetadata, MCA
 
 

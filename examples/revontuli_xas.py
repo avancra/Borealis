@@ -11,9 +11,9 @@ sys.path.append("C:\\LocalData\\renebes\\borealis")
 
 import math as m
 
-from borealis.huber import HuberSMC
+from borealis.controller.huber import HuberSMC
 from borealis.motor import Motor
-from borealis.ketek import KetekAXASM
+from borealis.detector.ketek import KetekAXASM
 from borealis.pseudo_motor import PseudoMotor
 
 #from spellman import Spellman_uX50P50
