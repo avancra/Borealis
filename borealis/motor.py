@@ -21,7 +21,7 @@ class Motor:
     """Motor generic class."""
 
     def __init__(self, alias: str, motor_id: str, motor_offset: float, controller: Controller,
-                 positive_direction: bool = True, soft_limit_low:  float = inf, soft_limit_high: float = -inf):
+                 positive_direction: bool = True, soft_limit_low:  float = -inf, soft_limit_high: float = inf):
         self._controller = controller
         self.motor_name = alias
         self.motor_id = motor_id
@@ -91,9 +91,6 @@ class Motor:
             assert self._limit_low <= dial <= self._limit_high
         except AssertionError:
             self.log(logging.ERROR, 'Soft Limit Error: the dial position %.2f is outside the available soft limit range [%.2f : %.2f]', dial, self._limit_low, self._limit_high)
-            # LOGGER.error(
-            #     'SOFT LIMIT ERROR: %s - the dial position %.2f is outside the available soft limit range [%.2f : %.2f]',
-            #     self.motor_name.upper(), dial, self._limit_low, self._limit_high)
             raise SoftLimitError(dial, self.motor_name, self._limit_low, self._limit_high)
 
     def amove(self, user_position: float):

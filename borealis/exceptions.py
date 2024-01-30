@@ -8,8 +8,8 @@ class BorealisException(Exception):
 class SoftLimitError(BorealisException):
 
     def __init__(self, value, alias, limit_low, limit_high):
-        message = (f'The dial position {value} for motor {alias.upper()} is outside the '
-                   f'available soft limit range [{limit_low}:{limit_high}].')
+        message = (f'The dial position {value:.2f} for motor {alias.upper()} is outside the '
+                   f'available soft limit range [{limit_low:.2f}:{limit_high:.2f}].')
         super().__init__(message)
 
 
