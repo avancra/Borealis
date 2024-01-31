@@ -2,6 +2,8 @@
 """
 Created on Tue Apr 25 09:48:49 2023
 
+Launched using : ipython -i revontuli_xas.py
+
 @author: Revontuli_admin
 """
 
