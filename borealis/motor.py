@@ -140,7 +140,7 @@ class Motor:
         self.log(logging.DEBUG, "moved to %.2f.", self.user_position)
         # LOGGER.debug("%s moved to %f.", self.motor_name, self.user_position)
 
-    def scan(self, start: float, stop: float, step: int, det: Detector = None, acq_time: float = None):
+    def scan(self, start: float, stop: float, step: int, det: Detector = None, acq_time: float = 0.):
         """
         Scan, with or without acquisition. Acquisition requires det and acq_time.
 
@@ -162,10 +162,10 @@ class Motor:
         start_time = time.time()
 
         LOGGER.info("Scan starts...\n")
-        LOGGER.info(f"|    # |      pos |    time | count tot. |")
-        LOGGER.info(f"------------------------------------------")
+        LOGGER.info("|    # |      pos |    time | count tot. |")
+        LOGGER.info("------------------------------------------")
         spectra = []
-        for position in np.arange(start, stop, step, dtype=np.float32):
+        for (idx, position) in enumerate(np.arange(start, stop, step, dtype=np.float32)):
             try:
                 self.amove(position)
             except RuntimeError as exc:  # TODO: check separately MotorNotReady and SoftLimitError errors once available
@@ -173,13 +173,14 @@ class Motor:
                 raise RuntimeError(f"Scan interrupted at position {position}") from exc
             counts = np.nan
             if det is not None:
-                assert acq_time is not None
+                assert acq_time > 0.
                 spectrum = det.acquisition(acq_time)
+                counts = spectrum.counts.sum()
                 spectra.append(spectrum)
-            elif acq_time is not None:
+            elif acq_time > 0.:
                 time.sleep(acq_time)
-            LOGGER.info(f"| {idx:5.0f} | {position:8.3f} | {acq_time:7.2f} | {counts:10d} |")
-        LOGGER.info(f"\n   Scan ended succesfully. Total duration was: {time.time()-start_time} s\n")
+            LOGGER.info(f"|{idx:5.0f} | {position:8.3f} | {acq_time:7.2f} | {counts:10.0f} |")
+        LOGGER.info(f"\n   Scan ended succesfully. Total duration was: {time.time()-start_time:.2f} s\n")
         return np.array(spectra)
 
     # TODO: rename to set_home/set_zero

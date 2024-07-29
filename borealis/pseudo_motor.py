@@ -134,8 +134,8 @@ class PseudoMotor:
                 spectra.append(spectrum)
             elif acq_time is not None:
                 time.sleep(acq_time)
-            LOGGER.info(f"| {idx:5.0f} | {position:8.3f} | {acq_time:7.2f} | {counts:10d} |")
-        LOGGER.info(f"\n   Scan ended succesfully. Total duration was: {time.time()-start_time} s\n")
+            LOGGER.info(f"|{idx:5.0f} | {position:8.3f} | {acq_time:7.2f} | {counts:10.0f} |")
+        LOGGER.info(f"\n   Scan ended succesfully. Total duration was: {time.time()-start_time:.2f} s\n")
         return np.array(spectra)
 
 # class Theta(ABC):
