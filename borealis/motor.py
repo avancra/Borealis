@@ -32,7 +32,7 @@ class Motor:
         self._dial_position = self._controller.get_axis_position(self.motor_id)
         self._user_position = self.dial_position + self.offset
         self._is_ready = self._controller.is_axis_ready(self.motor_id)
-        LOGGER.info("Motor %s successfully initialized.", self.motor_name)
+        LOGGER.info("Motor %s created.", self.motor_name)
 
     def log(self, level, msg, *args, **kwargs):
         """Log a message with prepending the device's alias in front of the message."""

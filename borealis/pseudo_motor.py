@@ -15,11 +15,13 @@ LOGGER = logging.getLogger(__name__)
 class PseudoMotor:
     """Class for a basic pseudo-motor, meaning a collection of Motor objects plus 0 or 1 detector."""
 
-    def __init__(self, motors: list[Motor, PseudoMotor], geometries: list, detector: Union[Detector, None] = None) -> None:
+    def __init__(self, alias: str, motors: list[Motor, PseudoMotor], geometries: list, detector: Union[Detector, None] = None) -> None:
         """
 
         Parameters
         ----------
+        alias : str
+            Name of the pseudo-motor
         motors : list[Motor, PseudoMotor]
             List of Motor or PseudoMotor objects.
         geometries : list[fct]
@@ -34,9 +36,11 @@ class PseudoMotor:
                          len(motors), len(geometries))
             raise ValueError(f"Length of motor list ({len(motors)}) does not match the length of "
                              f"geometry list ({len(geometries)})")
+        self._motor_name = alias
         self._motors = motors
         self._conversion_laws = geometries
         self._detector = detector
+        LOGGER.info("PseudoMotor %s created.", self._motor_name)
 
     @property
     def is_ready(self):
