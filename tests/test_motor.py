@@ -26,3 +26,11 @@ def test_motor_soft_limits():
         mot.amove(10)
 
     mot.set_current_as_zero()
+
+def test_motor_where():
+    ctrl = DummyCtrl()
+
+    mot = Motor('DummyMotor', '1', 0, ctrl)
+    mot.amove(10)
+
+    mot.where()

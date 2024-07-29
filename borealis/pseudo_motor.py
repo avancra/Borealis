@@ -40,7 +40,13 @@ class PseudoMotor:
         self._motors = motors
         self._conversion_laws = geometries
         self._detector = detector
+        self._position_law = lambda x: x[0].user_position
+
         LOGGER.info("PseudoMotor %s created.", self._motor_name)
+
+    @property
+    def position(self):
+        return self._position_law(self._motors)
 
     @property
     def is_ready(self):
@@ -51,6 +57,18 @@ class PseudoMotor:
         if self.is_ready is False:
             LOGGER.error("Command interrupted due to all motors not ready yet (i.e. not idle).")
             raise RuntimeError("Command interrupted due to all motors not ready yet (i.e. not idle).")
+
+    def where(self):
+        """
+        Print pseudo-motor position.
+
+        Returns
+        -------
+        str
+
+        """
+        print('{} at : {:6.2f} (user)'
+              .format(self._motor_name, self.position))
 
     def where_all(self):
         """
@@ -96,8 +114,8 @@ class PseudoMotor:
         start_time = time.time()
 
         LOGGER.info("Scan starts...\n")
-        LOGGER.info(f"|    # |      pos |    time | count tot. |")
-        LOGGER.info(f"------------------------------------------")
+        LOGGER.info("|    # |      pos |    time | count tot. |")
+        LOGGER.info("------------------------------------------")
         spectra = []
         for (idx, position) in enumerate(np.arange(start, stop, step, dtype=np.float32)):
             try:
