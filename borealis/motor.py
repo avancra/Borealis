@@ -32,6 +32,7 @@ class Motor:
         self._dial_position = self._controller.get_axis_position(self.motor_id)
         self._user_position = self.dial_position + self.offset
         self._is_ready = self._controller.is_axis_ready(self.motor_id)
+        LOGGER.info("Motor %s successfully initialized.", self.motor_name)
 
     def log(self, level, msg, *args, **kwargs):
         """Log a message with prepending the device's alias in front of the message."""
@@ -40,12 +41,10 @@ class Motor:
 
     @property
     def dial_position(self):
-        # TODO: add logging ?? is it necessary?
         return self._controller.get_axis_position(self.motor_id)
 
     @property
     def user_position(self):
-        # TODO: add logging ?? is it necessary?
         return self.dial_position * self._direction_coeff + self.offset
 
     @property
@@ -160,23 +159,28 @@ class Motor:
         spectra : ndarray
         """
         self._check_is_ready()
+        start_time = time.time()
 
-        mcas = []
+        LOGGER.info("Scan starts...\n")
+        LOGGER.info(f"|    # |      pos |    time | count tot. |")
+        LOGGER.info(f"------------------------------------------")
+        spectra = []
         for position in np.arange(start, stop, step, dtype=np.float32):
             try:
                 self.amove(position)
             except RuntimeError as exc:  # TODO: check separately MotorNotReady and SoftLimitError errors once available
                 LOGGER.exception("Scan interrupted at position %.2f", position)
                 raise RuntimeError(f"Scan interrupted at position {position}") from exc
-
+            counts = np.nan
             if det is not None:
                 assert acq_time is not None
                 spectrum = det.acquisition(acq_time)
-                mcas.append(spectrum)
+                spectra.append(spectrum)
             elif acq_time is not None:
                 time.sleep(acq_time)
-
-        return np.array(mcas)
+            LOGGER.info(f"| {idx:5.0f} | {position:8.3f} | {acq_time:7.2f} | {counts:10d} |")
+        LOGGER.info(f"\n   Scan ended succesfully. Total duration was: {time.time()-start_time} s\n")
+        return np.array(spectra)
 
     # TODO: rename to set_home/set_zero
     def set_current_as_zero(self):

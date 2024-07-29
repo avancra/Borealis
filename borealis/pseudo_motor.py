@@ -89,9 +89,13 @@ class PseudoMotor:
 
     def scan(self, start, stop, step, acq_time):
         self._check_is_ready()
+        start_time = time.time()
 
+        LOGGER.info("Scan starts...\n")
+        LOGGER.info(f"|    # |      pos |    time | count tot. |")
+        LOGGER.info(f"------------------------------------------")
         spectra = []
-        for position in np.arange(start, stop, step, dtype=np.float32):
+        for (idx, position) in enumerate(np.arange(start, stop, step, dtype=np.float32)):
             try:
                 self.amove(position)
             except RuntimeError:  # TODO: change to MotorNotReady error once available
@@ -100,16 +104,17 @@ class PseudoMotor:
                     position)
                 raise RuntimeError(f"Scan interrupted at position {position} "
                                    f"due to motor not being ready yet (i.e. not idle).")
-
+            counts = np.nan
             if self._detector is not None:
                 assert acq_time is not None
                 spectrum = self._detector.acquisition(acq_time)
+                counts = spectrum.counts.sum()
                 spectra.append(spectrum)
             elif acq_time is not None:
                 time.sleep(acq_time)
-
+            LOGGER.info(f"| {idx:5.0f} | {position:8.3f} | {acq_time:7.2f} | {counts:10d} |")
+        LOGGER.info(f"\n   Scan ended succesfully. Total duration was: {time.time()-start_time} s\n")
         return np.array(spectra)
-
 
 # class Theta(ABC):
 #
