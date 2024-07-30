@@ -80,9 +80,9 @@ class DummyDet(Detector):
 
     def acquisition(self, acquisition_time: float) -> mca.MCA:
         # this message logs the alais
-        self.log(logging.INFO, 'Log from Dummies! %s %.3f', 'Hi!', 0.225662455)
+        self.log(logging.DEBUG, 'Log from Dummies! %s %.3f', 'Hi!', 0.225662455)
         # This message doesn't add the alias
-        LOGGER.info('Another log from Dummy :)')
+        LOGGER.debug('Another log from Dummy :)')
 
         return mca.MCA(np.arange(10), mca.MCAMetadata.dummy())
 

@@ -15,11 +15,13 @@ LOGGER = logging.getLogger(__name__)
 class PseudoMotor:
     """Class for a basic pseudo-motor, meaning a collection of Motor objects plus 0 or 1 detector."""
 
-    def __init__(self, motors: list[Motor, PseudoMotor], geometries: list, detector: Union[Detector, None] = None) -> None:
+    def __init__(self, alias: str, motors: list[Motor, PseudoMotor], geometries: list, detector: Union[Detector, None] = None) -> None:
         """
 
         Parameters
         ----------
+        alias : str
+            Name of the pseudo-motor
         motors : list[Motor, PseudoMotor]
             List of Motor or PseudoMotor objects.
         geometries : list[fct]
@@ -34,9 +36,17 @@ class PseudoMotor:
                          len(motors), len(geometries))
             raise ValueError(f"Length of motor list ({len(motors)}) does not match the length of "
                              f"geometry list ({len(geometries)})")
+        self._motor_name = alias
         self._motors = motors
         self._conversion_laws = geometries
         self._detector = detector
+        self._position_law = lambda x: x[0].user_position
+
+        LOGGER.info("PseudoMotor %s created.", self._motor_name)
+
+    @property
+    def position(self):
+        return self._position_law(self._motors)
 
     @property
     def is_ready(self):
@@ -47,6 +57,17 @@ class PseudoMotor:
         if self.is_ready is False:
             LOGGER.error("Command interrupted due to all motors not ready yet (i.e. not idle).")
             raise RuntimeError("Command interrupted due to all motors not ready yet (i.e. not idle).")
+
+    def where(self):
+        """
+        Print pseudo-motor position.
+
+        Returns
+        -------
+        str
+
+        """
+        print('{} at : {:6.2f} (user)'.format(self._motor_name, self.position))
 
     def where_all(self):
         """
@@ -89,9 +110,18 @@ class PseudoMotor:
 
     def scan(self, start, stop, step, acq_time):
         self._check_is_ready()
+        start_time = time.time()
 
+        LOGGER.info("Scan starts...\n")
+        idx_col_width = 5
+        pos_col_width = 8
+        time_col_width = 7
+        count_col_width = 10
+        LOGGER.info(f"| {'#':>{idx_col_width}} | {'pos':>{pos_col_width}} | {'time':>{time_col_width}} "
+                    f"| {'count tot.':>{count_col_width}} |")
+        LOGGER.info(f"| {'-'*idx_col_width} | {'-'*pos_col_width} | {'-'*time_col_width} | {'-'*count_col_width} |")
         spectra = []
-        for position in np.arange(start, stop, step, dtype=np.float32):
+        for (idx, position) in enumerate(np.arange(start, stop, step, dtype=np.float32)):
             try:
                 self.amove(position)
             except RuntimeError:  # TODO: change to MotorNotReady error once available
@@ -100,16 +130,18 @@ class PseudoMotor:
                     position)
                 raise RuntimeError(f"Scan interrupted at position {position} "
                                    f"due to motor not being ready yet (i.e. not idle).")
-
+            counts = np.nan
             if self._detector is not None:
                 assert acq_time is not None
                 spectrum = self._detector.acquisition(acq_time)
+                counts = spectrum.counts.sum()
                 spectra.append(spectrum)
             elif acq_time is not None:
                 time.sleep(acq_time)
-
+            LOGGER.info(f"| {idx:{idx_col_width}.0f} | {position:{pos_col_width}.3f} "
+                        f"| {acq_time:{time_col_width}.2f} | {counts:{count_col_width}.0f} |")
+        LOGGER.info(f"\n   Scan ended succesfully. Total duration was: {time.time()-start_time:.2f} s\n")
         return np.array(spectra)
-
 
 # class Theta(ABC):
 #
