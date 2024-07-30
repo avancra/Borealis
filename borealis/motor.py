@@ -140,27 +140,33 @@ class Motor:
         self.log(logging.DEBUG, "moved to %.2f.", self.user_position)
         # LOGGER.debug("%s moved to %f.", self.motor_name, self.user_position)
 
-    def scan(self, start: float, stop: float, step: int, det: Detector = None, acq_time: float = 0.):
+    def scan(self, start: float, stop: float, step: float, det: Detector = None, acq_time: float = 0.):
         """
         Scan, with or without acquisition. Acquisition requires det and acq_time.
 
         Parameters
         ----------
         start : float
+            Start of interval.  The interval includes this value.
         stop : float
+            End of interval.  The interval does not include this value.
         step : float
+            Spacing between values.  For any output `out`, this is the distance
+            between two adjacent values, ``out[i+1] - out[i]``.
         det : borealis.Detector
             if not None, acquisition is done at each motor position.
         acq_time : float
-            if not None, btu det is None, will sleep for this time.
+            If a Detector is defined, will perform an acquisition for this time.
+            If no detector is defined and acq_time > 0, it will sleep for this time.
 
         Returns
         -------
         spectra : ndarray
+            Array of MCA objects.
         """
         self._check_is_ready()
-        start_time = time.time()
 
+        start_time = time.time()
         LOGGER.info("Scan starts...\n")
         idx_col_width = 5
         pos_col_width = 8
@@ -169,6 +175,7 @@ class Motor:
         LOGGER.info(f"| {'#':>{idx_col_width}} | {'pos':>{pos_col_width}} | {'time':>{time_col_width}} "
                     f"| {'count tot.':>{count_col_width}} |")
         LOGGER.info(f"| {'-'*idx_col_width} | {'-'*pos_col_width} | {'-'*time_col_width} | {'-'*count_col_width} |")
+
         spectra = []
         for (idx, position) in enumerate(np.arange(start, stop, step, dtype=np.float32)):
             try:
@@ -176,6 +183,7 @@ class Motor:
             except RuntimeError as exc:  # TODO: check separately MotorNotReady and SoftLimitError errors once available
                 LOGGER.exception("Scan interrupted at position %.2f", position)
                 raise RuntimeError(f"Scan interrupted at position {position}") from exc
+
             counts = np.nan
             if det is not None:
                 assert acq_time > 0.
@@ -184,17 +192,17 @@ class Motor:
                 spectra.append(spectrum)
             elif acq_time > 0.:
                 time.sleep(acq_time)
+
             LOGGER.info(f"| {idx:{idx_col_width}.0f} | {position:{pos_col_width}.3f} "
                         f"| {acq_time:{time_col_width}.2f} | {counts:{count_col_width}.0f} |")
+
         LOGGER.info(f"\n   Scan ended succesfully. Total duration was: {time.time()-start_time:.2f} s\n")
+
         return np.array(spectra)
 
     def set_current_as_zero(self):
-        """Set motor current position to 0."""
+        """Set motor current position as 0."""
         current_position = self.dial_position
         self._controller.set_axis_to_zero(self.motor_id)
         self.log(logging.WARNING, "Dial position reset to 0. Initial dial value was %.2f.",
                  current_position)
-        # LOGGER.warning("Dial position of %s reset to 0.\n"
-        #                "Initial dial value was %f.",
-        #                self.motor_name, current_position)

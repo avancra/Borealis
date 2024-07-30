@@ -174,15 +174,21 @@ class DummyCtrl(Controller):
     """When in need for a controller but no access to a real device."""
 
     def __init__(self):
-        self.position = 0
+        self.position = {}
         LOGGER.info('Dummy controller initialised')
         pass
 
     def move_axis(self, axis_id: str, target: float = 0):
-        self.position = target
+        self.position[axis_id] = target
 
     def get_axis_position(self, axis_id: str):
-        return self.position
+        try:
+            pos = self.position[axis_id]
+        except KeyError:
+            self.position[axis_id] = 0
+            pos = self.position[axis_id]
+
+        return pos
 
     def is_axis_ready(self, axis_id: str):
         return True
