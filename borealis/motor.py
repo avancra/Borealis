@@ -162,8 +162,13 @@ class Motor:
         start_time = time.time()
 
         LOGGER.info("Scan starts...\n")
-        LOGGER.info("|    # |      pos |    time | count tot. |")
-        LOGGER.info("------------------------------------------")
+        idx_col_width = 5
+        pos_col_width = 8
+        time_col_width = 7
+        count_col_width = 10
+        LOGGER.info(f"| {'#':>{idx_col_width}} | {'pos':>{pos_col_width}} | {'time':>{time_col_width}} "
+                    f"| {'count tot.':>{count_col_width}} |")
+        LOGGER.info(f"| {'-'*idx_col_width} | {'-'*pos_col_width} | {'-'*time_col_width} | {'-'*count_col_width} |")
         spectra = []
         for (idx, position) in enumerate(np.arange(start, stop, step, dtype=np.float32)):
             try:
@@ -179,7 +184,8 @@ class Motor:
                 spectra.append(spectrum)
             elif acq_time > 0.:
                 time.sleep(acq_time)
-            LOGGER.info(f"|{idx:5.0f} | {position:8.3f} | {acq_time:7.2f} | {counts:10.0f} |")
+            LOGGER.info(f"| {idx:{idx_col_width}.0f} | {position:{pos_col_width}.3f} "
+                        f"| {acq_time:{time_col_width}.2f} | {counts:{count_col_width}.0f} |")
         LOGGER.info(f"\n   Scan ended succesfully. Total duration was: {time.time()-start_time:.2f} s\n")
         return np.array(spectra)
 
