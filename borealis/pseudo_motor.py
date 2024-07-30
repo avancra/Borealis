@@ -67,8 +67,7 @@ class PseudoMotor:
         str
 
         """
-        print('{} at : {:6.2f} (user)'
-              .format(self._motor_name, self.position))
+        print('{} at : {:6.2f} (user)'.format(self._motor_name, self.position))
 
     def where_all(self):
         """
