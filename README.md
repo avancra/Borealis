@@ -31,8 +31,16 @@ A pseudo-motor energy moves the motor theta to the energy position in keV corres
 to the Bragg angle obeying the Bragg law:
 energy = 12.89842 / 2 * 0.362834 * sin(theta)
 
-This configuration file is run in ipython console:
+One starts the interactive ipython session and instantiate the dummy spectrometer with:
 ```
 ipython -i examples/dummy_spectrometer.py
 
+```
+Within the interactive ipython session, the user can interact with the spectrometer
+directly through call to object methods such as theta.amove() or energy.scan(),
+or via a script. A script example for an energy scan between 17.1 keV and 17.2 keV
+is given in examples\script_dummy_spectrometer.py.
+This script is executed via:
+```
+%run -i examples/script_dummy_spectrometer.py
 ```
