@@ -90,8 +90,6 @@ INI_FILEPATH = "C:/LocalData/renebes/borealis/examples/KETEK_DPP2_usb2.ini"
 det = KetekAXASM('ketek', INI_FILEPATH)
 
 ### INITIALIZATION OF PSEUDO-MOTORS ###
-mono_multiaxis = PseudoMotor([monox, monor], [geo_monox, geo_monor])
-tube_multiaxis = PseudoMotor([tubex, tubey, tuber], [geo_tubex, geo_tubey, geo_tuber])
 theta = PseudoMotor([tubex, tubey, tuber, monox, monor], [geo_tubex, geo_tubey, geo_tuber, geo_monox, geo_monor],det)
 
 ### INITIALIZATION OF X-RAY TUBE ###
