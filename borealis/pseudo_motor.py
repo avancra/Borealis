@@ -113,7 +113,7 @@ class PseudoMotor:
             motor_pos = self._conversion_laws[idx](pos)
             motor.amove(motor_pos)
 
-    def scan(self, start: float, stop: float, step: int, acq_time: float = 0):
+    def scan(self, start: float, stop: float, step: float, acq_time: float = 0):
         """
         Scan, with or without acquisition.
 
