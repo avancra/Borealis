@@ -116,7 +116,6 @@ class KetekAXASM(Detector):
         check_error(ret_code)
 
     def _get_serial_number(self):
-        # TODO: implement
         serial_number = ct.create_string_buffer(16)
         self.HANDEL.xiaBoardOperation(self._chan_no, b'get_serial_number', serial_number)
 

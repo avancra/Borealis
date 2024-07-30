@@ -33,7 +33,7 @@ class Detector(ABC):
         or otherwise populate the alias and serial_number attributes themselves in the sub_class __init__ method.
 
         """
-        self.alias = alias
+        self.alias = alias if alias != "" else self.DET_TYPE
         self.serial_number = 'Unknown'
 
     @abstractmethod
@@ -68,6 +68,10 @@ class Detector(ABC):
         kwargs['stacklevel'] = 2
         LOGGER.log(level, f'{self.alias}: {msg}', *args, **kwargs)
 
+    def __str__(self):
+        return f'{self.__class__.__name__}(alias={self.alias})'
+
+
 
 class DummyDet(Detector):
     """When in need for a detector but no access to a real device."""
@@ -76,21 +80,14 @@ class DummyDet(Detector):
 
     def __init__(self, alias: str = "DummyDet"):
         super().__init__(alias)
-        LOGGER.info('%s detector initialised.', self.alias)
+        LOGGER.info('%s detector initialised.', self)
 
     def acquisition(self, acquisition_time: float) -> mca.MCA:
-        # this message logs the alais
-        self.log(logging.DEBUG, 'Log from Dummies! %s %.3f', 'Hi!', 0.225662455)
-        # This message doesn't add the alias
-        LOGGER.debug('Another log from Dummy :)')
+        self.log(logging.DEBUG, "this message logs the alias")
+        LOGGER.debug('This message does not add the alias')
 
         return mca.MCA(np.arange(10), mca.MCAMetadata.dummy())
 
     def stop(self):
         LOGGER.info('%s controller closed', self.alias)
 
-    def get_det_info(self):
-        """Return the detector info as dictionary (stored in the MCA metadata)."""
-        return {'serial_number': self.serial_number,
-                'alias': self.alias,
-                'type': self.DET_TYPE}

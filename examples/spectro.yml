@@ -4,7 +4,7 @@
 
 detectors:
 # accepted detector types:
-# Ketek : KETEK-AXASM, Ketek
+# Ketek : KETEK-AXASM, Ketek, Ketek-AXAS M
 # Amptek : AmptekCdTe123, AmptekX123, Amptek
 
     - alias: 'EXAF'

@@ -4,6 +4,16 @@ from pathlib import Path
 import pytest
 
 from borealis.detector.amptek import Status
+from borealis.detector.detector_base import DummyDet, Detector
+
+
+def test_detector_base():
+    det = DummyDet('DummyAlias')
+
+    with pytest.raises(TypeError):
+        Detector('detector')
+
+    det.acquisition(5)
 
 
 @pytest.fixture()

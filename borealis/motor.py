@@ -189,7 +189,6 @@ class Motor:
         LOGGER.info(f"\n   Scan ended succesfully. Total duration was: {time.time()-start_time:.2f} s\n")
         return np.array(spectra)
 
-    # TODO: rename to set_home/set_zero
     def set_current_as_zero(self):
         """Set motor current position to 0."""
         current_position = self.dial_position

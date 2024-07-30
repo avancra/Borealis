@@ -29,6 +29,7 @@ class PseudoMotor:
         detector
             Instance of Detector.
         """
+        # TODO: change list to tuple to avoid changing the motor order by mistake ? same for geometries
         try:
             assert len(motors) == len(geometries)
         except AssertionError:
