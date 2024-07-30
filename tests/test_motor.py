@@ -32,6 +32,10 @@ def test_motor_soft_limits():
 
     mot.set_current_as_zero()
 
+###############################################################
+### Tests below are only aimed to check the console output  ###
+###############################################################
+
 def test_motor_where():
     """
     Check the output of the where method.
