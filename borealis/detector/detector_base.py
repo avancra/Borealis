@@ -72,14 +72,13 @@ class Detector(ABC):
         return f'{self.__class__.__name__}(alias={self.alias})'
 
 
-
 class DummyDet(Detector):
     """When in need for a detector but no access to a real device."""
 
     DET_TYPE = "Dummy"
 
     def __init__(self, alias: str = "DummyDet"):
-        super().__init__(alias)
+        super().__init__(alias=alias)
         LOGGER.info('%s detector initialised.', self)
 
     def acquisition(self, acquisition_time: float) -> mca.MCA:

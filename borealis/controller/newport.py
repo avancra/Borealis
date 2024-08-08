@@ -19,14 +19,24 @@ from borealis.controller.controller_base import Controller
 class NewportXPS(Controller):
     """Class to communicate with Newport controller."""
 
-    def __init__(self, ip_address, port=5001, timeout=1000):
+    CTRL_TYPE = "NewportXPS"
+
+    def __init__(self, ip_address, alias="", port=5001, timeout=1000):
         """Initialise the connection to the device."""
+        self._ip_address = ip_address
+        self._port = port
+        self._timeout = timeout
         self._xps = xps.XPS()
         ans = self._xps.OpenInstrument(ip_address, port, timeout)
         LOGGER.debug("Opening connection on port %d at IP address %s",
                      port, ip_address)
-        self._ctrl_name = f'Newport {ans}'
-        LOGGER.info("%s successfully initialised", self._ctrl_name)
+        alias = alias if alias !='' else f'Newport {ans}'
+        super().__init__(alias=alias)
+        LOGGER.info("%s (type %s) successfully initialised", self.alias, self.CTRL_TYPE)
+
+    def __str__(self):
+        return (f'{self.__class__.__name__}(ip_address={self._ip_address}, alias={self.alias}, '
+                f'port={self._port}. timeout={self._timeout})')
 
     # -------------  Overridden methods ------------- #
     def close(self):

@@ -22,9 +22,15 @@ class Controller(ABC):
 
     """
 
+    CTRL_TYPE = "Undefined"
+
     @abstractmethod
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, alias: str = "", **kwargs):
         """ABC method for controller initialisation. (derived must override)."""
+        self.alias = alias if alias != "" else self.CTRL_TYPE
+
+    def __str__(self):
+        return f'{self.__class__.__name__}(alias={self.alias})'
 
     # @abstractmethod
     # def close(self):
@@ -167,16 +173,18 @@ class Controller(ABC):
         """Log a message with prepending the device's alias in front of the message."""
         kwargs['stacklevel'] = 2
         # LOGGER.log(level, f'{self.alias}: {msg}', *args, **kwargs)
-        LOGGER.log(level, f'Controller: {msg}', *args, **kwargs)
+        LOGGER.log(level, f'{self.alias}: {msg}', *args, **kwargs)
 
 
 class DummyCtrl(Controller):
     """When in need for a controller but no access to a real device."""
 
-    def __init__(self):
+    CTRL_TYPE = "Dummy Controller"
+
+    def __init__(self, alias: str = "DummyCtrl") -> None:
+        super().__init__(alias=alias)
         self.position = {}
-        LOGGER.info('Dummy controller initialised')
-        pass
+        LOGGER.info('%s (%s) initialised.', self.alias, self.CTRL_TYPE)
 
     def move_axis(self, axis_id: str, target: float = 0):
         self.position[axis_id] = target
@@ -185,6 +193,7 @@ class DummyCtrl(Controller):
         try:
             pos = self.position[axis_id]
         except KeyError:
+
             self.position[axis_id] = 0
             pos = self.position[axis_id]
 
