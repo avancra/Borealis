@@ -22,7 +22,7 @@ class KetekAXASM(Detector):
     DET_TYPE = "Ketek-AXAS M"
 
     HANDEL = ct.CDLL(
-        (Path(__file__).parent / "lib/handel/handel.dll").as_posix())
+        (Path(__file__).parent.parent / "lib/handel/handel.dll").as_posix())
     MAXALIAS_LEN = 80
 
     def __init__(self, alias, ini_filepath):
