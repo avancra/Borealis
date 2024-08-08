@@ -21,7 +21,7 @@ class Motor:
     """Motor generic class."""
 
     def __init__(self, alias: str, motor_id: str, motor_offset: float, controller: Controller,
-                 positive_direction: bool = True, soft_limit_low:  float = -inf, soft_limit_high: float = inf):
+                 positive_direction: bool = True, soft_limit_low: float = -inf, soft_limit_high: float = inf) -> None:
         self._controller = controller
         self.motor_name = alias
         self.motor_id = motor_id
@@ -73,24 +73,25 @@ class Motor:
             # LOGGER.error('Command interrupted due to motor not ready yet (i.e. not idle).')
             raise NotReadyError(self.motor_name)
 
-    def check_soft_limits(self, dial: float) -> None:
+    def check_soft_limits(self, target_user: float) -> None:
         """
         Check if dial value is within the limits (inclusive).
 
         Parameters
         ----------
-        dial : float
-            Target position in dial unit.
+        target_user : float
+            Target position in user unit.
 
         Raises
         ------
         SoftLimitError when dial is outside the allowed range.
         """
+        target_dial = (target_user - self.offset) / self._direction_coeff
         try:
-            assert self._limit_low <= dial <= self._limit_high
+            assert self._limit_low <= target_dial <= self._limit_high
         except AssertionError:
-            self.log(logging.ERROR, 'Soft Limit Error: the dial position %.2f is outside the available soft limit range [%.2f : %.2f]', dial, self._limit_low, self._limit_high)
-            raise SoftLimitError(dial, self.motor_name, self._limit_low, self._limit_high)
+            self.log(logging.ERROR, 'Soft Limit Error: the dial position %.2f is outside the available soft limit range [%.2f : %.2f]', target_dial, self._limit_low, self._limit_high)
+            raise SoftLimitError(target_dial, self.motor_name, self._limit_low, self._limit_high)
 
     def amove(self, user_position: float):
         """
@@ -107,14 +108,12 @@ class Motor:
 
         """
         self._check_is_ready()
+        self.check_soft_limits(user_position)
 
         dial = (user_position - self.offset) / self._direction_coeff
-        self.check_soft_limits(dial)
-
         self._controller.move_axis(self.motor_id, dial)
         self._controller.wait_motion_end(self.motor_id, dial)
         self.log(logging.DEBUG, "moved to %.2f.", self.user_position)
-        # LOGGER.debug("%s moved to %f.", self.motor_name, self.user_position)
 
     def rmove(self, rel_position: float):
         """
@@ -131,14 +130,12 @@ class Motor:
 
         """
         self._check_is_ready()
+        self.check_soft_limits(self.user_position + rel_position)
 
         dial = self.dial_position + rel_position * self._direction_coeff
-        self.check_soft_limits(dial)
-
         self._controller.move_axis(self.motor_id, dial)
         self._controller.wait_motion_end(self.motor_id, dial)
         self.log(logging.DEBUG, "moved to %.2f.", self.user_position)
-        # LOGGER.debug("%s moved to %f.", self.motor_name, self.user_position)
 
     def scan(self, start: float, stop: float, step: float, det: Detector = None, acq_time: float = 0.):
         """

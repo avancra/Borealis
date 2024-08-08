@@ -193,7 +193,6 @@ class DummyCtrl(Controller):
         try:
             pos = self.position[axis_id]
         except KeyError:
-
             self.position[axis_id] = 0
             pos = self.position[axis_id]
 

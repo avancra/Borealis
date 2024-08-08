@@ -9,6 +9,7 @@ import math
 import pytest
 
 from borealis.controller.controller_base import DummyCtrl
+from borealis.exceptions import SoftLimitError
 from borealis.motor import Motor
 from borealis.pseudo_motor import PseudoMotor
 from borealis.detector.detector_base import DummyDet
@@ -103,6 +104,30 @@ def test_postion_law_conversion():
     assert pm_energy.user_position == pytest.approx(18.42)
 
     pm_energy.scan(18.4, 18.5, 0.01, acq_time=0.1)
+
+
+def test_soft_limit():
+    ctrl = DummyCtrl()
+    mot1 = Motor('DummyMotor1', '1', 30, ctrl, soft_limit_low=-25, soft_limit_high=25)
+    mot2 = Motor('DummyMotor2', '2', 0, ctrl)
+    geo1 = lambda x: x * 10
+    geo2 = lambda x: x
+    pos_law = lambda x: x[0].user_position / 10
+    pm_theta = PseudoMotor("pseudo", [mot1, mot2], [geo1, geo2], position_law=pos_law)
+
+    pm_theta.amove(5)
+    with pytest.raises(SoftLimitError):
+        pm_theta.amove(10)
+
+    theta_to_energy = lambda x: x * 2
+    energy_to_theta = lambda x: x / 2
+
+    pm_energy = PseudoMotor('energy', [pm_theta], [energy_to_theta],
+                            position_law=theta_to_energy)
+    pm_energy.amove(2)
+
+    with pytest.raises(SoftLimitError):
+        pm_energy.amove(20)
 
 
 ###############################################################
