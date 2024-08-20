@@ -64,7 +64,8 @@ class Motor:
         str
 
         """
-        print('{} at : {:6.2f} (dial) | {:6.2f} (user)'.format(self.motor_name, self.dial_position, self.user_position))
+        print(f'{self.motor_name:20} at : {self.user_position:6.2f} (user)')
+
 
     def _check_is_ready(self):
         # TODO: change to MotorNotReady error once available

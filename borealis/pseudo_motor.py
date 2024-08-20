@@ -72,17 +72,7 @@ class PseudoMotor:
         str
 
         """
-        print('{} at : {:6.2f} (user)'.format(self.motor_name, self.user_position))
-
-    def where_all(self):
-        """
-        Print individual motor dial / user positions.
-
-        Returns
-        -------
-        str
-
-        """
+        print(f'{self.motor_name:20} at : {self.user_position:6.2f} (user)')
         for motor in self._motors:
             motor.where()
 

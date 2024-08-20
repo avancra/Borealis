@@ -79,7 +79,8 @@ def test_motor_where():
     Check the output of the where method.
 
     The motor is first moved to a position of 10.
-    Position of motor showed in the console output are 10 (user) / 13 (dial).
+    Example output:
+    DummyMotor           at :  10.00 (user)
 
     """
     ctrl = DummyCtrl()

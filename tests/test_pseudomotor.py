@@ -134,12 +134,16 @@ def test_soft_limit():
 ### Tests below are only aimed to check the console output  ###
 ###############################################################
 
-def test_pseudomotor_where():
+def test_pseudomotor_where_single_pm():
     """
-    Check the output of the where method.
+    Check the output of the where method for a single pseudomotor composed of motors only.
 
     The pseudomotor is first moved to a position of 42.
-    Pseudomotor position in the console output is 42 (user).
+
+    example output:
+    DummyPseudoMotor     at :  42.00 (user)
+    DummyMotor1          at :  42.00 (user)
+    DummyMotor2          at :   0.00 (user)
 
     """
     ctrl = DummyCtrl()
@@ -155,16 +159,19 @@ def test_pseudomotor_where():
     pseudo.where()
 
 
-def test_pseudomotor_where_all():
+def test_pseudomotor_where_composed_pm():
     """
-    Check the output of the where_all method.
+    Check the output of the where method for a PM composed of both a pseudomotor and some motors.
 
     The tested pseudomotor is composed of one pseudomotor and two motors.
-    Positions in the console output are:
-    Pseudomotor position is -1.00 (user).
-    Motor 1 position is 0.00 (dial) | -1.00 (user)
-    Motor 2 position is 0.00 (dial) |  2.00 (user)
 
+    example output:
+    DummyPseudoMotor2    at :  -1.00 (user)
+    DummyPseudoMotor1    at :  -1.00 (user)
+    DummyMotor1          at :  -1.00 (user)
+    DummyMotor2          at :   2.00 (user)
+    DummyMotor1          at :  -1.00 (user)
+    DummyMotor2          at :   2.00 (user)
 
     """
     ctrl = DummyCtrl()
@@ -174,7 +181,7 @@ def test_pseudomotor_where_all():
     position_law = lambda x: x[0].user_position
     pseudo1 = PseudoMotor('DummyPseudoMotor1', [mot1, mot2], [geo, geo],position_law)
     pseudo2 = PseudoMotor('DummyPseudoMotor2', [pseudo1, mot1, mot2], [geo, geo, geo], position_law)
-    pseudo2.where_all()
+    pseudo2.where()
 
 
 def test_pseudomotor_scan():
