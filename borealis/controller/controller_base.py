@@ -22,14 +22,13 @@ class Controller(ABC):
 
     """
 
-    CTRL_TYPE = "Undefined"
-
     @abstractmethod
     def __init__(self, *args, alias: str = "", **kwargs):
         """ABC method for controller initialisation. (derived must override)."""
-        self.alias = alias if alias != "" else self.CTRL_TYPE
+        self.alias = alias if alias != "" else "Undefined"
 
     def __str__(self):
+        """Custom __str__ method for Controller class (DO NOT OVERWRITE THIS METHOD)."""
         return f'{self.__class__.__name__}(alias={self.alias})'
 
     # @abstractmethod
@@ -179,12 +178,10 @@ class Controller(ABC):
 class DummyCtrl(Controller):
     """When in need for a controller but no access to a real device."""
 
-    CTRL_TYPE = "Dummy Controller"
-
-    def __init__(self, alias: str = "DummyCtrl") -> None:
+    def __init__(self, alias: str = "Dummy Controller") -> None:
         super().__init__(alias=alias)
         self.position = {}
-        LOGGER.info('%s (%s) initialised.', self.alias, self.CTRL_TYPE)
+        LOGGER.info('%s initialised.', self)
 
     def move_axis(self, axis_id: str, target: float = 0):
         self.position[axis_id] = target

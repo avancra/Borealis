@@ -7,7 +7,7 @@ from borealis.detector.detector_base import DummyDet, Detector
 def test_controller_base():
     """The base class can not be instantiated."""
     with pytest.raises(TypeError):
-        Controller('detector')
+        Controller(alias='detector')
 
 
 def test_dummy_controller():

@@ -4,7 +4,7 @@ Created on Tue Mar 23 18:54:19 2021.
 
 @author: A. Vancraeyenest
 """
-
+import logging
 from operator import xor, and_
 from time import sleep
 
@@ -15,12 +15,11 @@ import numpy as np
 from borealis.detector.detector_base import Detector
 from borealis.mca import MCAMetadata, MCA
 
+LOGGER = logging.getLogger(__name__)
+
 
 class AmptekCdTe123(Detector):
     """Interface for CdTe X-123 detector from Amptek."""
-
-    DET_TYPE = 'Amptek-CdTe 123'
-
     vendor_id = 0x10C4
     product_id = 0x842A
     max_allowed_acq_time = 99999999.9
@@ -28,8 +27,7 @@ class AmptekCdTe123(Detector):
     min_allowed_gain = 0.750
     max_allowed_gain = 250
 
-    def __init__(self, alias):
-        """Initialise the detector."""
+    def __init__(self, alias: str = 'Amptek-CdTe 123'):
         """Initialise the detector."""
         super().__init__(alias)
         self._device = usb.core.find(idVendor=self.vendor_id,
@@ -53,7 +51,8 @@ class AmptekCdTe123(Detector):
                 == usb.util.ENDPOINT_IN)
 
         self.serial_number = self._get_serial_number()
-        print('Detector Amptek successfully initialised')
+
+        LOGGER.info("Detector %s successfully initialised", self)
 
     def acquisition(self, acquisition_time):
         """Start an acquisition and return corresponding Spectrum object."""

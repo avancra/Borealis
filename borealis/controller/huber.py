@@ -17,19 +17,16 @@ LOGGER = logging.getLogger(__name__)
 class HuberSMC(Controller):
     """Class to communicate with Huber controller."""
 
-    CTRL_TYPE = "HuberSMC"
-
-    def __init__(self, ip_address, port=1234, alias=""):
+    def __init__(self, ip_address: str, port: int = 1234, alias: str = ""):
         """Initialise the connection to the device."""
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.connect((ip_address, port))
-        LOGGER.debug("Socket connection open on port %d at IP address %s",
-                     port, ip_address)
+        LOGGER.debug("Opening connection on port %d at IP address %s", port, ip_address)
 
         ans = self._read().decode().strip('\r\n')
-        alias = alias if alias !='' else f'Huber {ans}'
+        alias = alias if alias !='' else f'HuberSMC {ans}'
         super().__init__(alias=alias)
-        LOGGER.info("%s (type %s) successfully initialised", self.alias, self.CTRL_TYPE)
+        LOGGER.info("%s successfully initialised", self)
 
     # -------------  Overridden methods ------------- #
     def move_axis(self, axis_id: str, target: float = 0):
