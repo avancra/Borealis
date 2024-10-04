@@ -155,7 +155,7 @@ class PseudoMotor:
             elif acq_time > 0.:
                 time.sleep(acq_time)
 
-            LOGGER.info(f"| {idx:{idx_col_width}.0f} | {position:{pos_col_width}.3f} "
+            LOGGER.info(f"| {idx:{idx_col_width}.0f} | {position:{pos_col_width}.4f} "
                         f"| {acq_time:{time_col_width}.2f} | {counts:{count_col_width}.0f} |")
 
         LOGGER.info(f"\n   Scan ended succesfully. Total duration was: {time.time()-start_time:.2f} s\n")
