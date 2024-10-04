@@ -5,8 +5,9 @@ Control and acquisition software for X-ray emission and absorption spectrometers
 ## Purpose
 
 The purpose of this software is to provide the required tools to control all
-components of the spectrometer (i.e. motors and their controllers, X-ray source
- and detectors) in order to perform an acquisition (i.e. scan).
+components of an X-ray emission and absorption spectrometer (i.e. motors and
+ their controllers, X-ray source  and detectors) in order to perform an
+ acquisition (e.g. collecting a spectrum).
 
 ## Installation
 
@@ -26,10 +27,15 @@ An example of configuration file for a dummy spectrometer is given in
 \examples\dummy_spectrometer.py.
 This dummy spectrometer consists in one dummy controller, a dummy detector and
 a Si(12 8 4) analyzer crystal.
-A step motor theta is positionning the spectrometer at a specific Bragg angle theta.
-A pseudo-motor energy moves the motor theta to the energy position in keV corresponding
-to the Bragg angle obeying the Bragg law:
+A step motor "mono" is positioning the monochromator, with an offset of -3 degrees.
+A pseudo-motor "theta" moves the motor "mono" in order to reach a specific Bragg
+angle theta, according to a positioning law theta_to_mono.
+A pseudo-motor "energy" moves the pseudo-motor "theta" to the energy position
+ in keV corresponding to the Bragg angle obeying the Bragg law:
 energy = 12.89842 / 2 * 0.362834 * sin(theta)
+"theta" and "energy" are both linked to a detector, allowing to perform an acquisition
+while scanning, i.e. at each point of a user-define trajectory.
+A pseudo-motor "energy_no_det" is identical to "energy", but is linked to no detector.
 
 One starts the interactive ipython session and instantiate the dummy spectrometer with:
 ```
