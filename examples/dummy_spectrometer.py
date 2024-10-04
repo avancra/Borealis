@@ -8,8 +8,9 @@ When in its repository, launched using : ipython -i dummy_spectrometer.py
 """
 
 import sys
+from pathlib import Path
 
-sys.path.append("C:\\LocalData\\Borealis")
+sys.path.append((Path(__file__).absolute().parent.parent).as_posix())
 
 import math
 
