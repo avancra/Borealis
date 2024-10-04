@@ -17,17 +17,16 @@ LOGGER = logging.getLogger(__name__)
 class HuberSMC(Controller):
     """Class to communicate with Huber controller."""
 
-    def __init__(self, ip_address, port=1234):
+    def __init__(self, ip_address: str, port: int = 1234, alias: str = ""):
         """Initialise the connection to the device."""
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.connect((ip_address, port))
-        LOGGER.debug("Socket connection open on port %d at IP address %s",
-                     port, ip_address)
+        LOGGER.debug("Opening connection on port %d at IP address %s", port, ip_address)
 
-        msg = self._read().decode().strip('\r\n')
-        self._name = f'Huber {msg}'
-        LOGGER.info("%s successfully initialised",
-                    self._name)
+        ans = self._read().decode().strip('\r\n')
+        alias = alias if alias !='' else f'HuberSMC {ans}'
+        super().__init__(alias=alias)
+        LOGGER.info("%s successfully initialised", self)
 
     # -------------  Overridden methods ------------- #
     def move_axis(self, axis_id: str, target: float = 0):
@@ -35,7 +34,7 @@ class HuberSMC(Controller):
         self._write(f'goto{axis_id}:{target}')
         self.wait_motion_end(axis_id, target)
         LOGGER.debug("%s: Moving axis %s to %f (dial).",
-                     self._name, axis_id, target)
+                     self.alias, axis_id, target)
 
     def get_axis_position(self, axis_id: str):
         """Get the dial position for a single axis."""
@@ -48,10 +47,10 @@ class HuberSMC(Controller):
         status = self.get_axis_status(axis_id)['axis ready']
         if status == '1':
             LOGGER.debug("%s: axis %s ready (i.e. idle).",
-                         self._name, axis_id)
+                         self.alias, axis_id)
         else:
             LOGGER.debug("%s: axis %s not ready yet (i.e. not idle).",
-                         self._name, axis_id)
+                         self.alias, axis_id)
         return status == '1'
 
     def is_limit_switch_activated(self, axis_id: str):
@@ -63,18 +62,18 @@ class HuberSMC(Controller):
             if status['limit switch status'] == '1':
                 # print('Limit switch [-] activated')
                 LOGGER.info("%s: Limit switch [-] of axis %s activated.",
-                            self._name, axis_id)
+                            self.alias, axis_id)
             elif status['limit switch status'] == '2':
                 # print('Limit switch [+] activated')
                 LOGGER.info("%s: Limit switch [+] of axis %s activated.",
-                            self._name, axis_id)
+                            self.alias, axis_id)
             return True
 
     def set_axis_to_zero(self, axis_id: str):
         """Set axis position to 0."""
         self._write(f'zero{axis_id}')
         LOGGER.debug("%s: Axis %s position set to 0 (home).",
-                     self._name, axis_id)
+                     self.alias, axis_id)
 
     # -------------  Own methods ------------- #
 
@@ -93,7 +92,7 @@ class HuberSMC(Controller):
         status = self.get_axis_status(axis_id)
         self.clean_axis_error(axis_id)
         LOGGER.debug("%s: Axis %s error: %s %s",
-                     self._name, axis_id,
+                     self.alias, axis_id,
                      status['error number'], status['error message'])
         return status['error number'], status['error message']
 
@@ -101,7 +100,7 @@ class HuberSMC(Controller):
         """Clean axis related errors."""
         self._write(f'cerr{axis_id}')
         LOGGER.debug("%s: Error cleared for axis %s.",
-                     self._name, axis_id)
+                     self.alias, axis_id)
 
     def get_axis_status(self, axis_id: str):
         self._write(f'?status{axis_id}')

@@ -21,7 +21,7 @@ class Motor:
     """Motor generic class."""
 
     def __init__(self, alias: str, motor_id: str, motor_offset: float, controller: Controller,
-                 positive_direction: bool = True, soft_limit_low:  float = -inf, soft_limit_high: float = inf):
+                 positive_direction: bool = True, soft_limit_low: float = -inf, soft_limit_high: float = inf) -> None:
         self._controller = controller
         self.motor_name = alias
         self.motor_id = motor_id
@@ -32,6 +32,7 @@ class Motor:
         self._dial_position = self._controller.get_axis_position(self.motor_id)
         self._user_position = self.dial_position + self.offset
         self._is_ready = self._controller.is_axis_ready(self.motor_id)
+        LOGGER.info("Motor %s created.", self.motor_name)
 
     def log(self, level, msg, *args, **kwargs):
         """Log a message with prepending the device's alias in front of the message."""
@@ -40,12 +41,10 @@ class Motor:
 
     @property
     def dial_position(self):
-        # TODO: add logging ?? is it necessary?
         return self._controller.get_axis_position(self.motor_id)
 
     @property
     def user_position(self):
-        # TODO: add logging ?? is it necessary?
         return self.dial_position * self._direction_coeff + self.offset
 
     @property
@@ -65,7 +64,8 @@ class Motor:
         str
 
         """
-        print('{} at : {:6.2f} (dial) | {:6.2f} (user)'.format(self.motor_name, self.dial_position, self.user_position))
+        print(f'{self.motor_name:20} at : {self.user_position:6.2f} (user)')
+
 
     def _check_is_ready(self):
         # TODO: change to MotorNotReady error once available
@@ -74,24 +74,25 @@ class Motor:
             # LOGGER.error('Command interrupted due to motor not ready yet (i.e. not idle).')
             raise NotReadyError(self.motor_name)
 
-    def check_soft_limits(self, dial: float) -> None:
+    def check_soft_limits(self, target_user: float) -> None:
         """
         Check if dial value is within the limits (inclusive).
 
         Parameters
         ----------
-        dial : float
-            Target position in dial unit.
+        target_user : float
+            Target position in user unit.
 
         Raises
         ------
         SoftLimitError when dial is outside the allowed range.
         """
+        target_dial = (target_user - self.offset) / self._direction_coeff
         try:
-            assert self._limit_low <= dial <= self._limit_high
+            assert self._limit_low <= target_dial <= self._limit_high
         except AssertionError:
-            self.log(logging.ERROR, 'Soft Limit Error: the dial position %.2f is outside the available soft limit range [%.2f : %.2f]', dial, self._limit_low, self._limit_high)
-            raise SoftLimitError(dial, self.motor_name, self._limit_low, self._limit_high)
+            self.log(logging.ERROR, 'Soft Limit Error: the dial position %.2f is outside the available soft limit range [%.2f : %.2f]', target_dial, self._limit_low, self._limit_high)
+            raise SoftLimitError(target_dial, self.motor_name, self._limit_low, self._limit_high)
 
     def amove(self, user_position: float):
         """
@@ -108,14 +109,12 @@ class Motor:
 
         """
         self._check_is_ready()
+        self.check_soft_limits(user_position)
 
         dial = (user_position - self.offset) / self._direction_coeff
-        self.check_soft_limits(dial)
-
         self._controller.move_axis(self.motor_id, dial)
         self._controller.wait_motion_end(self.motor_id, dial)
         self.log(logging.DEBUG, "moved to %.2f.", self.user_position)
-        # LOGGER.debug("%s moved to %f.", self.motor_name, self.user_position)
 
     def rmove(self, rel_position: float):
         """
@@ -132,59 +131,76 @@ class Motor:
 
         """
         self._check_is_ready()
+        self.check_soft_limits(self.user_position + rel_position)
 
         dial = self.dial_position + rel_position * self._direction_coeff
-        self.check_soft_limits(dial)
-
         self._controller.move_axis(self.motor_id, dial)
         self._controller.wait_motion_end(self.motor_id, dial)
         self.log(logging.DEBUG, "moved to %.2f.", self.user_position)
-        # LOGGER.debug("%s moved to %f.", self.motor_name, self.user_position)
 
-    def scan(self, start: float, stop: float, step: int, det: Detector = None, acq_time: float = None):
+    def scan(self, start: float, stop: float, step: float, det: Detector = None, acq_time: float = 0.):
         """
         Scan, with or without acquisition. Acquisition requires det and acq_time.
 
         Parameters
         ----------
         start : float
+            Start of interval.  The interval includes this value.
         stop : float
+            End of interval.  The interval does not include this value.
         step : float
+            Spacing between values.  For any output `out`, this is the distance
+            between two adjacent values, ``out[i+1] - out[i]``.
         det : borealis.Detector
             if not None, acquisition is done at each motor position.
         acq_time : float
-            if not None, btu det is None, will sleep for this time.
+            If a Detector is defined, will perform an acquisition for this time.
+            If no detector is defined and acq_time > 0, it will sleep for this time.
 
         Returns
         -------
         spectra : ndarray
+            Array of MCA objects.
         """
         self._check_is_ready()
 
-        mcas = []
-        for position in np.arange(start, stop, step, dtype=np.float32):
+        start_time = time.time()
+        LOGGER.info("Scan starts...\n")
+        idx_col_width = 5
+        pos_col_width = 8
+        time_col_width = 7
+        count_col_width = 10
+        LOGGER.info(f"| {'#':>{idx_col_width}} | {'pos':>{pos_col_width}} | {'time':>{time_col_width}} "
+                    f"| {'count tot.':>{count_col_width}} |")
+        LOGGER.info(f"| {'-'*idx_col_width} | {'-'*pos_col_width} | {'-'*time_col_width} | {'-'*count_col_width} |")
+
+        spectra = []
+        for (idx, position) in enumerate(np.arange(start, stop, step, dtype=np.float32)):
             try:
                 self.amove(position)
             except RuntimeError as exc:  # TODO: check separately MotorNotReady and SoftLimitError errors once available
                 LOGGER.exception("Scan interrupted at position %.2f", position)
                 raise RuntimeError(f"Scan interrupted at position {position}") from exc
 
+            counts = np.nan
             if det is not None:
-                assert acq_time is not None
+                assert acq_time > 0.
                 spectrum = det.acquisition(acq_time)
-                mcas.append(spectrum)
-            elif acq_time is not None:
+                counts = spectrum.counts.sum()
+                spectra.append(spectrum)
+            elif acq_time > 0.:
                 time.sleep(acq_time)
 
-        return np.array(mcas)
+            LOGGER.info(f"| {idx:{idx_col_width}.0f} | {position:{pos_col_width}.3f} "
+                        f"| {acq_time:{time_col_width}.2f} | {counts:{count_col_width}.0f} |")
 
-    # TODO: rename to set_home/set_zero
+        LOGGER.info(f"\n   Scan ended succesfully. Total duration was: {time.time()-start_time:.2f} s\n")
+
+        return np.array(spectra)
+
     def set_current_as_zero(self):
-        """Set motor current position to 0."""
+        """Set motor current position as 0."""
         current_position = self.dial_position
         self._controller.set_axis_to_zero(self.motor_id)
         self.log(logging.WARNING, "Dial position reset to 0. Initial dial value was %.2f.",
                  current_position)
-        # LOGGER.warning("Dial position of %s reset to 0.\n"
-        #                "Initial dial value was %f.",
-        #                self.motor_name, current_position)

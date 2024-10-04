@@ -87,11 +87,9 @@ monor = Motor(monor_name, monor_channel, monor_offset, _ctrler)
 ### INITIALIZATION OF DETECTORS ###
 
 INI_FILEPATH = "C:/LocalData/renebes/borealis/examples/KETEK_DPP2_usb2.ini"
-det = KetekAXASM('ketek', INI_FILEPATH)
+det = KetekAXASM(ini_filepath=INI_FILEPATH, alias='ketek')
 
 ### INITIALIZATION OF PSEUDO-MOTORS ###
-mono_multiaxis = PseudoMotor([monox, monor], [geo_monox, geo_monor])
-tube_multiaxis = PseudoMotor([tubex, tubey, tuber], [geo_tubex, geo_tubey, geo_tuber])
 theta = PseudoMotor([tubex, tubey, tuber, monox, monor], [geo_tubex, geo_tubey, geo_tuber, geo_monox, geo_monor],det)
 
 ### INITIALIZATION OF X-RAY TUBE ###

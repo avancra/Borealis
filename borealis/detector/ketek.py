@@ -5,6 +5,7 @@ Created on Sat Jan  8 12:54:49 2022.
 @author: A. Vancraeyenest
 """
 import ctypes as ct
+import logging
 from ctypes import byref
 from pathlib import Path
 from time import sleep
@@ -15,17 +16,16 @@ from borealis.detector.ketek_error import check_error
 from borealis.detector.detector_base import Detector
 from borealis.mca import MCA, MCAMetadata
 
+LOGGER = logging.getLogger(__name__)
+
 
 class KetekAXASM(Detector):
     """Class to operate KETEK detector AXAS-M."""
-
-    DET_TYPE = "Ketek-AXAS M"
-
     HANDEL = ct.CDLL(
-        (Path(__file__).parent / "lib/handel/handel.dll").as_posix())
+        (Path(__file__).parent.parent / "lib/handel/handel.dll").as_posix())
     MAXALIAS_LEN = 80
 
-    def __init__(self, alias, ini_filepath):
+    def __init__(self, ini_filepath: str, alias:str = "Ketek-AXAS M"):
         """Initialise the detector."""
         super().__init__(alias)
         self._ini_file = self._validate_ini(ini_filepath)
@@ -33,7 +33,8 @@ class KetekAXASM(Detector):
         self._initialise(self._ini_file)
         self._start_system()
         self.serial_number = self._get_serial_number()
-        print('Detector Ketek successfully initialised')
+
+        LOGGER.info("Detector %s successfully initialised", self)
 
     def acquisition(self, acquisition_time):
         """Start an acquisition and return corresponding Spectrum object."""
@@ -116,7 +117,6 @@ class KetekAXASM(Detector):
         check_error(ret_code)
 
     def _get_serial_number(self):
-        # TODO: implement
         serial_number = ct.create_string_buffer(16)
         self.HANDEL.xiaBoardOperation(self._chan_no, b'get_serial_number', serial_number)
 

@@ -4,29 +4,32 @@ Created on Wed Mar 15 16:42:03 2023.
 
 @author: A. Vancraeyenest
 """
-
+import logging
 import sys
+
 sys.path.append(r"C:\Windows\Microsoft.NET\assembly\GAC_64\Newport.XPS.CommandInterface\v4.0_2.3.0.0__9a267756cf640dcf")
+
 import clr
 clr.AddReference("Newport.XPS.CommandInterface")
 import CommandInterfaceXPS as xps
-import logging
-LOGGER = logging.getLogger(__name__)
 
 from borealis.controller.controller_base import Controller
+
+LOGGER = logging.getLogger(__name__)
 
 
 class NewportXPS(Controller):
     """Class to communicate with Newport controller."""
 
-    def __init__(self, ip_address, port=5001, timeout=1000):
+    def __init__(self, ip_address: str, alias: str = "", port: int = 5001, timeout: int = 1000):
         """Initialise the connection to the device."""
         self._xps = xps.XPS()
         ans = self._xps.OpenInstrument(ip_address, port, timeout)
-        LOGGER.debug("Opening connection on port %d at IP address %s",
-                     port, ip_address)
-        self._ctrl_name = f'Newport {ans}'
-        LOGGER.info("%s successfully initialised", self._ctrl_name)
+        LOGGER.debug("Opening connection on port %d at IP address %s with timeout %d)",
+                     port, ip_address, timeout)
+        alias = alias if alias != '' else f'NewportXPS {ans}'
+        super().__init__(alias=alias)
+        LOGGER.info("%s successfully initialised", self)
 
     # -------------  Overridden methods ------------- #
     def close(self):

@@ -4,18 +4,19 @@ from pathlib import Path
 import pytest
 
 from borealis.detector.amptek import Status
+from borealis.detector.detector_base import DummyDet, Detector
 
 
 @pytest.fixture()
 def get_raw_status():
-    with Path('status_data.pickle').open('rb') as fi:
+    with (Path(__file__).parent /'status_data.pickle').open('rb') as fi:
         statuses = pickle.load(fi)
     return statuses['raw_status']
 
 
 @pytest.fixture
 def get_raw_spectrum_status():
-    with Path('status_data.pickle').open('rb') as fi:
+    with  (Path(__file__).parent /'status_data.pickle').open('rb') as fi:
         statuses = pickle.load(fi)
     return statuses['spectrum_status']
 
