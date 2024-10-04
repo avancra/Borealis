@@ -7,6 +7,10 @@ When in its repository, launched using : ipython -i dummy_spectrometer.py
 @author: renebes
 """
 
+import sys
+
+sys.path.append("C:\\LocalData\\Borealis")
+
 import math
 
 from borealis.controller.controller_base import DummyCtrl
@@ -22,17 +26,33 @@ det = DummyDet()
 ####################################
 ### INITIALIZATION OF CONTROLLER ###
 ####################################
-ctrl = DummyCtrl()
+_ctrl = DummyCtrl()
 
 ###############################
 ### INITIALIZATION OF MOTOR ###
 ###############################
 
-theta = Motor('theta', '1', 0, ctrl)
+mono = Motor('mono', '1', -3, _ctrl)
 
 ######################################
 ### INITIALIZATION OF PSEUDO-MOTOR ###
 ######################################
+
+def theta_to_mono(angle):
+    """
+    Convert Bragg angle into monochromator position
+
+    """
+    position = 90 - angle
+    return position
+
+def theta_pos_law(motor_list):
+    angle = motor_list[0].user_position
+    position = angle + 90
+    return position
+
+theta = PseudoMotor('theta', [mono], [theta_to_mono],
+                      position_law= theta_pos_law, detector=det)
 
 # Si(12 8 4) has a d_hkl of 0.362834 Å
 d_hkl = 0.362834
@@ -73,8 +93,13 @@ def energy_to_theta(energy, d_hkl = d_hkl):
     angle = math.asin(12.39842 / (2 * d_hkl * energy)) * 180 / math.pi
     return angle
 
-energy = PseudoMotor('Energy', [theta], [energy_to_theta],
-                      position_law= theta_to_energy, detector=det)
+def energy_pos_law(motor_list):
+    angle = motor_list[0].user_position
+    return theta_to_energy(angle)
 
-energy_nodet = PseudoMotor('Energy (no detector)', [theta], [energy_to_theta],
-                           position_law= theta_to_energy)
+
+energy = PseudoMotor('energy', [theta], [energy_to_theta],
+                      position_law= energy_pos_law, detector=det)
+
+energy_nodet = PseudoMotor('energy (no detector)', [theta], [energy_to_theta],
+                           position_law=energy_pos_law)
