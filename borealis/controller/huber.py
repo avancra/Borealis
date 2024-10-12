@@ -82,7 +82,7 @@ class HuberSMC(Controller):
         msg = bytes(f'{msg}\r\n', "utf-8")
         self._socket.send(msg)
 
-    def _read(self, msg_length=2048):
+    def _read(self, msg_length: int = 2048):
         """Receive message from the socket and return answer."""
         msg = self._socket.recv(msg_length)
         return msg
@@ -128,14 +128,3 @@ class HuberSMC(Controller):
                   'axis ready': sta[8]}
         return status
 
-
-if __name__ == "__main__":
-    sock = HuberSMC("192.168.2.2", 1234)
-    sock._read()
-    sock._write("?")
-    sock._read()
-    sock._write("?p")
-    sock._read()
-    sock.get_axis_position('9')
-    sock.move_axis('9', 8.42)
-    sock.get_axis_position('9')

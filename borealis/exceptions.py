@@ -7,7 +7,7 @@ class BorealisException(Exception):
 
 class SoftLimitError(BorealisException):
 
-    def __init__(self, value, alias, limit_low, limit_high):
+    def __init__(self, value: float, alias: str, limit_low: float, limit_high: float):
         message = (f'The dial position {value:.2f} for motor {alias.upper()} is outside the '
                    f'available soft limit range [{limit_low:.2f}:{limit_high:.2f}].')
         super().__init__(message)
@@ -15,13 +15,13 @@ class SoftLimitError(BorealisException):
 
 class NotReadyError(BorealisException):
 
-    def __init__(self, alias):
+    def __init__(self, alias: str):
         message = (f'The device {alias.upper()} is not ready.')
         super().__init__(message)
 
 
 class LimitSwitchError(BorealisException):
 
-    def __init__(self, alias):
+    def __init__(self, alias: str):
         message = (f'The limit switch for device {alias.upper()} is activated.')
         super().__init__(message)
