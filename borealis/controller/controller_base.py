@@ -160,7 +160,7 @@ class Controller(ABC):
 
             if self.is_limit_switch_activated(axis_id):
                 raise RuntimeError(
-                    f"Limit switch activated, move aborted")
+                    "Limit switch activated, move aborted")
 
             if (time.time() - start_time) > timeout:
                 raise TimeoutError(

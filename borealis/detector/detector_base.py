@@ -70,9 +70,6 @@ class Detector(ABC):
         kwargs['stacklevel'] = 2
         LOGGER.log(level, f'{self.alias}: {msg}', *args, **kwargs)
 
-    def __str__(self):
-        return f'{self.__class__.__name__}(alias={self.alias})'
-
 
 class DummyDet(Detector):
     """When in need for a detector but no access to a real device."""
