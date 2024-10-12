@@ -85,36 +85,3 @@ class NewportXPS(Controller):
         else:
             print(f"Error calling the version command: {err_str}")
 
-
-if __name__ == "__main__":
-    ip_add = "..."
-    ctrl = NewportXPS(ip_add)
-    print("***")
-    try:
-        print("***")
-        # following 2 commands should give same output
-        print(ctrl.version())
-        print("***")
-        print(ctrl._xps.FirmwareVersionGet())
-        print("***")
-
-        # 1-motor group
-        axis = "tubex"
-        print(ctrl._xps.GroupInitialize(axis))
-        print("***")
-        print(ctrl._xps.GroupHomeSearch(axis))
-        print("***")
-        # print(ctrl._xps.GroupPositionCurrentGet(axis_id, [], 1, ""))
-        # answer, positions, err_str = ctrl._xps.GroupPositionCurrentGet(axis_id, [], 1)
-        # positions = [pos for pos in positions]
-        # print(f"{positions=}")
-        # print("***")
-        # print(ctrl._xps.GroupMoveAbsolute(axis_id, [10.0, ], 1))
-        print(ctrl.move_axis(axis, 50.))
-        print("***")
-        print(ctrl.get_axis_position(axis))
-    except Exception:
-        ctrl.close()
-        raise
-    else:
-        ctrl.close()

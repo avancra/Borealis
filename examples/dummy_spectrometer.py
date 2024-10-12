@@ -58,7 +58,7 @@ theta = PseudoMotor('theta', [mono], [theta_to_mono],
 # Si(12 8 4) has a d_hkl of 0.362834 Å
 d_hkl = 0.362834
 
-def theta_to_energy(angle, d_hkl = d_hkl):
+def theta_to_energy(angle: float, d_hkl: float = d_hkl):
     """
     Convert Bragg angle into energy following Bragg's law.
 
@@ -76,7 +76,7 @@ def theta_to_energy(angle, d_hkl = d_hkl):
     energy = 12.39842 / (2 * d_hkl * math.sin(angle * math.pi / 180))
     return energy
 
-def energy_to_theta(energy, d_hkl = d_hkl):
+def energy_to_theta(energy: float, d_hkl: float = d_hkl):
     """
     Convert energy to Bragg angle following Bragg's law.
 
@@ -94,7 +94,7 @@ def energy_to_theta(energy, d_hkl = d_hkl):
     angle = math.asin(12.39842 / (2 * d_hkl * energy)) * 180 / math.pi
     return angle
 
-def energy_pos_law(motor_list):
+def energy_pos_law(motor_list: list[Motor, PseudoMotor]):
     angle = motor_list[0].user_position
     return theta_to_energy(angle)
 

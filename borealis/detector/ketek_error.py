@@ -226,7 +226,7 @@ DEFAULT_ERROR = 'UNKNOWN_ERROR_CODE', ''
 class HandelError(IOError):
     """Handel related error class."""
 
-    def __init__(self, errno, strerror, description=''):
+    def __init__(self, errno: int, strerror: str, description: str = ''):
         self.errno = errno
         self.strerror = strerror
         self.description = description
@@ -236,13 +236,13 @@ class HandelError(IOError):
         return f'[{self.errno} {self.strerror}] {self.description}'
 
     @classmethod
-    def from_errno(cls, errno):
+    def from_errno(cls, errno: int):
         """Create HandelError from error numero."""
         strerror, description = ERROR_DICT.get(errno, DEFAULT_ERROR)
         return cls(errno, strerror, description)
 
 
-def check_error(errno):
+def check_error(errno: int):
     """Check return error code and raise corresponding error if needed."""
     if errno != 0:
         raise HandelError.from_errno(errno)

@@ -43,7 +43,7 @@ class Spellman_uX50P50():
         # TODO Logging the successful initialisation of the device
         print(f'Spellman {self.model_number} successfully initialised')
 
-    def set_filament_default_values(self, preheat, limit, ramp_time):
+    def set_filament_default_values(self, preheat: float, limit: float, ramp_time: float):
         """Set default values for filament."""
         # TODO: handle errors of progamming the filament ramp time, prehat and limits
         val = int(round(1000 * preheat / self.D2A_FIL))
@@ -70,7 +70,7 @@ class Spellman_uX50P50():
         return float(ans[1]) * self.A2D_KV / 1000
 
     @voltage_setpoint.setter
-    def voltage_setpoint(self, new_value):
+    def voltage_setpoint(self, new_value: float):
         """Program the accelerating voltage setpoint, in kV. """
         val = int(round(1000 * new_value / self.D2A_KV))
         cmd = f"10,{val},"
@@ -86,7 +86,7 @@ class Spellman_uX50P50():
         return float(ans[1]) * self.D2A_MA / 1000
 
     @current_setpoint.setter
-    def current_setpoint(self, new_value):
+    def current_setpoint(self, new_value: float):
         """Program the current setpoint, in mA. """
         val = int(round(1000 * new_value / self.D2A_MA))
         cmd = f"11,{val},"
@@ -167,7 +167,7 @@ class Spellman_uX50P50():
         """Write a message to the socket."""
         self._socket.send(msg)
 
-    def _read(self, msg_length=2048):
+    def _read(self, msg_length: int = 2048):
         """Receive message from the socket and return answer."""
         return self._socket.recv(msg_length)
 
@@ -175,11 +175,3 @@ class Spellman_uX50P50():
     def decode(msg):
         ans = msg.decode().split(',')
         return ans
-
-
-if __name__ == "__main__":
-    sock = Spellman_uX50P50()
-    sock.initialise("192.168.2.3", 50001)
-    sock.voltage
-    sock.current
-    sock.temperature
