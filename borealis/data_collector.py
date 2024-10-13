@@ -12,7 +12,8 @@ class DataCollector:
         self.current_scan = None
 
     def create_h5file(self, h5_filename):
-        self.h5file = h5py.File(h5_filename, 'w')
+        self.h5file = h5py.File(h5_filename, 'w', libver='latest')
+        self.h5file.swmr_mode = True
         # self.h5file["/"].attrs["Instrument"] = "The name of the instrument"
         self.h5file["/"].attrs["Date created"] = str(datetime.now())
 
