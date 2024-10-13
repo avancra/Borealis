@@ -85,7 +85,7 @@ class DummyDet(Detector):
         self.log(logging.DEBUG, "this message logs the alias")
         LOGGER.debug('This message does not add the alias')
 
-        return mca.MCA(np.arange(10), mca.MCAMetadata.dummy())
+        return mca.MCA(np.arange(2048), mca.MCAMetadata.dummy())
 
     def stop(self):
         LOGGER.info('%s controller closed', self.alias)

@@ -5,7 +5,7 @@ from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 from platformdirs import user_data_dir
 
-from borealis.exceptions import BorealisException
+from borealis.data_collector import DataCollector
 
 # default cross-platform directory for Borealis log and config files
 # On windows, it should be something like C:\\Users\\username\\AppData\\Local\\C4XS\\Borealis
@@ -27,7 +27,9 @@ stream_hdlr.setLevel(logging.INFO)
 logger.addHandler(stream_hdlr)
 
 # Handler to file
-file_hdlr = TimedRotatingFileHandler(app_dir / "borealis.log", when="midnight")
+log_dir = app_dir / 'logs'
+log_dir.mkdir(parents=False, exist_ok=True)
+file_hdlr = TimedRotatingFileHandler(log_dir / "borealis.log", when="midnight")
 file_hdlr.setLevel(logging.DEBUG)
 file_formatter = logging.Formatter('%(asctime)s - %(module)s - line %(lineno)d - %(levelname)s - %(message)s', datefmt='%H:%M:%S')
 file_hdlr.setFormatter(file_formatter)
@@ -35,3 +37,12 @@ logger.addHandler(file_hdlr)
 
 logger.debug("\n\n %s - New Borealis session started \n",
              datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+
+
+# Hdf5 file creation
+data_directory =  app_dir / 'data'
+data_directory.mkdir(parents=False, exist_ok=True)
+h5_filename = data_directory / f'borealis_datafile_{datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")}.h5'
+
+data_collector = DataCollector()
+data_collector.create_h5file(h5_filename)
