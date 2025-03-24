@@ -1,23 +1,48 @@
+import logging
 from datetime import datetime
 
 import h5py
 
 from borealis.mca import MCA
+from borealis.component import Component
+
+LOGGER = logging.getLogger(__name__)
 
 
-class DataCollector:
+class DataCollector(Component):
 
-    def __init__(self):
+    def __init__(self, orchestrator):
+        super().__init__(orchestrator)
         self.h5file = None
         self.current_scan = None
 
+    def receive(self, message, **kwargs):
+        LOGGER.info('Receiving message: %s', message)
+        match message:
+            case 'add_scan':
+                self.add_scan(**kwargs)
+            case 'add_scan_pseudo_motor':
+                self.add_scan_pseudo_motor(**kwargs)
+            case 'add_scan_detector':
+                self.add_scan_detector(**kwargs)
+            case 'add_motor_datapoint':
+                self.add_motor_datapoint(**kwargs)
+            case 'add_datapoint_mca':
+                self.add_datapoint_mca(**kwargs)
+
     def create_h5file(self, h5_filename):
+        if self.h5file is not None:
+            LOGGER.debug("Closing h5file...")
+            self.h5file.close()
+
+        LOGGER.info(f'Creating h5file {h5_filename}')
         self.h5file = h5py.File(h5_filename, 'w', libver='latest')
         self.h5file.swmr_mode = True
         # self.h5file["/"].attrs["Instrument"] = "The name of the instrument"
         self.h5file["/"].attrs["Date created"] = str(datetime.now())
 
     def add_scan(self, start_time):
+        LOGGER.debug('Adding scan to H5file')
         scan_number = len(list(self.h5file.keys())) + 1
         self.current_scan = self.h5file.create_group(f"/scan{scan_number}")
         self.current_scan.attrs["start_time"] = start_time

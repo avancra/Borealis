@@ -5,6 +5,7 @@ from logging.handlers import TimedRotatingFileHandler
 from pathlib import Path
 from platformdirs import user_data_dir
 
+from borealis.orchestrator import Orchestrator
 from borealis.data_collector import DataCollector
 
 # default cross-platform directory for Borealis log and config files
@@ -38,11 +39,13 @@ logger.addHandler(file_hdlr)
 logger.debug("\n\n %s - New Borealis session started \n",
              datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
+# SESSION ORCHESTRATOR
+session_orchestrator = Orchestrator()
 
 # Hdf5 file creation
 data_directory =  app_dir / 'data'
 data_directory.mkdir(parents=False, exist_ok=True)
 h5_filename = data_directory / f'borealis_datafile_{datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")}.h5'
 
-data_collector = DataCollector()
+data_collector = DataCollector(session_orchestrator)
 data_collector.create_h5file(h5_filename)
