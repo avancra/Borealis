@@ -17,7 +17,7 @@ class DataCollector(Component):
         self.current_scan = None
 
     def receive(self, message, **kwargs):
-        LOGGER.info('Receiving message: %s', message)
+        LOGGER.debug('Receiving message: %s', message)
         match message:
             case 'add_scan':
                 self.add_scan(**kwargs)

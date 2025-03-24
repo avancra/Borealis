@@ -1,7 +1,5 @@
 import logging
 
-# from borealis import session_orchestrator
-
 LOGGER = logging.getLogger(__name__)
 
 
@@ -13,7 +11,7 @@ class Component:
 
     def send(self, message, **kwargs):
         """Sends a message to the mediator."""
-        LOGGER.info('Sending message: %s', message)
+        LOGGER.debug('Sending message: %s', message)
         self._orchestrator.notify(self, message, **kwargs)
 
     def receive(self, message, **kwargs):
