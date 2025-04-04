@@ -54,7 +54,7 @@ class AmptekCdTe123(Detector):
 
         LOGGER.info("Detector %s successfully initialised", self)
 
-    def acquisition(self, acquisition_time):
+    def acquisition(self, acquisition_time: float):
         """Start an acquisition and return corresponding Spectrum object."""
         self._clear_spectrum()
         self._set_acquisition_time(acquisition_time, save_to_mem=False)
@@ -104,7 +104,7 @@ class AmptekCdTe123(Detector):
 
         return status
 
-    def _get_spectrum(self, clear=False):
+    def _get_spectrum(self, clear: bool = False):
         """Send a spectrum request and return spectrum."""
         if clear:
             self._write('F5FA02020000FE0D')
@@ -115,7 +115,7 @@ class AmptekCdTe123(Detector):
 
         return spectrum
 
-    def _get_spectrum_status(self, clear=False):
+    def _get_spectrum_status(self, clear: bool = False):
         """Send a spectrum & status request and return spectrum & status."""
         if clear:
             self._write('F5FA02040000FE0B')
@@ -144,7 +144,7 @@ class AmptekCdTe123(Detector):
         resp = self._read(8000)
         print(resp.tobytes())
 
-    def _send_text_config(self, config_cmd, save_to_mem=True):
+    def _send_text_config(self, config_cmd: str, save_to_mem: bool = True):
         """
         Send a text configuration command (ASCII commands).
 
@@ -189,7 +189,7 @@ class AmptekCdTe123(Detector):
         """Reset the Configuration to defaults."""
         self._send_text_config('RESC=Y;', save_to_mem=True)
 
-    def _set_acquisition_time(self, acq_time, save_to_mem=True):
+    def _set_acquisition_time(self, acq_time: float, save_to_mem: bool = True):
         """
         Preset Acquisition Time, without any preset counts.
 
@@ -212,7 +212,7 @@ class AmptekCdTe123(Detector):
 
         self._send_text_config(f'PRET={acq_time:.1f};PREC=OFF;', save_to_mem)
 
-    def _set_acquisition_counts(self, acq_counts, save_to_mem=True):
+    def _set_acquisition_counts(self, acq_counts: int, save_to_mem: bool = True):
         """
         Preset Acquisition Counts, without any preset time.
 
@@ -237,8 +237,8 @@ class AmptekCdTe123(Detector):
 
         self._send_text_config(f'PRET=OFF;PREC={acq_counts};', save_to_mem)
 
-    def _set_acquisition_time_counts(self, acq_time, acq_counts,
-                                     save_to_mem=True):
+    def _set_acquisition_time_counts(self, acq_time: float, acq_counts: int,
+                                     save_to_mem: bool = True):
         """
         Preset Acquisition Time and Counts.
 
@@ -271,7 +271,7 @@ class AmptekCdTe123(Detector):
         self._send_text_config(f'PRET={acq_time:.1f};PREC={acq_counts};',
                                save_to_mem)
 
-    def _set_mca_channel(self, number_of_channel):
+    def _set_mca_channel(self, number_of_channel: int):
         """Select Number of MCA Channels."""
         allowed_values = [256, 512, 1024, 2048, 4096, 8192]
 
@@ -281,7 +281,7 @@ class AmptekCdTe123(Detector):
 
         self._send_text_config(f'MCAC={number_of_channel};', save_to_mem=True)
 
-    def _set_gain(self, gain, save_to_mem=True):
+    def _set_gain(self, gain: float, save_to_mem: bool = True):
         """
         Set the total gain.
 
@@ -307,7 +307,7 @@ class AmptekCdTe123(Detector):
         self._send_text_config(f'GAIN={gain:.3f};', save_to_mem)
 
     @staticmethod
-    def _get_mca_counts(answer, num_chan=2048, contain_status=False):
+    def _get_mca_counts(answer, num_chan: int = 2048, contain_status: bool = False):
         """Extract spectrum from response packet."""
         if contain_status:
             raw = np.array(answer[6:6+3*num_chan])
@@ -391,21 +391,3 @@ class Status:
     def from_status_packet(cls, stat_packet):
         raw_status = stat_packet[6:70]
         return cls(raw_status)
-
-
-if __name__ == '__main__':
-    import traceback
-    # from matplotlib import pyplot as plt
-    dev = AmptekCdTe123('amptek')
-    stat = dev._get_status()
-    print(stat._raw)
-    print(stat.status)
-    print(stat.serial_number)
-    try:
-        mca = dev.acquisition(5)
-        # plt.plot(maca.counts)
-
-    except Exception:
-        traceback.print_exc()
-
-    dev.stop()
