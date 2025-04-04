@@ -5,14 +5,25 @@ Created on Mon Jul 29 10:18:23 2024
 @author: renebes
 """
 import math
+from pathlib import Path
 
 import pytest
 
+import borealis
 from borealis.controller.controller_base import DummyCtrl
 from borealis.exceptions import SoftLimitError
 from borealis.motor import Motor
 from borealis.pseudo_motor import PseudoMotor
 from borealis.detector.detector_base import DummyDet
+
+
+@pytest.fixture(autouse=True, scope='module')
+def h5file():
+    borealis.data_collector.filename_base = 'datafile_test_pm'
+    borealis.data_collector.instrument = 'Dummy instrument'
+    borealis.data_collector.experiment_id = "Fake ID 42"
+    borealis.data_collector.current_sample = 'Dummy sample'
+    borealis.data_collector.create_h5file(add_date=False)
 
 
 def test_pseudomotor_const():
@@ -191,6 +202,7 @@ def test_pseudomotor_scan():
     Two tests are performed: (1) without and (2) with a detector.
 
     """
+
     ctrl = DummyCtrl()
     mot1 = Motor('DummyMotor1', '1', 1, ctrl)
     mot2 = Motor('DummyMotor2', '2', 2, ctrl)

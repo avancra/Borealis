@@ -39,13 +39,13 @@ logger.addHandler(file_hdlr)
 logger.debug("\n\n %s - New Borealis session started \n",
              datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
-# SESSION ORCHESTRATOR
+# SESSION OBJECTS
 session_orchestrator = Orchestrator()
-
-# Hdf5 file creation
-data_directory =  app_dir / 'data'
-data_directory.mkdir(parents=False, exist_ok=True)
-h5_filename = data_directory / f'borealis_datafile_{datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")}.h5'
-
 data_collector = DataCollector(session_orchestrator)
-data_collector.create_h5file(h5_filename)
+
+# Exposing main functions at package level as users shouldn't care about DataCollector
+def new_file(exp_id: str = ''):
+    data_collector.create_h5file(experiment_id=exp_id)
+
+def new_sample(sample: str):
+    data_collector.current_sample = sample

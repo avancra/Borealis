@@ -17,6 +17,7 @@ class Orchestrator(Mediator):
     def __init__(self):
         self._components = []
 
+
     def add_component(self, component):
         """Adds a component to the mediator."""
         LOGGER.debug('Adding component %s', component)
@@ -28,5 +29,7 @@ class Orchestrator(Mediator):
             if component is not sender:
                 LOGGER.debug(f'Notifying... {component}')
                 component.receive(message, **kwargs)
+
+
 
 
