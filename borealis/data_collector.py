@@ -66,9 +66,12 @@ class DataCollector(Component):
         self.current_scan.attrs["Sample name"] = self.current_sample
         # h5_scan.attrs["scan type"] = f"Type of the scan #{scan_number}, ie. function call"
 
+        self.h5file.flush()
+
     def close_scan(self, end_time):
         self.current_scan.attrs["end_time"] = end_time
         self.current_scan = None
+
         self.h5file.flush()
 
     def add_scan_detector(self, detector, scan_points):
@@ -82,6 +85,8 @@ class DataCollector(Component):
         # h5_detector.attrs["id"] = "unique_id"
         # h5_detector.attrs["type"] = "class name"
 
+        self.h5file.flush()
+
     def add_scan_pseudo_motor(self, pseudomotor, scan_points):
         self.current_scan.create_group(pseudomotor.motor_name)
         self.current_scan.create_dataset(f'{pseudomotor.motor_name}/user_position', (scan_points,))
@@ -91,6 +96,8 @@ class DataCollector(Component):
         # self.current_scan.attrs["conversion law"] = "conversion law of pseudo_motor in symbolic python"
         # self.current_scan.attrs["individual conversion law"] = "conversion law of pseudo_motor in symbolic python"
 
+        self.h5file.flush()
+
     def add_datapoint_mca(self, alias: str, idx: int, mca: MCA):
         nb_channels = len(mca.counts)
         self.current_scan[alias]['MCA'][0:nb_channels,idx] = mca.counts
@@ -99,5 +106,9 @@ class DataCollector(Component):
         self.current_scan[alias]['OCR'][idx] = mca.metadata.output_cr
         self.current_scan[alias]['OCR'][idx] = mca.metadata.output_cr
 
+        self.h5file.flush()
+
     def add_motor_datapoint(self, alias: str, idx: int, position):
         self.current_scan[alias]['user_position'][idx] = position
+
+        self.h5file.flush()
