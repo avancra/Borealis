@@ -25,7 +25,7 @@ class KetekAXASM(Detector):
         (Path(__file__).parent.parent / "lib/handel/handel.dll").as_posix())
     MAXALIAS_LEN = 80
 
-    def __init__(self, ini_filepath: str, alias:str = "Ketek-AXAS M"):
+    def __init__(self, ini_filepath: str, alias: str = "Ketek-AXAS M"):
         """Initialise the detector."""
         super().__init__(alias)
         self._ini_file = self._validate_ini(ini_filepath)
@@ -36,7 +36,7 @@ class KetekAXASM(Detector):
 
         LOGGER.info("Detector %s successfully initialised", self)
 
-    def acquisition(self, acquisition_time):
+    def acquisition(self, acquisition_time: float):
         """Start an acquisition and return corresponding Spectrum object."""
         self._start_run()
         sleep(acquisition_time)
@@ -64,7 +64,7 @@ class KetekAXASM(Detector):
         check_error(ret_code)
 
     @staticmethod
-    def _validate_ini(ini_filepath):
+    def _validate_ini(ini_filepath: str):
         """Check that ini_filepath is a valid and existing filepath."""
         try:
             assert Path(ini_filepath).exists()
@@ -75,7 +75,7 @@ class KetekAXASM(Detector):
 
         return ini_filepath
 
-    def _initialise(self, path):
+    def _initialise(self, path: str):
         """
         Wrap xiaInit.
 
@@ -122,7 +122,7 @@ class KetekAXASM(Detector):
 
         return serial_number.value
 
-    def _start_run(self, resume=False):
+    def _start_run(self, resume: bool = False):
         """Wrap xiaStartRun."""
         ret_code = self.HANDEL.xiaStartRun(self._chan_no, resume)
         check_error(ret_code)
@@ -167,34 +167,6 @@ class KetekAXASM(Detector):
                      'OCR': all_stats_ct[5]}
 
         return all_stats
-    #
-    # def _set_logging(self, output='stdout', level='error'):
-    #     """
-    #     Wrap xiaSetLogOutput and xiaSetLogLevel.
-    #
-    #     Set the logging output and level.
-    #
-    #     Parameters
-    #     ----------
-    #     output : str, optional
-    #         filename or 'stdout' or 'stderr'. The default is 'stdout'.
-    #     level : str, optional
-    #         level name, one of 'debug', 'info', 'warning', 'error'.
-    #         The default is 'error'.
-    #
-    #     Returns
-    #     -------
-    #     None.
-    #
-    #     """
-    #     log_levels = {'debug': 4,
-    #                   'info': 3,
-    #                   'warning': 2,
-    #                   'error': 1}
-    #     ret_code = self.HANDEL.xiaSetLogOutput(self._to_bytes(output))
-    #     check_error(ret_code)
-    #     ret_code = self.HANDEL.xiaSetLogLevel(log_levels[level])
-    #     check_error(ret_code)
 
     @staticmethod
     def _to_bytes(arg):
@@ -202,14 +174,3 @@ class KetekAXASM(Detector):
         if isinstance(arg, bytes):
             return arg
         return arg.encode()
-
-
-if __name__ == '__main__':
-    from matplotlib import pyplot as plt
-    dev = KetekAXASM('ketek', (Path(__file__).parent / "examples/KETEK_DPP2_usb2.ini").as_posix())
-    # dev._set_logging('stderr', 'error')
-    dev._start_system()
-    spe = dev.acquisition(1)
-    # print(dev._get_all_run_stats())
-    plt.plot(spe)
-    dev.stop()
