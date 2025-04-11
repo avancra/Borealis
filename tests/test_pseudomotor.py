@@ -215,3 +215,24 @@ def test_pseudomotor_scan():
     det = DummyDet()
     pseudo2 = PseudoMotor('DummyPseudoMotor1', [mot1, mot2], [geo1, geo2], position_law, detector=det)
     pseudo2.scan(0, 5, 1, acq_time=.5)
+
+
+def test_pseudomotor_scan_no_h5file():
+    """
+    Check the output of the scan method.
+
+    Two tests are performed: (1) without and (2) with a detector.
+
+    """
+    borealis.data_collector.h5file = None
+
+    ctrl = DummyCtrl()
+    mot1 = Motor('DummyMotor1', '1', 1, ctrl)
+    mot2 = Motor('DummyMotor2', '2', 2, ctrl)
+    geo1 = lambda x: x
+    geo2 = lambda x: 2 * x
+    position_law = lambda x: x[0].user_position
+    pseudo1 = PseudoMotor('DummyPseudoMotor1', [mot1, mot2], [geo1, geo2], position_law)
+
+    with pytest.raises(UserWarning):
+        pseudo1.scan(2, 5, .5, acq_time=.1)

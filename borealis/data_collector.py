@@ -61,6 +61,9 @@ class DataCollector(Component):
 
     def add_scan(self, start_time):
         # TODO: check if h5file is not None
+        if self.h5file is None:
+            raise UserWarning("No File exists to save data, create one with the 'new_file' command.")
+
         LOGGER.debug('Adding scan to H5file')
         scan_number = len(list(self.h5file.keys())) + 1
         self.current_scan = self.h5file.create_group(f"/scan{scan_number}")
