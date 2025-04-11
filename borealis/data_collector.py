@@ -35,6 +35,8 @@ class DataCollector(Component):
                 self.add_motor_datapoint(**kwargs)
             case 'add_datapoint_mca':
                 self.add_datapoint_mca(**kwargs)
+            case 'close_scan':
+                self.close_scan(**kwargs)
 
     def create_h5file(self, experiment_id: str = '', add_date=True):
         if self.h5file is not None:
@@ -68,8 +70,8 @@ class DataCollector(Component):
 
         self.h5file.flush()
 
-    def close_scan(self, end_time):
-        self.current_scan.attrs["end_time"] = end_time
+    def close_scan(self):
+        self.current_scan.attrs["end_time"] = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
         self.current_scan = None
 
         self.h5file.flush()
