@@ -26,7 +26,7 @@ class DataCollector(Component):
         LOGGER.debug('Receiving message: %s', message)
         match message:
             case 'add_scan':
-                self.add_scan(**kwargs)
+                self.add_scan()
             case 'add_scan_pseudo_motor':
                 self.add_scan_pseudo_motor(**kwargs)
             case 'add_scan_detector':
@@ -59,7 +59,7 @@ class DataCollector(Component):
         self.h5file["/"].attrs["Experiment ID"] = self.experiment_id
         self.h5file["/"].attrs["Date created"] = str(datetime.now().strftime("%Y-%m-%d %H-%M-%S"))
 
-    def add_scan(self, start_time):
+    def add_scan(self):
         # TODO: check if h5file is not None
         if self.h5file is None:
             raise UserWarning("No File exists to save data, create one with the 'new_file' command.")
@@ -67,7 +67,7 @@ class DataCollector(Component):
         LOGGER.debug('Adding scan to H5file')
         scan_number = len(list(self.h5file.keys())) + 1
         self.current_scan = self.h5file.create_group(f"/scan{scan_number}")
-        self.current_scan.attrs["start_time"] = start_time.strftime("%Y-%m-%d %H-%M-%S")
+        self.current_scan.attrs["start_time"] = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
         self.current_scan.attrs["Sample name"] = self.current_sample
         # h5_scan.attrs["scan type"] = f"Type of the scan #{scan_number}, ie. function call"
 

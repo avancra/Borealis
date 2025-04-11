@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
 from typing import Union, Callable
 import time
 
@@ -136,7 +135,7 @@ class PseudoMotor(Component):
         self._check_is_ready()
         start_time = time.time()
 
-        self.send('add_scan', start_time=datetime.now())
+        self.send('add_scan')
         nb_of_point = len(np.arange(start, stop, step, dtype=np.float32))
         if self._detector is not None:
             self.send('add_scan_detector', detector=self._detector, scan_points=nb_of_point)
