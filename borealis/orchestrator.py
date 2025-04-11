@@ -7,7 +7,7 @@ LOGGER = logging.getLogger(__name__)
 class Mediator(ABC):
     """Mediator interface declares communication methods."""
     @abstractmethod
-    def notify(self, message):
+    def notify(self, sender, message, **kwargs):
         """Notify method for sending messages to components."""
         pass
 
@@ -16,7 +16,6 @@ class Orchestrator(Mediator):
     """Concrete Mediator manages communication between components."""
     def __init__(self):
         self._components = []
-
 
     def add_component(self, component):
         """Adds a component to the mediator."""

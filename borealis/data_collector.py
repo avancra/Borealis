@@ -80,15 +80,16 @@ class DataCollector(Component):
         self.h5file.flush()
 
     def add_scan_detector(self, detector, scan_points):
-        self.current_scan.create_group(detector.alias)
+        det_grp = self.current_scan.create_group(detector.alias)
         self.current_scan.create_dataset(f'{detector.alias}/MCA', (4096, scan_points))
         self.current_scan.create_dataset(f'{detector.alias}/runtime', (scan_points,))
         self.current_scan.create_dataset(f'{detector.alias}/ICR', (scan_points,))
         self.current_scan.create_dataset(f'{detector.alias}/OCR', (scan_points,))
         # arr = np.arange('2023-02-01T01:00', '2023-02-01T02:39', dtype="datetime64[m]")
         # h5_detector.create_dataset(f'{h5_detector.name}/time_per_point', data=arr.astype(h5py.opaque_dtype(arr.dtype)))
-        # h5_detector.attrs["id"] = "unique_id"
-        # h5_detector.attrs["type"] = "class name"
+
+        for key, value in detector.get_det_info().items():
+            det_grp.attrs[key.replace('_', ' ').capitalize()] = value
 
         self.h5file.flush()
 
