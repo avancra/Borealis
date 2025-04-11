@@ -61,6 +61,10 @@ class PseudoMotor(Component):
     def is_ready(self):
         return all(motor.is_ready for motor in self._motors)
 
+    @property
+    def motor_list(self):
+        return [motor.motor_name for motor in self._motors]
+
     def _check_is_ready(self):
         # TODO: change to MotorNotReady error once available
         if self.is_ready is False:

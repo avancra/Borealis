@@ -36,7 +36,7 @@ class DataCollector(Component):
             case 'add_datapoint_mca':
                 self.add_datapoint_mca(**kwargs)
             case 'close_scan':
-                self.close_scan(**kwargs)
+                self.close_scan()
 
     def create_h5file(self, experiment_id: str = '', add_date=True):
         if self.h5file is not None:
@@ -80,7 +80,7 @@ class DataCollector(Component):
         self.h5file.flush()
 
     def add_scan_detector(self, detector, scan_points):
-        det_grp = self.current_scan.create_group(detector.alias)
+        det_group = self.current_scan.create_group(detector.alias)
         self.current_scan.create_dataset(f'{detector.alias}/MCA', (4096, scan_points))
         self.current_scan.create_dataset(f'{detector.alias}/runtime', (scan_points,))
         self.current_scan.create_dataset(f'{detector.alias}/ICR', (scan_points,))
@@ -89,14 +89,14 @@ class DataCollector(Component):
         # h5_detector.create_dataset(f'{h5_detector.name}/time_per_point', data=arr.astype(h5py.opaque_dtype(arr.dtype)))
 
         for key, value in detector.get_det_info().items():
-            det_grp.attrs[key.replace('_', ' ').capitalize()] = value
+            det_group.attrs[key.replace('_', ' ').capitalize()] = value
 
         self.h5file.flush()
 
     def add_scan_pseudo_motor(self, pseudomotor, scan_points):
-        self.current_scan.create_group(pseudomotor.motor_name)
+        pm_group = self.current_scan.create_group(pseudomotor.motor_name)
         self.current_scan.create_dataset(f'{pseudomotor.motor_name}/user_position', (scan_points,))
-        # self.current_scan.attrs["motor_list"] = "list of motor and pseudo motor constituting the pseudomotor"
+        pm_group.attrs.create('Motors', pseudomotor.motor_list)
         # self.current_scan.attrs["soft_limits"] = "(low, high)"
         #   would be nice to have
         # self.current_scan.attrs["conversion law"] = "conversion law of pseudo_motor in symbolic python"

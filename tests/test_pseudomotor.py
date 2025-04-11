@@ -36,6 +36,21 @@ def test_pseudomotor_const():
     PseudoMotor('DummyPseudoMotor', [mot1, mot2], [geo1, geo2], position_law)
 
 
+def test_pseudomotor_motor_list():
+    ctrl = DummyCtrl()
+    mot1 = Motor('DummyMotor1', '1', 0, ctrl)
+    mot2 = Motor('DummyMotor2', '2', 0, ctrl)
+    geo1 = lambda x: x
+    geo2 = lambda x: -x
+    position_law = lambda x: x[0].user_position
+    pm = PseudoMotor('DummyPseudoMotor', [mot1, mot2], [geo1, geo2], position_law)
+
+    motors = pm.motor_list
+
+    assert len(motors) == 2
+    assert motors[0] == 'DummyMotor1'
+
+
 def test_pseudomotor_move():
     """
     Check  the move method.
@@ -97,7 +112,7 @@ def test_postion_law_conversion():
     geo1 = lambda x: math.cos(x * math.pi / 180)
     geo2 = lambda x: math.sin(x * math.pi / 180)
     pos_law = lambda x: math.acos(x[0].user_position) * 180 / math.pi
-    pm_theta = PseudoMotor("pseudo", [mot1, mot2], [geo1, geo2], position_law=pos_law)
+    pm_theta = PseudoMotor("Theta", [mot1, mot2], [geo1, geo2], position_law=pos_law)
 
     pm_theta.amove(45)
     assert mot1.user_position == pytest.approx(math.sqrt(2) / 2)
@@ -108,7 +123,7 @@ def test_postion_law_conversion():
     theta_to_energy = lambda x: 12.39842 / (2 * d_si999 * math.sin(x[0].user_position * math.pi / 180))
     energy_to_theta = lambda x: math.asin(12.39842 / (2 * d_si999 * x)) * 180 / math.pi
 
-    pm_energy = PseudoMotor('energy', [pm_theta], [energy_to_theta],
+    pm_energy = PseudoMotor('Energy', [pm_theta], [energy_to_theta],
                             position_law=theta_to_energy)
     pm_energy.amove(18.42)
     assert pm_theta.user_position == pytest.approx(75.0368)
