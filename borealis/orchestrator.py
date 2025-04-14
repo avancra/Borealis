@@ -1,33 +1,45 @@
 import logging
-from abc import ABC, abstractmethod
 
 LOGGER = logging.getLogger(__name__)
 
 
-class Mediator(ABC):
-    """Mediator interface declares communication methods."""
-    @abstractmethod
-    def notify(self, sender, message, **kwargs):
-        """Notify method for sending messages to components."""
-        pass
+class Orchestrator():
+    """Session orchestrator, keep track of components and manages communication between them."""
 
-
-class Orchestrator(Mediator):
-    """Concrete Mediator manages communication between components."""
     def __init__(self):
-        self._components = []
+        self.sensor_components = []
+        self.controller_components = []
+        self.data_managers = []
 
-    def add_component(self, component):
+    def add_controller_component(self, component):
         """Adds a component to the mediator."""
-        LOGGER.debug('Adding component %s', component)
-        self._components.append(component)
+        LOGGER.debug('Adding controller component %s', component)
+        self.controller_components.append(component)
 
-    def notify(self, sender, message, **kwargs):
+    def add_sensor_component(self, component):
+        """Adds a component to the mediator."""
+        LOGGER.debug('Adding sensor component %s', component)
+        self.sensor_components.append(component)
+
+    def add_data_component(self, component):
+        """Adds a component to the mediator."""
+        LOGGER.debug('Adding data manager %s', component)
+        self.data_managers.append(component)
+
+    def notify(self, sender, topic, message, **kwargs):
         """Notifies all components with the message."""
-        for component in self._components:
-            if component is not sender:
-                LOGGER.debug(f'Notifying... {component}')
-                component.receive(message, **kwargs)
+        # TODO: deal with dispatching logic here
+        match topic:
+            case 'DataPoint':
+                self.notify_data_managers(sender, message, kwargs)
+            case 'Scan':
+                self.notify_data_managers(sender, message, kwargs)
+
+    def notify_data_managers(self, sender, message, kwargs):
+        for component in self.data_managers:
+            LOGGER.debug(f'Notifying {component}...')
+            component.receive(message, **kwargs)
+
 
 
 

@@ -5,12 +5,12 @@ from pathlib import Path
 import h5py
 
 from borealis.mca import MCA
-from borealis.component import Component
+from borealis.component import DataComponent
 
 LOGGER = logging.getLogger(__name__)
 
 
-class DataCollector(Component):
+class DataCollector(DataComponent):
 
     def __init__(self, orchestrator):
         super().__init__(orchestrator)
@@ -21,6 +21,10 @@ class DataCollector(Component):
         self.current_sample = 'Unknown sample'
         self.instrument = 'Unknown instrument'
         self.experiment_id = 'Unknown ID'
+
+    def __str__(self):
+        """Custom __str__ method for DataCollector class."""
+        return f'{self.__class__.__name__}'
 
     def receive(self, message, **kwargs):
         LOGGER.debug('Receiving message: %s', message)
@@ -57,10 +61,9 @@ class DataCollector(Component):
         self.h5file.swmr_mode = True
         self.h5file["/"].attrs["Instrument"] = self.instrument
         self.h5file["/"].attrs["Experiment ID"] = self.experiment_id
-        self.h5file["/"].attrs["Date created"] = str(datetime.now().strftime("%Y-%m-%d %H-%M-%S"))
+        self.h5file["/"].attrs["Date created"] = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
 
     def add_scan(self):
-        # TODO: check if h5file is not None
         if self.h5file is None:
             raise UserWarning("No File exists to save data, create one with the 'new_file' command.")
 

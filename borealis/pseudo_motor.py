@@ -9,12 +9,12 @@ import numpy as np
 from borealis import session_orchestrator
 from borealis.motor import Motor
 from borealis.detector.detector_base import Detector
-from borealis.component import Component
+from borealis.component import ControllerComponent
 
 LOGGER = logging.getLogger(__name__)
 
 
-class PseudoMotor(Component):
+class PseudoMotor(ControllerComponent):
     """Class for a basic pseudo-motor, meaning a collection of Motor objects plus 0 or 1 detector."""
 
     def __init__(self, alias: str, motors: list[Motor, PseudoMotor], geometries: list,
@@ -35,6 +35,7 @@ class PseudoMotor(Component):
         detector
             Instance of Detector.
         """
+        self.motor_name = alias
         # TODO: change list to tuple to avoid changing the motor order by mistake ? same for geometries
         super().__init__(session_orchestrator)
         try:
@@ -44,13 +45,18 @@ class PseudoMotor(Component):
                          len(motors), len(geometries))
             raise ValueError(f"Length of motor list ({len(motors)}) does not match the length of "
                              f"geometry list ({len(geometries)})")
-        self.motor_name = alias
+
         self._motors = motors
         self._conversion_laws = geometries
         self._detector = detector
         self._position_law = position_law
 
         LOGGER.info("PseudoMotor %s created.", self.motor_name)
+
+    def __str__(self):
+        """Custom __str__ method for PseudoMotor class."""
+        print(hasattr(self, 'motor_name'))
+        return f'{self.__class__.__name__}(alias={self.motor_name})'
 
     @property
     def user_position(self):
@@ -135,11 +141,11 @@ class PseudoMotor(Component):
         self._check_is_ready()
         start_time = time.time()
 
-        self.send('add_scan')
+        self.send(topic='Scan', message='add_scan')
         nb_of_point = len(np.arange(start, stop, step, dtype=np.float32))
         if self._detector is not None:
-            self.send('add_scan_detector', detector=self._detector, scan_points=nb_of_point)
-        self.send('add_scan_pseudo_motor', pseudomotor=self, scan_points=nb_of_point)
+            self.send(topic='Scan', message='add_scan_detector', detector=self._detector, scan_points=nb_of_point)
+        self.send(topic='Scan', message='add_scan_pseudo_motor', pseudomotor=self, scan_points=nb_of_point)
 
         LOGGER.info("Scan starts...\n")
         idx_col_width = 5
@@ -159,7 +165,7 @@ class PseudoMotor(Component):
                     "Scan interrupted at position %.2f",position)
                 raise RuntimeError(f"Scan interrupted at position {position}") from exc
 
-            self.send('add_motor_datapoint', alias=self.motor_name, idx=idx, position=position)
+            self.send(topic='DataPoint', message='add_motor_datapoint', alias=self.motor_name, idx=idx, position=position)
 
             counts = np.nan
             if self._detector is not None:
@@ -167,14 +173,14 @@ class PseudoMotor(Component):
                 spectrum = self._detector.acquisition(acq_time)
                 counts = spectrum.counts.sum()
                 spectra.append(spectrum)
-                self.send('add_datapoint_mca', alias=self._detector.alias, idx=idx, mca=spectrum)
+                self.send(topic='DataPoint', message='add_datapoint_mca', alias=self._detector.alias, idx=idx, mca=spectrum)
             elif acq_time > 0.:
                 time.sleep(acq_time)
 
             LOGGER.info(f"| {idx:{idx_col_width}.0f} | {position:{pos_col_width}.4f} "
                         f"| {acq_time:{time_col_width}.2f} | {counts:{count_col_width}.0f} |")
 
-        self.send('close_scan')
+        self.send(topic='Scan', message='close_scan')
 
         LOGGER.info(f"\n   Scan ended succesfully. Total duration was: {time.time()-start_time:.2f} s\n")
 
