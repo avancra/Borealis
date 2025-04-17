@@ -27,6 +27,8 @@ def h5file():
 
 
 def test_pseudomotor_const():
+    borealis.session_orchestrator._remove_all_sensors()
+    borealis.session_orchestrator._remove_all_controllers()
     ctrl = DummyCtrl()
     mot1 = Motor('DummyMotor1', '1', 0, ctrl)
     mot2 = Motor('DummyMotor2', '2', 0, ctrl)
@@ -37,6 +39,8 @@ def test_pseudomotor_const():
 
 
 def test_pseudomotor_motor_list():
+    borealis.session_orchestrator._remove_all_sensors()
+    borealis.session_orchestrator._remove_all_controllers()
     ctrl = DummyCtrl()
     mot1 = Motor('DummyMotor1', '1', 0, ctrl)
     mot2 = Motor('DummyMotor2', '2', 0, ctrl)
@@ -61,6 +65,8 @@ def test_pseudomotor_move():
     Pseudomotor position in the console output is  (user).
 
     """
+    borealis.session_orchestrator._remove_all_sensors()
+    borealis.session_orchestrator._remove_all_controllers()
     ctrl = DummyCtrl()
     mot1 = Motor('DummyMotor1', '1', -1, ctrl)
     mot1.amove(3)
@@ -95,13 +101,15 @@ def test_pseudomotor_move():
 
 
 def test_postion_law_conversion():
+    borealis.session_orchestrator._remove_all_sensors()
+    borealis.session_orchestrator._remove_all_controllers()
     ctrl = DummyCtrl()
     mot1 = Motor('DummyMotor1', '1', 0, ctrl)
     mot2 = Motor('DummyMotor2', '2', 0, ctrl)
     geo1 = lambda x: x * math.cos(math.pi / 3)  # PM(user) -> M(user)
     geo2 = lambda x: x * math.sin(math.pi / 3)
     pos_law = lambda x: math.sqrt(x[0].user_position ** 2 + x[1].user_position ** 2)
-    pseudo = PseudoMotor("pseudo", [mot1, mot2], [geo1, geo2], position_law=pos_law)
+    pseudo = PseudoMotor("Pseudo", [mot1, mot2], [geo1, geo2], position_law=pos_law)
 
     pseudo.amove(1)
     assert mot1.user_position == pytest.approx(0.5)
@@ -133,6 +141,8 @@ def test_postion_law_conversion():
 
 
 def test_soft_limit():
+    borealis.session_orchestrator._remove_all_sensors()
+    borealis.session_orchestrator._remove_all_controllers()
     ctrl = DummyCtrl()
     mot1 = Motor('DummyMotor1', '1', 30, ctrl, soft_limit_low=-25, soft_limit_high=25)
     mot2 = Motor('DummyMotor2', '2', 0, ctrl)
@@ -172,6 +182,8 @@ def test_pseudomotor_where_single_pm():
     DummyMotor2          at :   0.00 (user)
 
     """
+    borealis.session_orchestrator._remove_all_sensors()
+    borealis.session_orchestrator._remove_all_controllers()
     ctrl = DummyCtrl()
     mot1 = Motor('DummyMotor1', '1', 6, ctrl)
     mot2 = Motor('DummyMotor2', '2', 0, ctrl)
@@ -200,6 +212,8 @@ def test_pseudomotor_where_composed_pm():
     DummyMotor2          at :   2.00 (user)
 
     """
+    borealis.session_orchestrator._remove_all_sensors()
+    borealis.session_orchestrator._remove_all_controllers()
     ctrl = DummyCtrl()
     mot1 = Motor('DummyMotor1', '1', -1, ctrl)
     mot2 = Motor('DummyMotor2', '2', 2, ctrl)
@@ -217,6 +231,8 @@ def test_pseudomotor_scan():
     Two tests are performed: (1) without and (2) with a detector.
 
     """
+    borealis.session_orchestrator._remove_all_sensors()
+    borealis.session_orchestrator._remove_all_controllers()
 
     ctrl = DummyCtrl()
     mot1 = Motor('DummyMotor1', '1', 1, ctrl)
@@ -239,6 +255,8 @@ def test_pseudomotor_scan_no_h5file():
     Two tests are performed: (1) without and (2) with a detector.
 
     """
+    borealis.session_orchestrator._remove_all_sensors()
+    borealis.session_orchestrator._remove_all_controllers()
     borealis.data_collector.h5file = None
 
     ctrl = DummyCtrl()

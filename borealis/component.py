@@ -1,10 +1,10 @@
 import logging
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 
 LOGGER = logging.getLogger(__name__)
 
 
-class Component(ABC):
+class Component(metaclass=ABCMeta):
 
     def __init__(self, session_orchestrator):
         self._orchestrator = session_orchestrator

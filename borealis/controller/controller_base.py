@@ -5,7 +5,7 @@ Created on Thu February 9 14:48:59 2023.
 @author: A. Vancraeyenest
 """
 import logging
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 import time
 
 import pytest
@@ -13,7 +13,7 @@ import pytest
 LOGGER = logging.getLogger(__name__)
 
 
-class Controller(ABC):
+class Controller(metaclass=ABCMeta):
     """
     Abstract base class for Controller classes.
 

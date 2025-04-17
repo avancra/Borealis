@@ -55,7 +55,6 @@ class PseudoMotor(ControllerComponent):
 
     def __str__(self):
         """Custom __str__ method for PseudoMotor class."""
-        print(hasattr(self, 'motor_name'))
         return f'{self.__class__.__name__}(alias={self.motor_name})'
 
     @property
@@ -69,6 +68,12 @@ class PseudoMotor(ControllerComponent):
     @property
     def motor_list(self):
         return [motor.motor_name for motor in self._motors]
+
+    def get_device_info(self):
+        attrs = {'Alias': self.motor_name,
+                 'Motors': self.motor_list,}
+        datasets = {'user_position': 1, }
+        return self.motor_name, {'attrs': attrs, 'data_sets': datasets}
 
     def _check_is_ready(self):
         # TODO: change to MotorNotReady error once available
@@ -141,11 +146,12 @@ class PseudoMotor(ControllerComponent):
         self._check_is_ready()
         start_time = time.time()
 
-        self.send(topic='Scan', message='add_scan')
         nb_of_point = len(np.arange(start, stop, step, dtype=np.float32))
-        if self._detector is not None:
-            self.send(topic='Scan', message='add_scan_detector', detector=self._detector, scan_points=nb_of_point)
-        self.send(topic='Scan', message='add_scan_pseudo_motor', pseudomotor=self, scan_points=nb_of_point)
+        self.send(topic='Scan', message='new_scan', scan_points=nb_of_point)
+
+        # if self._detector is not None:
+        #     self.send(topic='Scan', message='add_scan_detector', detector=self._detector)
+        # self.send(topic='Scan', message='add_scan_pseudo_motor', pseudomotor=self)
 
         LOGGER.info("Scan starts...\n")
         idx_col_width = 5

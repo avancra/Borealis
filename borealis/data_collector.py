@@ -29,12 +29,8 @@ class DataCollector(DataComponent):
     def receive(self, message, **kwargs):
         LOGGER.debug('Receiving message: %s', message)
         match message:
-            case 'add_scan':
-                self.add_scan()
-            case 'add_scan_pseudo_motor':
-                self.add_scan_pseudo_motor(**kwargs)
-            case 'add_scan_detector':
-                self.add_scan_detector(**kwargs)
+            case 'new_scan':
+                self.add_scan(**kwargs)
             case 'add_motor_datapoint':
                 self.add_motor_datapoint(**kwargs)
             case 'add_datapoint_mca':
@@ -63,7 +59,7 @@ class DataCollector(DataComponent):
         self.h5file["/"].attrs["Experiment ID"] = self.experiment_id
         self.h5file["/"].attrs["Date created"] = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
 
-    def add_scan(self):
+    def add_scan(self, **kwargs):
         if self.h5file is None:
             raise UserWarning("No File exists to save data, create one with the 'new_file' command.")
 
@@ -72,6 +68,17 @@ class DataCollector(DataComponent):
         self.current_scan = self.h5file.create_group(f"/scan{scan_number}")
         self.current_scan.attrs["start_time"] = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
         self.current_scan.attrs["Sample name"] = self.current_sample
+
+        for alias, device_info in kwargs['all_device_info'].items():
+            group = self.current_scan.create_group(alias)
+            for name, value in device_info['attrs'].items():
+                group.attrs[name.replace('_', ' ').capitalize()] = value
+            for name, size in device_info['data_sets'].items():
+                if size == 1:
+                    group.create_dataset(f'{name}', (kwargs['scan_points'], ))
+                else:
+                    group.create_dataset(f'{name}', (size, kwargs['scan_points']))
+
         # h5_scan.attrs["scan type"] = f"Type of the scan #{scan_number}, ie. function call"
 
         self.h5file.flush()
@@ -79,31 +86,6 @@ class DataCollector(DataComponent):
     def close_scan(self):
         self.current_scan.attrs["end_time"] = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
         self.current_scan = None
-
-        self.h5file.flush()
-
-    def add_scan_detector(self, detector, scan_points):
-        det_group = self.current_scan.create_group(detector.alias)
-        self.current_scan.create_dataset(f'{detector.alias}/MCA', (4096, scan_points))
-        self.current_scan.create_dataset(f'{detector.alias}/runtime', (scan_points,))
-        self.current_scan.create_dataset(f'{detector.alias}/ICR', (scan_points,))
-        self.current_scan.create_dataset(f'{detector.alias}/OCR', (scan_points,))
-        # arr = np.arange('2023-02-01T01:00', '2023-02-01T02:39', dtype="datetime64[m]")
-        # h5_detector.create_dataset(f'{h5_detector.name}/time_per_point', data=arr.astype(h5py.opaque_dtype(arr.dtype)))
-
-        for key, value in detector.get_det_info().items():
-            det_group.attrs[key.replace('_', ' ').capitalize()] = value
-
-        self.h5file.flush()
-
-    def add_scan_pseudo_motor(self, pseudomotor, scan_points):
-        pm_group = self.current_scan.create_group(pseudomotor.motor_name)
-        self.current_scan.create_dataset(f'{pseudomotor.motor_name}/user_position', (scan_points,))
-        pm_group.attrs.create('Motors', pseudomotor.motor_list)
-        # self.current_scan.attrs["soft_limits"] = "(low, high)"
-        #   would be nice to have
-        # self.current_scan.attrs["conversion law"] = "conversion law of pseudo_motor in symbolic python"
-        # self.current_scan.attrs["individual conversion law"] = "conversion law of pseudo_motor in symbolic python"
 
         self.h5file.flush()
 

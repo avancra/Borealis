@@ -10,20 +10,23 @@ from math import inf
 
 import numpy as np
 
+from borealis import session_orchestrator
 from borealis.controller.controller_base import Controller
 from borealis.detector.detector_base import Detector
 from borealis.exceptions import SoftLimitError, NotReadyError
+from borealis.component import ControllerComponent
 
 LOGGER = logging.getLogger(__name__)
 
 
-class Motor:
+class Motor(ControllerComponent):
     """Motor generic class."""
 
     def __init__(self, alias: str, motor_id: str, motor_offset: float, controller: Controller,
                  positive_direction: bool = True, soft_limit_low: float = -inf, soft_limit_high: float = inf) -> None:
         self._controller = controller
         self.motor_name = alias
+        super().__init__(session_orchestrator)
         self.motor_id = motor_id
         self.offset = motor_offset
         self._direction_coeff = -1 if positive_direction is False else 1
@@ -54,6 +57,11 @@ class Motor:
     @property
     def movement_direction(self):
         return "Pos(+)" if self._direction_coeff == 1 else "Neg(-)"
+
+    def get_device_info(self):
+        attrs = {'Alias': self.motor_name, }
+        datasets = {'user_position': 1, }
+        return self.motor_name, {'attrs': attrs, 'data_sets': datasets}
 
     def where(self):
         """
