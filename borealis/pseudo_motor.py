@@ -18,7 +18,7 @@ class PseudoMotor(ControllerComponent):
     """Class for a basic pseudo-motor, meaning a collection of Motor objects plus 0 or 1 detector."""
 
     def __init__(self, alias: str, motors: list[Motor, PseudoMotor], geometries: list,
-                 position_law: Callable[[list], float], detector: Union[Detector, None] = None) -> None:
+                 position_law: Callable[[list], float]) -> None:
         """
 
         Parameters
@@ -32,8 +32,7 @@ class PseudoMotor(ControllerComponent):
         position_law : Callable[[list], float]
             Function that takes as input the list of (pseudo)-motors as it was given at instantiation and returns
              a single float.
-        detector
-            Instance of Detector.
+
         """
         self.motor_name = alias
         # TODO: change list to tuple to avoid changing the motor order by mistake ? same for geometries
@@ -48,7 +47,6 @@ class PseudoMotor(ControllerComponent):
 
         self._motors = motors
         self._conversion_laws = geometries
-        self._detector = detector
         self._position_law = position_law
 
         LOGGER.info("PseudoMotor %s created.", self.motor_name)
@@ -135,59 +133,9 @@ class PseudoMotor(ControllerComponent):
             Spacing between values.  For any output `out`, this is the distance
             between two adjacent values, ``out[i+1] - out[i]``.
         acq_time : float
-            If a Detector is attached to the pseudo-motor, will perform an acquisition for this time.
-            If no detector is defined and acq_time > 0, it will sleep for this time.
 
-        Returns
-        -------
-        spectra : ndarray
-            Array of MCA objects.
         """
         self._check_is_ready()
-        start_time = time.time()
 
-        nb_of_point = len(np.arange(start, stop, step, dtype=np.float32))
-        self.send(topic='Scan', message='new_scan', scan_points=nb_of_point)
-
-        # if self._detector is not None:
-        #     self.send(topic='Scan', message='add_scan_detector', detector=self._detector)
-        # self.send(topic='Scan', message='add_scan_pseudo_motor', pseudomotor=self)
-
-        LOGGER.info("Scan starts...\n")
-        idx_col_width = 5
-        pos_col_width = 8
-        time_col_width = 7
-        count_col_width = 10
-        LOGGER.info(f"| {'#':>{idx_col_width}} | {'pos':>{pos_col_width}} | {'time':>{time_col_width}} "
-                    f"| {'count tot.':>{count_col_width}} |")
-        LOGGER.info(f"| {'-'*idx_col_width} | {'-'*pos_col_width} | {'-'*time_col_width} | {'-'*count_col_width} |")
-
-        spectra = []
-        for (idx, position) in enumerate(np.arange(start, stop, step, dtype=np.float32)):
-            try:
-                self.amove(position)
-            except RuntimeError as exc:  # TODO: change to MotorNotReady error once available
-                LOGGER.error(
-                    "Scan interrupted at position %.2f",position)
-                raise RuntimeError(f"Scan interrupted at position {position}") from exc
-
-            self.send(topic='DataPoint', message='add_motor_datapoint', alias=self.motor_name, idx=idx, position=position)
-
-            counts = np.nan
-            if self._detector is not None:
-                assert acq_time > 0.
-                spectrum = self._detector.acquisition(acq_time)
-                counts = spectrum.counts.sum()
-                spectra.append(spectrum)
-                self.send(topic='DataPoint', message='add_datapoint_mca', alias=self._detector.alias, idx=idx, mca=spectrum)
-            elif acq_time > 0.:
-                time.sleep(acq_time)
-
-            LOGGER.info(f"| {idx:{idx_col_width}.0f} | {position:{pos_col_width}.4f} "
-                        f"| {acq_time:{time_col_width}.2f} | {counts:{count_col_width}.0f} |")
-
-        self.send(topic='Scan', message='close_scan')
-
-        LOGGER.info(f"\n   Scan ended succesfully. Total duration was: {time.time()-start_time:.2f} s\n")
-
-        return np.array(spectra)
+        scan_points = np.arange(start, stop, step, dtype=np.float32)
+        self.send(message='Scan', scan_points=scan_points, acq_time=acq_time)

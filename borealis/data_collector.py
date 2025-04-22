@@ -31,10 +31,8 @@ class DataCollector(DataComponent):
         match message:
             case 'new_scan':
                 self.add_scan(**kwargs)
-            case 'add_motor_datapoint':
-                self.add_motor_datapoint(**kwargs)
-            case 'add_datapoint_mca':
-                self.add_datapoint_mca(**kwargs)
+            case 'new_scan_point':
+                self.add_scan_point(**kwargs)
             case 'close_scan':
                 self.close_scan()
 
@@ -103,3 +101,9 @@ class DataCollector(DataComponent):
         self.current_scan[alias]['user_position'][idx] = position
 
         self.h5file.flush()
+
+    def add_scan_point(self, idx, data, positions):
+        for sensor_alias, sensor_data in data.items():
+            self.add_datapoint_mca(sensor_alias, idx, sensor_data)
+        for ctlr_alias, ctlr_position in positions.items():
+            self.add_motor_datapoint(ctlr_alias, idx, ctlr_position)

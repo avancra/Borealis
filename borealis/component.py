@@ -9,10 +9,10 @@ class Component(metaclass=ABCMeta):
     def __init__(self, session_orchestrator):
         self._orchestrator = session_orchestrator
 
-    def send(self, topic, message, **kwargs):
+    def send(self, message, **kwargs):
         """Sends a message to the mediator."""
-        LOGGER.debug('Sending message: %s (%s)', message, topic)
-        self._orchestrator.notify(sender=self, topic=topic, message=message, **kwargs)
+        LOGGER.debug('Sending message: %s', message)
+        self._orchestrator.notify(sender=self, message=message, **kwargs)
 
     @abstractmethod
     def receive(self, message, **kwargs):

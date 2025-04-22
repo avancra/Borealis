@@ -59,7 +59,7 @@ def theta_pos_law(motor_list):
     return position
 
 theta = PseudoMotor('theta', [mono], [theta_to_mono],
-                      position_law= theta_pos_law, detector=det)
+                      position_law= theta_pos_law)
 
 # Si(12 8 4) has a d_hkl of 0.362834 Å
 d_hkl = 0.362834
@@ -100,13 +100,11 @@ def energy_to_theta(energy: float, d_hkl: float = d_hkl):
     angle = math.asin(12.39842 / (2 * d_hkl * energy)) * 180 / math.pi
     return angle
 
+
 def energy_pos_law(motor_list: list[Motor, PseudoMotor]):
     angle = motor_list[0].user_position
     return theta_to_energy(angle)
 
 
 energy = PseudoMotor('energy', [theta], [energy_to_theta],
-                      position_law= energy_pos_law, detector=det)
-
-energy_nodet = PseudoMotor('energy (no detector)', [theta], [energy_to_theta],
-                           position_law=energy_pos_law)
+                      position_law=energy_pos_law)

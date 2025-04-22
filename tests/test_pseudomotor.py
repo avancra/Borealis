@@ -243,8 +243,8 @@ def test_pseudomotor_scan():
     pseudo1 = PseudoMotor('DummyPseudoMotor1', [mot1, mot2], [geo1, geo2], position_law)
     pseudo1.scan(2, 5, .5, acq_time=.1)
 
-    det = DummyDet()
-    pseudo2 = PseudoMotor('DummyPseudoMotor1', [mot1, mot2], [geo1, geo2], position_law, detector=det)
+    DummyDet()
+    pseudo2 = PseudoMotor('DummyPseudoMotor1', [mot1, mot2], [geo1, geo2], position_law)
     pseudo2.scan(0, 5, 1, acq_time=.5)
 
 

@@ -5,6 +5,7 @@ Created on Fri May 13 14:48:59 2022.
 @author: A. Vancraeyenest
 """
 import logging
+import time
 from abc import ABCMeta, abstractmethod
 
 import numpy as np
@@ -54,7 +55,7 @@ class Detector(SensorComponent, metaclass=ABCMeta):
 
         Returns
         -------
-        mac : mca.MCA
+        mca : mca.MCA
             MCA object with spectrum counts and metadata.
 
         """
@@ -82,6 +83,13 @@ class Detector(SensorComponent, metaclass=ABCMeta):
         kwargs['stacklevel'] = 2
         LOGGER.log(level, f'{self.alias}: {msg}', *args, **kwargs)
 
+    def receive(self, message, **kwargs):
+        match message:
+            case 'measure':
+                mca = self.acquisition(kwargs['acquisition_time'])
+                kwargs['mca'] = mca
+                self.send('DataPoint', message='mca', **kwargs)
+
 
 class DummyDet(Detector):
     """When in need for a detector but no access to a real device."""
@@ -93,6 +101,8 @@ class DummyDet(Detector):
     def acquisition(self, acquisition_time: float) -> mca.MCA:
         self.log(logging.DEBUG, "this message logs the alias")
         LOGGER.debug('This message does not add the alias')
+
+        time.sleep(acquisition_time)
 
         return mca.MCA(np.arange(2048), mca.MCAMetadata.dummy())
 
