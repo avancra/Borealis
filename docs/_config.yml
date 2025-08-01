@@ -1,6 +1,8 @@
-theme: jekyll-theme-cayman
 title: Borealis
 description: Documentation for the Borealis project
+
+remote_theme: just-the-docs/just-the-docs
+
 
 titles_from_headings:
   enabled: true
