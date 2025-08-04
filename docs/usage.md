@@ -1,7 +1,8 @@
 ---
-layout: default
 title: Usage
+layout: default
 permalink: /usage/
+nav_order: 3
 ---
 
 # How to use Borealis

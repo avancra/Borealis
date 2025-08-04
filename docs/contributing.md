@@ -1,7 +1,8 @@
 ---
-layout: default
 title: Contributing
+layout: default
 permalink: /contributing/
+nav_order: 4
 ---
 
 

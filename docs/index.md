@@ -1,3 +1,11 @@
+---
+title: Home
+layout: home
+description: "Borealis is a control and acquisition software for X-ray emission and absorption spectrometers"
+permalink: /
+nav_order: 1
+---
+
 # Borealis Project Documentation
 
 Welcome to the documentation site for the **Borealis** project.
