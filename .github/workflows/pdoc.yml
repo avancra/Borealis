@@ -1,0 +1,48 @@
+name: Generate API Docs with pdoc
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  generate-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install pdoc
+      run: |
+        python -m pip install --upgrade pip
+        pip install pdoc
+    - name: Install dependencies
+      run: 
+        pip install -r requirements.txt
+    - name: Generate Markdown docs
+      run: |
+        rm -rf docs/api
+        mkdir -p docs/api
+        pdoc borealis --output-dir docs/api
+
+    - name: Add front matter to Markdown files
+      run: |
+        for file in docs/api/*.md; do
+          echo -e "---\ntitle: $(basename "$file" .md)\nnav_order: 2\n---\n$(cat "$file")" > "$file"
+        done
+
+    - name: Commit and push changes
+      run: |
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+        git add docs/api
+        git commit -m "Update API docs with pdoc [auto]" || echo "No changes to commit"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
