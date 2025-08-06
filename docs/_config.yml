@@ -36,3 +36,6 @@ nav_external_links:
 
 # Color scheme supports "light" (default) and "dark"
 color_scheme: light
+
+# Add support for LaTeX rendering of mathematical equation
+math: mathjax
