@@ -1,10 +1,16 @@
 title: Borealis
 description: Documentation for the Borealis project
 
+plugins:
+  - jekyll-remote-theme
+
 remote_theme: just-the-docs/just-the-docs
 
 titles_from_headings:
   enabled: true
+
+exclude:
+  - conf.py
 
 ###############################
 # Just-the-docs configuration #

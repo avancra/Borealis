@@ -2,7 +2,7 @@
 title: Contributing
 layout: default
 permalink: /contributing/
-nav_order: 4
+nav_order: 5
 ---
 
 

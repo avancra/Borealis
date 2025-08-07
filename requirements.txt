@@ -1,0 +1,7 @@
+pyusb
+pythonnet
+numpy
+scipy
+platformdirs
+pytest
+h5py
