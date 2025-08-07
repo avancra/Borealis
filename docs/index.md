@@ -21,6 +21,7 @@ To get started with Borealis, check out the following sections:
 
 - [Installation Guide](installation)
 - [Usage Instructions](usage)
+- [Architecture](architecture)
 - [Contributing](contributing)
 
 ## Repository
