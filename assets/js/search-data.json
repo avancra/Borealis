@@ -1,0 +1,170 @@
+{"0": {
+    "doc": "Architecture",
+    "title": "Borealis – Technical Architecture Overview",
+    "content": " ",
+    "url": "/architecture/#borealis--technical-architecture-overview",
+    
+    "relUrl": "/architecture/#borealis--technical-architecture-overview"
+  },"1": {
+    "doc": "Architecture",
+    "title": "Introduction",
+    "content": "The Borealis library is designed to [brief description of purpose, e.g., “facilitate scalable data processing for scientific workflows”]. This document outlines its core architectural components and how they interact. ",
+    "url": "/architecture/#introduction",
+    
+    "relUrl": "/architecture/#introduction"
+  },"2": {
+    "doc": "Architecture",
+    "title": "Diagram",
+    "content": ". ",
+    "url": "/architecture/#diagram",
+    
+    "relUrl": "/architecture/#diagram"
+  },"3": {
+    "doc": "Architecture",
+    "title": "Core Components",
+    "content": "1. Orchestator . 2. Data collector . 3. Components . 4. API Interface . ",
+    "url": "/architecture/#core-components",
+    
+    "relUrl": "/architecture/#core-components"
+  },"4": {
+    "doc": "Architecture",
+    "title": "Architecture",
+    "content": " ",
+    "url": "/architecture/",
+    
+    "relUrl": "/architecture/"
+  },"5": {
+    "doc": "Contributing",
+    "title": "Contributing to Borealis",
+    "content": "Thank you for your interest in contributing to Borealis! . We welcome contributions of all kinds — from bug reports and feature requests to documentation improvements and code enhancements. ",
+    "url": "/contributing/#contributing-to-borealis",
+    
+    "relUrl": "/contributing/#contributing-to-borealis"
+  },"6": {
+    "doc": "Contributing",
+    "title": "🧭 Getting Started",
+    "content": ". | Fork the repository | Clone your fork: git clone https://github.com/your-username/Borealis.git cd Borealis . | Create a branch for your changes: git checkout -b feature/your-feature-name . | . ",
+    "url": "/contributing/#-getting-started",
+    
+    "relUrl": "/contributing/#-getting-started"
+  },"7": {
+    "doc": "Contributing",
+    "title": "🛠️ Development Setup",
+    "content": "To set up your development environment: . conda env create -f env.yml conda activate borealis . Make sure your changes follow the project’s structure and style. ",
+    "url": "/contributing/#%EF%B8%8F-development-setup",
+    
+    "relUrl": "/contributing/#️-development-setup"
+  },"8": {
+    "doc": "Contributing",
+    "title": "🧪 Testing Your Changes",
+    "content": "Please test your changes before submitting a pull request. If applicable, include: . | Unit tests | Example scripts | Updated documentation | . ",
+    "url": "/contributing/#-testing-your-changes",
+    
+    "relUrl": "/contributing/#-testing-your-changes"
+  },"9": {
+    "doc": "Contributing",
+    "title": "🚀 Submitting a Pull Request",
+    "content": ". | Push your branch: git push origin feature/your-feature-name . | Open a pull request on GitHub | Provide a clear description of your changes and link to any related issues | . ",
+    "url": "/contributing/#-submitting-a-pull-request",
+    
+    "relUrl": "/contributing/#-submitting-a-pull-request"
+  },"10": {
+    "doc": "Contributing",
+    "title": "🤝 Code of Conduct",
+    "content": "Please be respectful and inclusive. We follow a Code of Conduct to ensure a welcoming environment for everyone. ",
+    "url": "/contributing/#-code-of-conduct",
+    
+    "relUrl": "/contributing/#-code-of-conduct"
+  },"11": {
+    "doc": "Contributing",
+    "title": "🙋‍♀️ Need Help?",
+    "content": "If you’re unsure where to start or have questions, feel free to open an issue or reach out! . ",
+    "url": "/contributing/#%EF%B8%8F-need-help",
+    
+    "relUrl": "/contributing/#️-need-help"
+  },"12": {
+    "doc": "Contributing",
+    "title": "Contributing",
+    "content": " ",
+    "url": "/contributing/",
+    
+    "relUrl": "/contributing/"
+  },"13": {
+    "doc": "Home",
+    "title": "Borealis Project Documentation",
+    "content": "Welcome to the documentation site for the Borealis project. ",
+    "url": "/#borealis-project-documentation",
+    
+    "relUrl": "/#borealis-project-documentation"
+  },"14": {
+    "doc": "Home",
+    "title": "Overview",
+    "content": "Borealis is a control and acquisition software for X-ray emission and absorption spectrometers. ",
+    "url": "/#overview",
+    
+    "relUrl": "/#overview"
+  },"15": {
+    "doc": "Home",
+    "title": "Getting Started",
+    "content": "To get started with Borealis, check out the following sections: . | Installation Guide | Usage Instructions | Architecture | Contributing | . ",
+    "url": "/#getting-started",
+    
+    "relUrl": "/#getting-started"
+  },"16": {
+    "doc": "Home",
+    "title": "Repository",
+    "content": "You can find the source code and contribute on GitHub. ",
+    "url": "/#repository",
+    
+    "relUrl": "/#repository"
+  },"17": {
+    "doc": "Home",
+    "title": "Home",
+    "content": " ",
+    "url": "/",
+    
+    "relUrl": "/"
+  },"18": {
+    "doc": "Installation",
+    "title": "Installation",
+    "content": "To install and set up the Borealis control and acquisition software for X-ray emission and absorption spectrometers, follow these steps: . ",
+    "url": "/installation/",
+    
+    "relUrl": "/installation/"
+  },"19": {
+    "doc": "Installation",
+    "title": "Clone the Repository",
+    "content": "Start by cloning the repository to get a copy of the source code: . git clone https://github.com/avancra/Borealis.git cd Borealis . ",
+    "url": "/installation/#clone-the-repository",
+    
+    "relUrl": "/installation/#clone-the-repository"
+  },"20": {
+    "doc": "Installation",
+    "title": "Set Up the Environment",
+    "content": "The required dependencies are listed in the env.yml file. You can create a conda environment using: . conda env create -f env.yml conda activate borealis . ",
+    "url": "/installation/#set-up-the-environment",
+    
+    "relUrl": "/installation/#set-up-the-environment"
+  },"21": {
+    "doc": "Usage",
+    "title": "How to use Borealis",
+    "content": " ",
+    "url": "/usage/#how-to-use-borealis",
+    
+    "relUrl": "/usage/#how-to-use-borealis"
+  },"22": {
+    "doc": "Usage",
+    "title": "How to run an experiment",
+    "content": "The user must create a configuration file to initialize all python objects composing the spectrometer and to establish all communication with the hardware. An example of configuration file for a dummy spectrometer is given in \\examples\\dummy_spectrometer.py. This dummy spectrometer consists in one dummy controller, a dummy detector and a Si(12 8 4) analyzer crystal. A step motor “mono” is positioning the monochromator, with an offset of -3 degrees. A pseudo-motor “theta” moves the motor “mono” in order to reach a specific Bragg angle theta, according to a positioning law theta_to_mono. A pseudo-motor “energy” moves the pseudo-motor “theta” to the energy position in keV corresponding to the Bragg angle obeying the Bragg law: . \\[energy = 12.89842 / 2 * 0.362834 * sin(theta)\\] “theta” and “energy” are both linked to a detector, allowing to perform an acquisition while scanning, i.e. at each point of a user-define trajectory. A pseudo-motor “energy_no_det” is identical to “energy”, but is linked to no detector. One starts the interactive ipython session and instantiate the dummyspectrometer with: . ipython -i examples/dummy_spectrometer.py . Within the interactive ipython session, the user can interact with the spectrometer directly through call to object methods such as theta.amove() or energy.scan(), or via a script. A script example for an energy scan between 17.1 keV and 17.2 keV is given in examples\\script_dummy_spectrometer.py. This script is executed via: . %run -i examples/script_dummy_spectrometer.py . ",
+    "url": "/usage/#how-to-run-an-experiment",
+    
+    "relUrl": "/usage/#how-to-run-an-experiment"
+  },"23": {
+    "doc": "Usage",
+    "title": "Usage",
+    "content": " ",
+    "url": "/usage/",
+    
+    "relUrl": "/usage/"
+  }
+}
