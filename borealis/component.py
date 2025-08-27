@@ -5,6 +5,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Component(metaclass=ABCMeta):
+    """Base component class."""
 
     def __init__(self, session_orchestrator):
         self._orchestrator = session_orchestrator
@@ -20,6 +21,7 @@ class Component(metaclass=ABCMeta):
 
 
 class SensorComponent(Component):
+    """Base sensor component class."""
 
     def __init__(self, session_orchestrator):
         super().__init__(session_orchestrator)
@@ -30,6 +32,7 @@ class SensorComponent(Component):
 
 
 class DataComponent(Component):
+    """Base data component class."""
 
     def __init__(self, session_orchestrator):
         super().__init__(session_orchestrator)
@@ -40,6 +43,7 @@ class DataComponent(Component):
 
 
 class ControllerComponent(Component):
+    """Base controller component class."""
 
     def __init__(self, session_orchestrator):
         super().__init__(session_orchestrator)

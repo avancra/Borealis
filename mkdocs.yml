@@ -1,0 +1,52 @@
+site_name: Borealis Documentation
+site_url: https://avancra.github.io/Borealis/
+docs_dir: docs
+repo_url: https://github.com/avancra/Borealis
+repo_name: Borealis on Github
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  features:
+    - content.action.edit
+  icon:
+    repo: fontawesome/brands/github
+
+
+markdown_extensions:
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - javascripts/config.js
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+plugins:
+  - search
+  - mkdocs-autoapi:
+      autoapi_dir: ./borealis/
+      autoapi_ignore:
+        - "lib/"
+      autoapi_add_nav_entry: False
+  - mkdocstrings:
+      handlers:
+        python:
+          paths:
+            - ./
+          options:
+            docstring_style: numpy
+            show_root_heading: true
+            show_source: true
+            merge_init_into_class: true
+
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Usage: usage.md
+  - Architecture: architecture.md
+  - Contributing: contributing.md
+  - API Reference: autoapi/
+  - View on GitHub: https://github.com/avancra/Borealis
+

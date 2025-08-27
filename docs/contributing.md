@@ -1,11 +1,3 @@
----
-title: Contributing
-layout: default
-permalink: /contributing/
-nav_order: 5
----
-
-
 # Contributing to Borealis
 
 Thank you for your interest in contributing to Borealis!

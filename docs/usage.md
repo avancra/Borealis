@@ -1,10 +1,3 @@
----
-title: Usage
-layout: default
-permalink: /usage/
-nav_order: 3
----
-
 # How to use Borealis
 
 
@@ -24,10 +17,10 @@ pseudo-motor "energy" moves the pseudo-motor "theta" to the energy position
 in keV corresponding to the Bragg angle obeying the Bragg law: 
 
 $$
-energy = 12.89842 / 2 * 0.362834 * sin(theta)
+energy = 12.89842 / 2 * 0.362834 * sin(\theta)
 $$
 
-"theta" and "energy" are both linked to a detector, allowing to perform an 
+$\theta$ and $energy$ are both linked to a detector, allowing to perform an 
 acquisition while scanning, i.e. at each point of a user-define trajectory. 
 A pseudo-motor "energy_no_det" is identical to "energy", but is linked to no 
 detector.

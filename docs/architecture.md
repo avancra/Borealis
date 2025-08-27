@@ -1,10 +1,3 @@
----
-title: Architecture
-layout: default
-permalink: /architecture/
-nav_order: 4
----
-
 # Borealis – Technical Architecture Overview
 
 ## Introduction
@@ -13,7 +6,7 @@ outlines its core architectural components and how they interact.
 
 ## Diagram
 
-![Schema explaining how the main building blocks of Borealis operate together.]({{"/diagrams/Borealis_core.png" | relative_url}})
+![Schema explaining how the main building blocks of Borealis operate together.](diagrams/Borealis_core.png)
 
 ## Core Components
 

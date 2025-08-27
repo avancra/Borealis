@@ -1,10 +1,3 @@
----
-title: Installation
-layout: default
-permalink: /installation/
-nav_order: 2
----
-
 # Installation
 
 To install and set up the **Borealis** control and acquisition software for X-ray emission and absorption spectrometers, follow these steps:

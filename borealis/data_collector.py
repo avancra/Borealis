@@ -11,8 +11,17 @@ LOGGER = logging.getLogger(__name__)
 
 
 class DataCollector(DataComponent):
+    """Data collector"""
 
     def __init__(self, orchestrator):
+        """
+        DataCollector constructor
+
+        Parameters
+        ----------
+        orchestrator: Orchestrator
+
+        """
         super().__init__(orchestrator)
         self.h5file = None
         self.current_scan = None

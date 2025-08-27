@@ -19,11 +19,11 @@ from borealis.detector.detector_base import DummyDet
 
 @pytest.fixture(autouse=True, scope='module')
 def h5file():
-    borealis.data_collector.filename_base = 'datafile_test_pm'
-    borealis.data_collector.instrument = 'Dummy instrument'
-    borealis.data_collector.experiment_id = "Fake ID 42"
-    borealis.data_collector.current_sample = 'Dummy sample'
-    borealis.data_collector.create_h5file(add_date=False)
+    borealis.session_data_collector.filename_base = 'datafile_test_pm'
+    borealis.session_data_collector.instrument = 'Dummy instrument'
+    borealis.session_data_collector.experiment_id = "Fake ID 42"
+    borealis.session_data_collector.current_sample = 'Dummy sample'
+    borealis.session_data_collector.create_h5file(add_date=False)
 
 
 def test_pseudomotor_const():
@@ -257,7 +257,7 @@ def test_pseudomotor_scan_no_h5file():
     """
     borealis.session_orchestrator._remove_all_sensors()
     borealis.session_orchestrator._remove_all_controllers()
-    borealis.data_collector.h5file = None
+    borealis.session_data_collector.h5file = None
 
     ctrl = DummyCtrl()
     mot1 = Motor('DummyMotor1', '1', 1, ctrl)

@@ -8,6 +8,19 @@ from platformdirs import user_data_dir
 from borealis.orchestrator import Orchestrator
 from borealis.data_collector import DataCollector
 
+__all__ = [
+    "pseudo_motor",
+    "orchestrator",
+    "controller",
+    "detector",
+    "motor",
+    "mca",
+    "exceptions",
+    "component",
+    "spellman",
+    "data_collector",
+]
+
 # default cross-platform directory for Borealis log and config files
 # On windows, it should be something like C:\\Users\\username\\AppData\\Local\\C4XS\\Borealis
 # On linux, it should be something like /home/username/.local/share/Borealis
@@ -41,11 +54,25 @@ logger.debug("\n\n %s - New Borealis session started \n",
 
 # SESSION OBJECTS
 session_orchestrator = Orchestrator()
-data_collector = DataCollector(session_orchestrator)
+session_data_collector = DataCollector(session_orchestrator)
 
 # Exposing main functions at package level as users shouldn't care about DataCollector
 def new_file(exp_id: str = ''):
-    data_collector.create_h5file(experiment_id=exp_id)
+    """New file."""
+    session_data_collector.create_h5file(experiment_id=exp_id)
 
 def new_sample(sample: str):
-    data_collector.current_sample = sample
+    """New sample."""
+    session_data_collector.current_sample = sample
+
+
+def hello_world():
+    """
+    Say hello.
+
+    Returns
+    -------
+    str
+        A greeting string.
+    """
+    return "Hello, Borealis!"

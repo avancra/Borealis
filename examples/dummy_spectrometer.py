@@ -14,7 +14,7 @@ sys.path.append((Path(__file__).absolute().parent.parent).as_posix())
 
 import math
 
-from borealis import new_file, new_sample, data_collector
+from borealis import new_file, new_sample, session_data_collector
 from borealis.controller.controller_base import DummyCtrl
 from borealis.detector.detector_base import DummyDet
 from borealis.motor import Motor
@@ -23,7 +23,7 @@ from borealis.pseudo_motor import PseudoMotor
 ######################################################
 ### Define the name of the instrument session wide ###
 ######################################################
-data_collector.instrument = 'Dummy instrument'
+session_data_collector.instrument = 'Dummy instrument'
 
 ##################################
 ### INITIALIZATION OF DETECTOR ###
