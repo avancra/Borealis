@@ -64,15 +64,3 @@ def new_file(exp_id: str = ''):
 def new_sample(sample: str):
     """New sample."""
     session_data_collector.current_sample = sample
-
-
-def hello_world():
-    """
-    Say hello.
-
-    Returns
-    -------
-    str
-        A greeting string.
-    """
-    return "Hello, Borealis!"
