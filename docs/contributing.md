@@ -48,6 +48,6 @@ Please test your changes before submitting a pull request. If applicable, includ
 
 Please be respectful and inclusive. We follow a Code of Conduct to ensure a welcoming environment for everyone.
 
-## :material-chat-question-outline:♀️ Need Help?
+## :material-chat-question-outline: Need Help?
 
 If you're unsure where to start or have questions, feel free to open an issue or reach out!
