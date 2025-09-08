@@ -8,6 +8,8 @@ copyright: Copyright &copy; 2024 - 2025 Aurélie Vancraeyenest
 
 theme:
   name: material
+  logo: assets/MainLogo_cropped.png
+  favicon: assets/favicon.png
   features:
     - content.action.edit
   icon:
@@ -45,11 +47,15 @@ extra:
       link: https://github.com/avancra
     - icon: fontawesome/brands/linkedin
       link: www.linkedin.com/in/avancra
+  logo: assets/MainLogo.png
 
 extra_javascript:
   - javascripts/config.js
   - https://polyfill.io/v3/polyfill.min.js?features=es6
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+extra_css:
+  - styles/extra.css
 
 plugins:
   - search
