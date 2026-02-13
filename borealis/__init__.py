@@ -3,8 +3,12 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 
 from pathlib import Path
+from typing import Union, Iterable
+
 from platformdirs import user_data_dir
 
+from borealis.motor import Motor
+from borealis.pseudo_motor import PseudoMotor
 from borealis.orchestrator import Orchestrator
 from borealis.data_collector import DataCollector
 
@@ -56,11 +60,31 @@ logger.debug("\n\n %s - New Borealis session started \n",
 session_orchestrator = Orchestrator()
 session_data_collector = DataCollector(session_orchestrator)
 
-# Exposing main functions at package level as users shouldn't care about DataCollector
+# Exposing main functions at package level as users shouldn't care about internals
 def new_file(exp_id: str = ''):
     """New file."""
     session_data_collector.create_h5file(experiment_id=exp_id)
 
+
 def new_sample(sample: str):
-    """New sample."""
+    """New sample.
+
+    Parameters
+    ----------
+    sample : str
+    """
     session_data_collector.current_sample = sample
+
+
+def scan(scan_motor: Union[Motor, PseudoMotor], data_point: Iterable[float], acq_time: float):
+    """Master scan function.
+
+    Parameters
+    ----------
+    scan_motor : Union[Motor, PseudoMotor]
+        Instance of Motor or Pseudo-motor to scan
+    data_point : Iterable[float]
+    acq_time : float
+
+    """
+    session_orchestrator.scan(scan_motor, data_point, acq_time)
