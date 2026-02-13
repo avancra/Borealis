@@ -39,7 +39,7 @@ _ctrl = DummyCtrl()
 ### INITIALIZATION OF MOTOR ###
 ###############################
 
-mono = Motor('mono', '1', -3, _ctrl)
+mono = Motor('mono', '1', motor_offset=-3, controller=_ctrl, soft_limit_low=0, soft_limit_high=20)
 
 ######################################
 ### INITIALIZATION OF PSEUDO-MOTOR ###

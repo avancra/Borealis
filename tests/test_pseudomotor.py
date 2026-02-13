@@ -243,18 +243,19 @@ def test_pseudomotor_scan():
     pseudo1 = PseudoMotor('DummyPseudoMotor1', [mot1, mot2], [geo1, geo2], position_law)
     pseudo1.scan(2, 5, .5, acq_time=.1)
 
+    # An acqusition time = 0 should not raise Error
+    pseudo1.scan(2, 5, .5)
+
     DummyDet()
     pseudo2 = PseudoMotor('DummyPseudoMotor1', [mot1, mot2], [geo1, geo2], position_law)
     pseudo2.scan(0, 5, 1, acq_time=.5)
 
+    # An acqusition time = 0 should not raise Error
+    pseudo2.scan(0, 5, 1)
+
 
 def test_pseudomotor_scan_no_h5file():
-    """
-    Check the output of the scan method.
-
-    Two tests are performed: (1) without and (2) with a detector.
-
-    """
+    """Check that scan fails if no H5File defined."""
     borealis.session_orchestrator._remove_all_sensors()
     borealis.session_orchestrator._remove_all_controllers()
     borealis.session_data_collector.h5file = None

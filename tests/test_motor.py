@@ -1,9 +1,19 @@
 import pytest
 
+import borealis
 from borealis.controller.controller_base import DummyCtrl
 from borealis.exceptions import SoftLimitError
 from borealis.motor import Motor
 from borealis.detector.detector_base import DummyDet
+
+
+@pytest.fixture(autouse=True, scope='module')
+def h5file():
+    borealis.session_data_collector.filename_base = 'datafile_test_mot'
+    borealis.session_data_collector.instrument = 'Dummy instrument'
+    borealis.session_data_collector.experiment_id = "Fake ID 42"
+    borealis.session_data_collector.current_sample = 'Dummy sample'
+    borealis.session_data_collector.create_h5file(add_date=False)
 
 
 def test_motor_const():
@@ -88,20 +98,40 @@ def test_motor_where():
     mot.amove(10)
     mot.where()
 
+
 def test_motor_scan():
     """
     Check the output of the scan method.
 
-    Three tests are performed, (1) without detector and no acquisition time,
+    Four tests are performed:
+    (1) without detector and no acquisition time,
     (2) without a detector but an acquisition time is given,
-    and (3) with a detector and an acquisition time.
+    (3) with a detector and no acquisition time,
+    (4) with a detector and an acquisition time.
 
     """
+    borealis.session_orchestrator._remove_all_sensors()
+    borealis.session_orchestrator._remove_all_controllers()
+
     ctrl = DummyCtrl()
     mot = Motor('DummyMotor', '1', 0, ctrl)
-    mot.scan(1, 10, 1)
 
+    mot.scan(1, 10, 1)
     mot.scan(2, 5, .5, acq_time=.1)
 
     det = DummyDet()
-    mot.scan(0, 5, 1, acq_time=.5, det=det)
+    mot.scan(0, 5, 1)
+    mot.scan(0, 5, 1, acq_time=.5)
+
+
+def test_motor_scan_no_h5file():
+    """Check that scan fails if no H5File defined."""
+    borealis.session_orchestrator._remove_all_sensors()
+    borealis.session_orchestrator._remove_all_controllers()
+    borealis.session_data_collector.h5file = None
+
+    ctrl = DummyCtrl()
+    mot = Motor('DummyMotor', '1', 0, ctrl)
+
+    with pytest.raises(UserWarning):
+        mot.scan(1, 10, 1)

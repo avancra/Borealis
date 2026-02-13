@@ -104,7 +104,7 @@ class DummyDet(Detector):
 
         time.sleep(acquisition_time)
 
-        return mca.MCA(np.arange(2048), mca.MCAMetadata.dummy())
+        return mca.MCA(np.arange(2048) * acquisition_time, mca.MCAMetadata.dummy())
 
     def stop(self):
         LOGGER.info('%s controller closed', self.alias)
