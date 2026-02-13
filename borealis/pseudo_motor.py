@@ -121,7 +121,7 @@ class PseudoMotor(ControllerComponent):
 
     def scan(self, start: float, stop: float, step: float, acq_time: float = 0):
         """
-        Scan, with or without acquisition.
+        Perform a scan, if acq_time > 0 will also do an acquisition on all sensors.
 
         Parameters
         ----------
