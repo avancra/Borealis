@@ -11,7 +11,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class DataCollector(DataComponent):
-    """Data collector"""
+    """Data collector with HDF5 file handler."""
 
     def __init__(self, orchestrator):
         """
@@ -20,6 +20,7 @@ class DataCollector(DataComponent):
         Parameters
         ----------
         orchestrator: Orchestrator
+            Session orchestrator
 
         """
         super().__init__(orchestrator)

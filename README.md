@@ -36,19 +36,17 @@ in keV corresponding to the Bragg angle obeying the Bragg law:
 $energy = 12.89842 / 2 * 0.362834 * sin(theta)$
 
 "theta" and "energy" are both linked to a detector, allowing to perform an 
-acquisition while scanning, i.e. at each point of a user-define trajectory. 
-A pseudo-motor "energy_no_det" is identical to "energy", but is linked to no 
-detector.
+acquisition while scanning, i.e. at each point of a user-defined trajectory.
 
 One starts the interactive ipython session and instantiate the 
-dummyspectrometer with:
+dummy spectrometer with:
 ```
 ipython -i examples/dummy_spectrometer.py
 
 ```
 Within the interactive ipython session, the user can interact with the 
-spectrometer directly through call to object methods such as theta.amove() 
-or energy.scan(), or via a script. A script example for an energy scan 
+spectrometer directly through call to object methods such as `theta.amove()` 
+or `energy.scan()`, or via a script. A script example for an energy scan 
 between 17.1 keV and 17.2 keV is given in 
 `examples\script_dummy_spectrometer.py`.
 
