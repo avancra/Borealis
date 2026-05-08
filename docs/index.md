@@ -15,8 +15,9 @@ To get started with Borealis, check out the following sections:
 - [Usage Instructions](usage.md)
 
 For more in depth understanding of how Borealis works, or if you wish to contribute, checkout the following sections:
+
 - [Architecture](architecture.md)
-- [Contributing](contributing.md)
+- [Contributing](contributing/index.md)
 
 ## :material-github: Repository
 

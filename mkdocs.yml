@@ -12,6 +12,7 @@ theme:
   favicon: assets/favicon.png
   features:
     - content.action.edit
+#    - navigation.indexes
   icon:
     repo: fontawesome/brands/github
   palette:
@@ -81,7 +82,10 @@ nav:
   - Installation: installation.md
   - Usage: usage.md
   - Architecture: architecture.md
-  - Contributing: contributing.md
+  - Contributing:
+    - How to contribute: contributing/index.md
+    - Add a new detector: contributing/add_detector.md
+    - Add a new controller: contributing/add_controller.md
   - API Reference: autoapi/
   - View on GitHub: https://github.com/avancra/Borealis
 
