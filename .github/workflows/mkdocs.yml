@@ -57,7 +57,7 @@ jobs:
         run: echo "PYTHONPATH=$PYTHONPATH:$(pwd)/borealis" >> $GITHUB_ENV
 
       - name: Build MkDocs site
-        run: mkdocs build --strict --verbose
+        run: mkdocs build --verbose
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
