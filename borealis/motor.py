@@ -4,7 +4,6 @@ Created on Mon Mar  6 10:50:29 2023.
 
 @author: René Bes
 """
-import time
 import logging
 from math import inf
 
@@ -12,7 +11,6 @@ import numpy as np
 
 from borealis import session_orchestrator
 from borealis.controller.controller_base import Controller
-from borealis.detector.detector_base import Detector
 from borealis.exceptions import SoftLimitError, NotReadyError
 from borealis.component import ControllerComponent
 

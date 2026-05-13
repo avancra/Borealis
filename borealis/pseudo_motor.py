@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 import logging
-from typing import Union, Callable
-import time
+from typing import Callable
 
 import numpy as np
 
 from borealis import session_orchestrator
 from borealis.motor import Motor
-from borealis.detector.detector_base import Detector
 from borealis.component import ControllerComponent
 
 LOGGER = logging.getLogger(__name__)

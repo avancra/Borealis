@@ -7,8 +7,6 @@ from typing import Union, Iterable
 
 from platformdirs import user_data_dir
 
-from borealis.motor import Motor
-from borealis.pseudo_motor import PseudoMotor
 from borealis.orchestrator import Orchestrator
 from borealis.data_collector import DataCollector
 
@@ -76,7 +74,7 @@ def new_sample(sample: str):
     session_data_collector.current_sample = sample
 
 
-def scan(scan_motor: Union[Motor, PseudoMotor], data_point: Iterable[float], acq_time: float):
+def scan(scan_motor: Union['Motor', 'PseudoMotor'], data_point: Iterable[float], acq_time: float):
     """Master scan function.
 
     Parameters
