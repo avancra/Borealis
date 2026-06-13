@@ -9,10 +9,10 @@ from math import inf
 
 import numpy as np
 
-from borealis import session_orchestrator
 from borealis.controller.controller_base import Controller
 from borealis.exceptions import SoftLimitError, NotReadyError
 from borealis.component import ControllerComponent
+from data_structures import DeviceInfo
 
 LOGGER = logging.getLogger(__name__)
 
@@ -23,8 +23,8 @@ class Motor(ControllerComponent):
     def __init__(self, alias: str, motor_id: str, motor_offset: float, controller: Controller,
                  positive_direction: bool = True, soft_limit_low: float = -inf, soft_limit_high: float = inf) -> None:
         self._controller = controller
-        self.motor_name = alias
-        super().__init__(session_orchestrator)
+        self.alias = alias
+
         self.motor_id = motor_id
         self.offset = motor_offset
         self._direction_coeff = -1 if positive_direction is False else 1
@@ -33,12 +33,13 @@ class Motor(ControllerComponent):
         self._dial_position = self._controller.get_axis_position(self.motor_id)
         self._user_position = self.dial_position + self.offset
         self._is_ready = self._controller.is_axis_ready(self.motor_id)
-        LOGGER.info("Motor %s created.", self.motor_name)
+        super().__init__()
+        LOGGER.info("Motor %s created.", self.alias)
 
     def log(self, level, msg, *args, **kwargs):
         """Log a message with prepending the device's alias in front of the message."""
         kwargs['stacklevel'] = 2
-        LOGGER.log(level, f'{self.motor_name}: {msg}', *args, **kwargs)
+        LOGGER.log(level, f'{self.alias}: {msg}', *args, **kwargs)
 
     @property
     def dial_position(self):
@@ -57,9 +58,9 @@ class Motor(ControllerComponent):
         return "Pos(+)" if self._direction_coeff == 1 else "Neg(-)"
 
     def get_device_info(self):
-        attrs = {'Alias': self.motor_name, }
+        attrs = {'Alias': self.alias, }
         datasets = {'user_position': 1, }
-        return self.motor_name, {'attrs': attrs, 'data_sets': datasets}
+        return DeviceInfo(alias=self.alias, metadata={'attrs': attrs, 'data_sets': datasets})
 
     def where(self):
         """
@@ -70,7 +71,7 @@ class Motor(ControllerComponent):
         str
 
         """
-        print(f'{self.motor_name:20} at : {self.user_position:6.2f} (user)')
+        print(f'{self.alias:20} at : {self.user_position:6.2f} (user)')
 
 
     def _check_is_ready(self):
@@ -78,7 +79,7 @@ class Motor(ControllerComponent):
         if self.is_ready is False:
             self.log(logging.ERROR, 'Command interrupted due to motor not ready yet (i.e. not idle).')
             # LOGGER.error('Command interrupted due to motor not ready yet (i.e. not idle).')
-            raise NotReadyError(self.motor_name)
+            raise NotReadyError(self.alias)
 
     def check_soft_limits(self, target_user: float) -> None:
         """
@@ -98,7 +99,7 @@ class Motor(ControllerComponent):
             assert self._limit_low <= target_dial <= self._limit_high
         except AssertionError:
             self.log(logging.ERROR, 'Soft Limit Error: the dial position %.2f is outside the available soft limit range [%.2f : %.2f]', target_dial, self._limit_low, self._limit_high)
-            raise SoftLimitError(target_dial, self.motor_name, self._limit_low, self._limit_high)
+            raise SoftLimitError(target_dial, self.alias, self._limit_low, self._limit_high)
 
     def amove(self, user_position: float):
         """

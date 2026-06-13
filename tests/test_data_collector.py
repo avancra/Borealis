@@ -1,14 +1,13 @@
 from pathlib import Path
 
+import borealis
 from borealis.data_collector import DataCollector
-from borealis.orchestrator import Orchestrator
 
 class TestDataCollector:
 
     @classmethod
     def setup_class(cls):
-        orchestrator = Orchestrator()
-        cls.dc = DataCollector(orchestrator)
+        cls.dc = DataCollector()
         cls.dc.filename_base = Path(f'datafile_test_dc')
 
     def test_data_collector(self):
@@ -19,5 +18,6 @@ class TestDataCollector:
     @classmethod
     def teardown_class(cls):
         cls.dc.h5file.close()
+        borealis.session_orchestrator.data_managers.remove(cls.dc)
         # Path('./data/borealis_datafile_test.h5').unlink()
 

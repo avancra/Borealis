@@ -3,6 +3,8 @@ import time
 
 import numpy as np
 
+from data_structures import DeviceInfo
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -14,30 +16,46 @@ class Orchestrator():
         self.controllers = []
         self.data_managers = []
 
+    def add_data_component(self, component):
+        """Adds a component to the mediator."""
+        LOGGER.debug('Adding data manager %s', component)
+        self.data_managers.append(component)
+
     def add_controller_component(self, component):
         """Adds a component to the mediator."""
         LOGGER.debug('Adding controller component %s', component)
-        try:
-            assert hasattr(component, 'get_device_info')
-        except AssertionError:
-            LOGGER.error('Component %s is missing a get_device_info method', component)
-            raise AttributeError(f'Component {component} has no get_device_info method')
+
+        self._ensure_unique_alias(component)
+        self._validate_device_info(component)
         self.controllers.append(component)
 
     def add_sensor_component(self, component):
         """Adds a component to the mediator."""
         LOGGER.debug('Adding sensor component %s', component)
-        try:
-            assert hasattr(component, 'get_device_info')
-        except AssertionError:
-            LOGGER.error('Component %s is missing a get_device_info method', component)
-            raise AttributeError(f'Component {component} has no get_device_info method')
+
+        self._ensure_unique_alias(component)
+        self._validate_device_info(component)
         self.sensors.append(component)
 
-    def add_data_component(self, component):
-        """Adds a component to the mediator."""
-        LOGGER.debug('Adding data manager %s', component)
-        self.data_managers.append(component)
+    def _ensure_unique_alias(self, component):
+        all_aliases = [cpnt.alias for cpnt in (self.sensors + self.controllers)]
+        if component.alias in all_aliases:
+            raise ValueError(f"Duplicate alias detected: '{component.alias}'")
+
+    @staticmethod
+    def _validate_device_info(component):
+        if not hasattr(component, "get_device_info"):
+            LOGGER.error("Component %s is missing get_device_info()", component)
+            raise AttributeError(f"Component {component} must implement get_device_info()")
+        dev_info = component.get_device_info()
+        if not isinstance(dev_info, DeviceInfo):
+            LOGGER.error(
+                "Component %s get_device_info() must return DeviceInfo, got %s",
+                component, type(dev_info)
+            )
+            raise TypeError(
+                f"{component} get_device_info() must return DeviceInfo, got {type(dev_info)}"
+            )
 
     def _remove_all_sensors(self):
         self.sensors = []
@@ -61,7 +79,10 @@ class Orchestrator():
         scan_motor = sender
 
         # first create new scan in data collector
-        all_device_info = dict(device.get_device_info() for device in (self.sensors + self.controllers))
+        all_device_info = {
+            info.alias: info.metadata
+            for info in (device.get_device_info() for device in (self.sensors + self.controllers))
+        }
         scan_info = {'scan_points': len(scan_points), 'all_device_info': all_device_info}
         self.notify_data_managers('new_scan', scan_info)
 
@@ -77,7 +98,6 @@ class Orchestrator():
         LOGGER.info(
             f"| {'-' * idx_col_width} | {'-' * pos_col_width} | {'-' * time_col_width} | {'-' * count_col_width} |")
 
-        spectra = []
         for (idx, position) in enumerate(scan_points):
             try:
                 scan_motor.amove(position)
@@ -99,7 +119,7 @@ class Orchestrator():
                 time.sleep(acq_time)
 
             # Get all controller position
-            positions = {ctlr.motor_name: ctlr.user_position for ctlr in self.controllers}
+            positions = {ctlr.alias: ctlr.user_position for ctlr in self.controllers}
 
             point_data = {'idx': idx, 'data': data, 'positions': positions}
             self.notify_data_managers('new_scan_point', point_data)

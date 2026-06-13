@@ -247,7 +247,7 @@ def test_pseudomotor_scan():
     pseudo1.scan(2, 5, .5)
 
     DummyDet()
-    pseudo2 = PseudoMotor('DummyPseudoMotor1', [mot1, mot2], [geo1, geo2], position_law)
+    pseudo2 = PseudoMotor('DummyPseudoMotor2', [mot1, mot2], [geo1, geo2], position_law)
     pseudo2.scan(0, 5, 1, acq_time=.5)
 
     # An acqusition time = 0 should not raise Error

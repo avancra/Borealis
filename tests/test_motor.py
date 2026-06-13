@@ -15,65 +15,74 @@ def h5file():
     borealis.session_data_collector.current_sample = 'Dummy sample'
     borealis.session_data_collector.create_h5file(add_date=False)
 
+@pytest.fixture(scope="module")
+def dummy_ctrl():
+    return DummyCtrl()
 
-def test_motor_const():
-    ctrl = DummyCtrl()
+@pytest.fixture(autouse=True)
+def reset_orchestrator():
+    borealis.session_orchestrator._remove_all_sensors()
+    borealis.session_orchestrator._remove_all_controllers()
+    yield
+
+def test_motor_const(dummy_ctrl):
+    ctrl = dummy_ctrl
     Motor('DummyMotor', '1', 0, ctrl)
 
 
-def test_motor_soft_limits():
+def test_motor_soft_limits(dummy_ctrl):
     """
     Check softlimit error is raised when softlimits are reached.
 
     """
-    ctrl = DummyCtrl()
+    ctrl = dummy_ctrl
 
-    mot = Motor('DummyMotor', '1', 0, ctrl)
+    mot = Motor('DummyMoto_1r', '1', 0, ctrl)
     mot.amove(10)
 
-    mot = Motor('DummyMotor', '1', 0, ctrl, soft_limit_low=5, soft_limit_high=20)
+    mot = Motor('DummyMotor_2', '1', 0, ctrl, soft_limit_low=5, soft_limit_high=20)
     mot.amove(10)
     with pytest.raises(SoftLimitError):
         mot.amove(50)
 
-    mot = Motor('DummyMotor', '1', 0, ctrl, soft_limit_low=5, soft_limit_high=20, positive_direction=False)
+    mot = Motor('DummyMotor_3', '1', 0, ctrl, soft_limit_low=5, soft_limit_high=20, positive_direction=False)
     with pytest.raises(SoftLimitError):
         mot.amove(10)
 
     mot.set_current_as_zero()
 
 
-def test_motor_soft_limits_with_offset():
+def test_motor_soft_limits_with_offset(dummy_ctrl):
     """
     Check softlimit error is raised when softlimits are reached.
 
     """
-    ctrl = DummyCtrl()
+    ctrl = dummy_ctrl
 
-    mot = Motor('DummyMotor', '1', 30, ctrl)
+    mot = Motor('DummyMotor_1', '1', 30, ctrl)
     mot.amove(10)
 
-    mot = Motor('DummyMotor', '2', 30, ctrl, soft_limit_low=-25, soft_limit_high=20)
-    mot.amove(10)
-    with pytest.raises(SoftLimitError):
-        mot.amove(0)
-
-    mot = Motor('DummyMotor', '3', 30, ctrl, soft_limit_low=5, soft_limit_high=20, positive_direction=False)
+    mot = Motor('DummyMotor_2', '2', 30, ctrl, soft_limit_low=-25, soft_limit_high=20)
     mot.amove(10)
     with pytest.raises(SoftLimitError):
         mot.amove(0)
 
-    mot = Motor('DummyMotor', '4', 10, ctrl)
+    mot = Motor('DummyMotor_3', '3', 30, ctrl, soft_limit_low=5, soft_limit_high=20, positive_direction=False)
+    mot.amove(10)
+    with pytest.raises(SoftLimitError):
+        mot.amove(0)
+
+    mot = Motor('DummyMotor_4', '4', 10, ctrl)
     mot.rmove(10)
 
-    mot = Motor('DummyMotor', '5', 10, ctrl, soft_limit_low=-20, soft_limit_high=20)
+    mot = Motor('DummyMotor_5', '5', 10, ctrl, soft_limit_low=-20, soft_limit_high=20)
     print(mot.user_position, mot.dial_position)
     mot.rmove(10)
     print(mot.user_position, mot.dial_position)
     with pytest.raises(SoftLimitError):
         mot.rmove(20)
 
-    mot = Motor('DummyMotor', '6', 10, ctrl, soft_limit_low=-20, soft_limit_high=20, positive_direction=False)
+    mot = Motor('DummyMotor_6', '6', 10, ctrl, soft_limit_low=-20, soft_limit_high=20, positive_direction=False)
     print(mot.user_position, mot.dial_position)
     mot.rmove(10)
     print(mot.user_position, mot.dial_position)
@@ -84,7 +93,7 @@ def test_motor_soft_limits_with_offset():
 ### Tests below are only aimed to check the console output  ###
 ###############################################################
 
-def test_motor_where():
+def test_motor_where(dummy_ctrl):
     """
     Check the output of the where method.
 
@@ -93,13 +102,13 @@ def test_motor_where():
     DummyMotor           at :  10.00 (user)
 
     """
-    ctrl = DummyCtrl()
+    ctrl = dummy_ctrl
     mot = Motor('DummyMotor', '1', -3, ctrl)
     mot.amove(10)
     mot.where()
 
 
-def test_motor_scan():
+def test_motor_scan(dummy_ctrl):
     """
     Check the output of the scan method.
 
@@ -110,10 +119,7 @@ def test_motor_scan():
     (4) with a detector and an acquisition time.
 
     """
-    borealis.session_orchestrator._remove_all_sensors()
-    borealis.session_orchestrator._remove_all_controllers()
-
-    ctrl = DummyCtrl()
+    ctrl = dummy_ctrl
     mot = Motor('DummyMotor', '1', 0, ctrl)
 
     mot.scan(1, 10, 1)
@@ -124,13 +130,11 @@ def test_motor_scan():
     mot.scan(0, 5, 1, acq_time=.5)
 
 
-def test_motor_scan_no_h5file():
+def test_motor_scan_no_h5file(dummy_ctrl):
     """Check that scan fails if no H5File defined."""
-    borealis.session_orchestrator._remove_all_sensors()
-    borealis.session_orchestrator._remove_all_controllers()
     borealis.session_data_collector.h5file = None
 
-    ctrl = DummyCtrl()
+    ctrl = dummy_ctrl
     mot = Motor('DummyMotor', '1', 0, ctrl)
 
     with pytest.raises(UserWarning):

@@ -7,9 +7,6 @@ from typing import Union, Iterable
 
 from platformdirs import user_data_dir
 
-from borealis.orchestrator import Orchestrator
-from borealis.data_collector import DataCollector
-
 __all__ = [
     "pseudo_motor",
     "orchestrator",
@@ -31,15 +28,16 @@ app_author = "C4XS"
 app_dir = Path(user_data_dir(app_name, app_author))
 app_dir.mkdir(parents=True, exist_ok=True)
 
-#####  LOGGING settings  #####
+###################
+#  LOGGING SETUP  #
+###################
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 # Stream handler to log to the console
 stream_hdlr = logging.StreamHandler()
 stream_hdlr.setLevel(logging.INFO)
-# stream_formatter = logging.Formatter('%(asctime)s - %(message)s')
-# stream_hdlr.setFormatter(stream_formatter)
 logger.addHandler(stream_hdlr)
 
 # Handler to file
@@ -54,9 +52,19 @@ logger.addHandler(file_hdlr)
 logger.debug("\n\n %s - New Borealis session started \n",
              datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
-# SESSION OBJECTS
+#####################
+#  SESSION OBJECTS  #
+#####################
+
+from borealis.orchestrator import Orchestrator
 session_orchestrator = Orchestrator()
-session_data_collector = DataCollector(session_orchestrator)
+
+from borealis.data_collector import DataCollector
+session_data_collector = DataCollector()
+
+####################
+#   PUBLIC API     #
+####################
 
 # Exposing main functions at package level as users shouldn't care about internals
 def new_file(exp_id: str = ''):

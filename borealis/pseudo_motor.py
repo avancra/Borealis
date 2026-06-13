@@ -5,9 +5,9 @@ from typing import Callable
 
 import numpy as np
 
-from borealis import session_orchestrator
 from borealis.motor import Motor
 from borealis.component import ControllerComponent
+from data_structures import DeviceInfo
 
 LOGGER = logging.getLogger(__name__)
 
@@ -32,9 +32,9 @@ class PseudoMotor(ControllerComponent):
              a single float.
 
         """
-        self.motor_name = alias
+        self.alias = alias
         # TODO: change list to tuple to avoid changing the motor order by mistake ? same for geometries
-        super().__init__(session_orchestrator)
+
         try:
             assert len(motors) == len(geometries)
         except AssertionError:
@@ -46,12 +46,12 @@ class PseudoMotor(ControllerComponent):
         self._motors = motors
         self._conversion_laws = geometries
         self._position_law = position_law
-
-        LOGGER.info("PseudoMotor %s created.", self.motor_name)
+        super().__init__()
+        LOGGER.info("PseudoMotor %s created.", self.alias)
 
     def __str__(self):
         """Custom __str__ method for PseudoMotor class."""
-        return f'{self.__class__.__name__}(alias={self.motor_name})'
+        return f'{self.__class__.__name__}(alias={self.alias})'
 
     @property
     def user_position(self):
@@ -63,13 +63,13 @@ class PseudoMotor(ControllerComponent):
 
     @property
     def motor_list(self):
-        return [motor.motor_name for motor in self._motors]
+        return [motor.alias for motor in self._motors]
 
     def get_device_info(self):
-        attrs = {'Alias': self.motor_name,
+        attrs = {'Alias': self.alias,
                  'Motors': self.motor_list,}
         datasets = {'user_position': 1, }
-        return self.motor_name, {'attrs': attrs, 'data_sets': datasets}
+        return DeviceInfo(alias=self.alias, metadata={'attrs': attrs, 'data_sets': datasets})
 
     def _check_is_ready(self):
         # TODO: change to MotorNotReady error once available
@@ -86,7 +86,7 @@ class PseudoMotor(ControllerComponent):
         str
 
         """
-        print(f'{self.motor_name:20} at : {self.user_position:6.2f} (user)')
+        print(f'{self.alias:20} at : {self.user_position:6.2f} (user)')
         for motor in self._motors:
             motor.where()
 
@@ -107,7 +107,7 @@ class PseudoMotor(ControllerComponent):
         for idx, motor in enumerate(self._motors):
             motor_pos = self._conversion_laws[idx](target_user)
             motor.check_soft_limits(motor_pos)
-            LOGGER.debug("Valid dial %.3f for (pseudo)motor %s", motor_pos, motor.motor_name)
+            LOGGER.debug("Valid dial %.3f for (pseudo)motor %s", motor_pos, motor.alias)
 
     def amove(self, target_user):
         self._check_is_ready()

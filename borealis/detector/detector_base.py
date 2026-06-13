@@ -10,9 +10,9 @@ from abc import ABCMeta, abstractmethod
 
 import numpy as np
 
-from borealis import session_orchestrator
 from borealis import mca
 from borealis.component import SensorComponent
+from data_structures import DeviceInfo
 
 LOGGER = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ class Detector(SensorComponent, metaclass=ABCMeta):
         self.alias = alias if alias != "" else "Undefined"
         self.serial_number = 'Unknown'
         self.mca_size = 4096
-        super().__init__(session_orchestrator)
+        super().__init__()
 
     def __str__(self):
         """Custom __str__ method for Detector class (DO NOT OVERWRITE THIS METHOD)."""
@@ -76,7 +76,7 @@ class Detector(SensorComponent, metaclass=ABCMeta):
                      'runtime': 1,
                      'ICR': 1,
                      'OCR': 1}
-        return self.alias, {'attrs': attrs, 'data_sets': data_sets }
+        return DeviceInfo(alias=self.alias, metadata={'attrs': attrs, 'data_sets': data_sets })
 
     def log(self, level, msg, *args, **kwargs):
         """Log a message with prepending the device's alias in front of the message."""

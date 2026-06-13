@@ -13,7 +13,7 @@ LOGGER = logging.getLogger(__name__)
 class DataCollector(DataComponent):
     """Data collector with HDF5 file handler."""
 
-    def __init__(self, orchestrator):
+    def __init__(self):
         """
         DataCollector constructor
 
@@ -23,7 +23,7 @@ class DataCollector(DataComponent):
             Session orchestrator
 
         """
-        super().__init__(orchestrator)
+        super().__init__()
         self.h5file = None
         self.current_scan = None
         self.data_dir = Path.cwd() / 'data'
