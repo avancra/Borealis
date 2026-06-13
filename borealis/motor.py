@@ -12,7 +12,7 @@ import numpy as np
 from borealis.controller.controller_base import Controller
 from borealis.exceptions import SoftLimitError, NotReadyError
 from borealis.component import ControllerComponent
-from data_structures import DeviceInfo
+from borealis.data_structures import DeviceInfo
 
 LOGGER = logging.getLogger(__name__)
 
@@ -164,7 +164,8 @@ class Motor(ControllerComponent):
         self._check_is_ready()
 
         scan_points = np.arange(start, stop, step, dtype=np.float32)
-        self.send(message='Scan', scan_points=scan_points, acq_time=acq_time)
+        acq_times = np.full_like(scan_points, acq_time)
+        self.send(message='Scan', scan_points=scan_points, acq_times=acq_times)
 
     def set_current_as_zero(self):
         """Set motor current position as 0."""

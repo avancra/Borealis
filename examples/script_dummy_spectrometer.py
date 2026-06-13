@@ -13,3 +13,5 @@ mono.scan(1, 10, 1, acq_time=1)
 
 # scan in energy with detector (acquisition) and acquisition time of 1 s per point
 energy.scan(17.1, 17.2, 0.01, acq_time=1)
+
+scan(energy, [17.1, 17.2], [1., 2.])

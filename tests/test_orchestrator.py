@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, call
 import numpy as np
 
 from borealis.orchestrator import Orchestrator
-from data_structures import DeviceInfo
+from borealis.data_structures import DeviceInfo
 
 
 class MockSensor:
@@ -86,9 +86,9 @@ def test_notify_scan_calls_scan_method(monkeypatch):
     orch = Orchestrator()
     orch.scan = MagicMock()
 
-    orch.notify(sender="X", message="Scan", scan_points=[1, 2], acq_time=0.1)
+    orch.notify(sender="X", message="Scan", scan_points=[1, 2], acq_times=[0.1, 0.1])
 
-    orch.scan.assert_called_once_with("X", [1, 2], 0.1)
+    orch.scan.assert_called_once_with("X", [1, 2], [0.1, 0.1])
 
 
 def test_notify_scan_missing_arguments():
@@ -115,9 +115,9 @@ def test_scan_runs_full_cycle():
     orch.add_data_component(dm)
 
     scan_points = [0.0, 1.0]
-    acq_time = 0.0
+    acq_times = [1.0, 2.0]
 
-    orch.scan(sender=ctrl, scan_points=scan_points, acq_time=acq_time)
+    orch.scan(sender=ctrl, scan_points=scan_points, acq_times=acq_times)
 
     # Data manager should receive:
     # 1× new_scan
@@ -141,8 +141,15 @@ def test_scan_motor_runtime_error_propagates():
     orch.add_controller_component(bad_motor)
 
     with pytest.raises(RuntimeError):
-        orch.scan(bad_motor, scan_points=[1], acq_time=0.0)
+        orch.scan(bad_motor, scan_points=[1, ], acq_times=[0.0, ])
 
+
+def test_scan_error_length_not_matching():
+    orch = Orchestrator()
+    ctrl = MockController(name="motor")
+
+    with pytest.raises(ValueError):
+        orch.scan(sender=ctrl, scan_points=[1, 2, 3], acq_times=[0.1, 0.1])
 
 # ---------------------------------------------------------
 # notify_data_managers()

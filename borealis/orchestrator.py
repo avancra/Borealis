@@ -3,7 +3,7 @@ import time
 
 import numpy as np
 
-from data_structures import DeviceInfo
+from borealis.data_structures import DeviceInfo
 
 LOGGER = logging.getLogger(__name__)
 
@@ -69,14 +69,17 @@ class Orchestrator():
             case 'Scan':
                 try:
                     scan_points = kwargs['scan_points']
-                    acq_time = kwargs['acq_time']
+                    acq_times = kwargs['acq_times']
                 except KeyError:
-                    raise AttributeError(f'No scan point or acquisition time is specified')
+                    raise AttributeError(f'No scan point or acquisition times is specified')
 
-                self.scan(sender, scan_points, acq_time)
+                self.scan(sender, scan_points, acq_times)
 
-    def scan(self, sender, scan_points, acq_time):
+    def scan(self, sender, scan_points, acq_times):
         scan_motor = sender
+
+        if len(scan_points) != len(acq_times):
+            raise ValueError("Length of scan points and acquisition times does not match")
 
         # first create new scan in data collector
         all_device_info = {
@@ -98,7 +101,7 @@ class Orchestrator():
         LOGGER.info(
             f"| {'-' * idx_col_width} | {'-' * pos_col_width} | {'-' * time_col_width} | {'-' * count_col_width} |")
 
-        for (idx, position) in enumerate(scan_points):
+        for idx, (position, acq_time) in enumerate(zip(scan_points, acq_times)):
             try:
                 scan_motor.amove(position)
             except RuntimeError as exc:  # TODO: change to MotorNotReady error once available
@@ -116,7 +119,7 @@ class Orchestrator():
                     data[sensor.alias] = sensor.acquisition(acquisition_time=acq_time)
                     log_counts = data[sensor.alias].counts.sum()
             elif acq_time > 0:
-                time.sleep(acq_time)
+                time.sleep(float(acq_time))
 
             # Get all controller position
             positions = {ctlr.alias: ctlr.user_position for ctlr in self.controllers}
@@ -129,7 +132,7 @@ class Orchestrator():
 
         self.notify_data_managers('close_scan', {})
 
-        LOGGER.info(f"\n   Scan ended succesfully. Total duration was: {time.time() - start_time:.2f} s\n")
+        LOGGER.info(f"\n   Scan ended successfully. Total duration was: {time.time() - start_time:.2f} s\n")
 
     def notify_data_managers(self, message, kwargs):
         for component in self.data_managers:

@@ -14,7 +14,7 @@ sys.path.append((Path(__file__).absolute().parent.parent).as_posix())
 
 import math
 
-from borealis import new_file, new_sample, session_data_collector
+from borealis import new_file, new_sample, session_data_collector, scan
 from borealis.controller.controller_base import DummyCtrl
 from borealis.detector.detector_base import DummyDet
 from borealis.motor import Motor

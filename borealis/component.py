@@ -2,7 +2,7 @@ import logging
 from abc import ABCMeta, abstractmethod
 
 from borealis import session_orchestrator
-from data_structures import DeviceInfo
+from borealis.data_structures import DeviceInfo
 
 LOGGER = logging.getLogger(__name__)
 

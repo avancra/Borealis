@@ -12,7 +12,7 @@ import numpy as np
 
 from borealis import mca
 from borealis.component import SensorComponent
-from data_structures import DeviceInfo
+from borealis.data_structures import DeviceInfo
 
 LOGGER = logging.getLogger(__name__)
 
@@ -102,7 +102,7 @@ class DummyDet(Detector):
         self.log(logging.DEBUG, "this message logs the alias")
         LOGGER.debug('This message does not add the alias')
 
-        time.sleep(acquisition_time)
+        time.sleep(float(acquisition_time))
 
         return mca.MCA(np.arange(2048) * acquisition_time, mca.MCAMetadata.dummy())
 
