@@ -2,9 +2,8 @@ import contextlib
 import logging
 import sys
 
-import mca
 from borealis.detector.detector_base import Detector
-from utils import get_lib_dir
+from borealis.utils import get_lib_dir
 
 pixet_dir = get_lib_dir() / 'pixet/'
 sys.path.append(pixet_dir.as_posix())
@@ -42,6 +41,6 @@ class MinipixTPX3(Detector):
     def stop(self):
         pypixet.exit()
 
-    def acquisition(self, acquisition_time: float) -> mca.MCA:
+    def acquisition(self, acquisition_time: float) -> 'MCA':
         pass
 
