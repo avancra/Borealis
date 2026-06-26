@@ -4,6 +4,7 @@ import sys
 
 from borealis.detector.detector_base import Detector
 from borealis.utils import get_lib_dir
+from borealis.mca import MCAMetadata, MCA
 
 pixet_dir = get_lib_dir() / 'pixet/'
 sys.path.append(pixet_dir.as_posix())
@@ -37,10 +38,37 @@ class MinipixTPX3(Detector):
 
         self.serial_number = dev_info.serial
 
+        # TODO: turn into property +  enun for possible modes (cf doc)
+        self.device.setOperationMode(self.pixet.PX_TPX3_OPM_EVENT_ITOT)
+
+        # TODO:  turn into property
+        self.device.setThreshold(self.pixet.PX_CHIP_ALL, 4, self.pixet.PX_THLFLG_ENERGY)
+
+        # TODO: turn into property
+        self.nb_of_frame = 1
+
+        self.width = self.device.width()
+        self.height = self.device.height()
+        self.mca_size = self.width * self.height
+
 
     def stop(self):
         pypixet.exit()
 
     def acquisition(self, acquisition_time: float) -> 'MCA':
-        pass
+        rc = self.device.doSimpleAcquisition(self.nb_of_frame,
+                                             acquisition_time,
+                                             self.pixet.PX_FTYPE_NONE,
+                                             "")
+        raw_frame = self.device.lastAcqFrameRefInc()
+        for sub_frame in raw_frame.subFrames():
+            if sub_frame.frameName() in ("iToT", "ToT"):
+
+                mca_metadata = MCAMetadata(raw_frame.acqTime(),
+                                           None,
+                                           None,
+                                           self.get_det_info())
+                mca = MCA(sub_frame.data(), mca_metadata)
+
+                return mca
 
