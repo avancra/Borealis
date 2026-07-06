@@ -117,7 +117,10 @@ class Orchestrator():
                 for sensor in self.sensors:
                     # TODO: make asynchronous in case there are many sensors
                     data[sensor.alias] = sensor.acquisition(acquisition_time=acq_time)
-                    log_counts = data[sensor.alias].counts.sum()
+                    try:
+                        log_counts = data[sensor.alias].counts.sum()
+                    except AttributeError:
+                        log_counts = np.nan
             elif acq_time > 0:
                 time.sleep(float(acq_time))
 

@@ -6,13 +6,11 @@ When in its repository, launched using : ipython -i dummy_spectrometer.py
 
 @author: renebes
 """
-
+import math
 import sys
 from pathlib import Path
 
 sys.path.append((Path(__file__).absolute().parent.parent).as_posix())
-
-import math
 
 from borealis import new_file, new_sample, session_data_collector, scan
 from borealis.controller.controller_base import DummyCtrl

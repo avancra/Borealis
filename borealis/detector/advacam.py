@@ -2,9 +2,12 @@ import contextlib
 import logging
 import sys
 
+import numpy as np
+
 from borealis.detector.detector_base import Detector
 from borealis.utils import get_lib_dir
-from borealis.mca import MCAMetadata, MCA
+from borealis.mca import FrameMetadata, Frame
+from borealis.data_structures import DeviceInfo
 
 pixet_dir = get_lib_dir() / 'pixet/'
 sys.path.append(pixet_dir.as_posix())
@@ -31,8 +34,6 @@ class MinipixTPX3(Detector):
             self.device = devices[0]
 
         full_name = self.device.fullName()
-        super().__init__(full_name)
-
         dev_info = self.pixet.DevInfo()
         self.device.deviceInfo(dev_info)
 
@@ -51,11 +52,13 @@ class MinipixTPX3(Detector):
         self.height = self.device.height()
         self.mca_size = self.width * self.height
 
+        super().__init__(full_name)
+
 
     def stop(self):
         pypixet.exit()
 
-    def acquisition(self, acquisition_time: float) -> 'MCA':
+    def acquisition(self, acquisition_time: float) -> Frame:
         rc = self.device.doSimpleAcquisition(self.nb_of_frame,
                                              acquisition_time,
                                              self.pixet.PX_FTYPE_NONE,
@@ -64,11 +67,17 @@ class MinipixTPX3(Detector):
         for sub_frame in raw_frame.subFrames():
             if sub_frame.frameName() in ("iToT", "ToT"):
 
-                mca_metadata = MCAMetadata(raw_frame.acqTime(),
-                                           None,
-                                           None,
-                                           self.get_det_info())
-                mca = MCA(sub_frame.data(), mca_metadata)
+                mca_metadata = FrameMetadata(raw_frame.acqTime(), self.get_det_info())
 
-                return mca
+                itot = np.asarray(sub_frame.data()).reshape(self.height, self.width)
+                frame = Frame(np.zeros_like(itot), itot, mca_metadata)
 
+                return frame
+
+    def get_device_info(self):
+        attrs = self.get_det_info()
+        data_sets = {'IToT': (self.height, self.width),
+                     'Events': (self.height, self.width),
+                     'runtime': 1,
+                     }
+        return DeviceInfo(alias=self.alias, metadata={'attrs': attrs, 'data_sets': data_sets })

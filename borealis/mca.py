@@ -58,3 +58,55 @@ class MCA:
     def from_dict(cls, mca_dict):
         return cls(np.array(mca_dict["mca_counts"]),
                    MCAMetadata.from_dict(mca_dict["metadata"]))
+
+
+class FrameMetadata:
+
+    def __init__(self, runtime: float, sensor_info: dict):
+        self.runtime = runtime
+        self.acq_date = datetime.datetime.now()
+        self.det_sn = sensor_info["serial_number"]
+        self.det_alias = sensor_info["alias"]
+        self.det_type = sensor_info["type"]
+        # self._mask_dead_pixel
+        LOGGER.debug('New Frame (2D) created')
+
+    def as_dict(self):
+        det_info = {'serial_number': self.det_sn,
+                    'alias': self.det_alias,
+                    'type': self.det_type}
+
+        return {'date': self.acq_date,
+                'runtime': self.runtime,
+                'sensor': det_info}
+
+    @classmethod
+    def from_dict(cls, md_dict):
+        return cls(runtime=md_dict['runtime'],
+                   sensor_info=md_dict['detector'])
+
+
+    @classmethod
+    def dummy(cls):
+        """For testing purposes"""
+        return cls(1,{'serial_number': 'Unknown', 'alias': 'DummySensor', 'type': 'Dummy'})
+
+
+class Frame:
+
+    def __init__(self, events: np.ndarray, itot: np.ndarray, metadata: FrameMetadata):
+        self.events = events
+        self.itot = itot
+        self.metadata = metadata
+
+    def as_dict(self):
+        return_dict = {"itot": self.itot.tolist(),
+                       "events": self.events.tolist(),
+                       "metadata": self.metadata.as_dict()}
+        return return_dict
+
+    @classmethod
+    def from_dict(cls, frame_dict):
+        return cls(np.array(frame_dict["events"]),
+                   np.array(frame_dict['itot']),
+                   FrameMetadata.from_dict(frame_dict["metadata"]))

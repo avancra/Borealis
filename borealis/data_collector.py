@@ -1,10 +1,11 @@
 import logging
 from datetime import datetime
 from pathlib import Path
+from typing import Union
 
 import h5py
 
-from borealis.mca import MCA
+from borealis.mca import MCA, Frame
 from borealis.component import DataComponent
 
 LOGGER = logging.getLogger(__name__)
@@ -83,9 +84,13 @@ class DataCollector(DataComponent):
                 group.attrs[name.replace('_', ' ').capitalize()] = value
             for name, size in device_info['data_sets'].items():
                 if size == 1:
-                    group.create_dataset(f'{name}', (kwargs['scan_points'], ))
-                else:
-                    group.create_dataset(f'{name}', (size, kwargs['scan_points']))
+                    group.create_dataset(f'{name}', shape=(kwargs['scan_points'], ))
+                elif isinstance(size, int):
+                    group.create_dataset(f'{name}', shape=(size, kwargs['scan_points']))
+                elif isinstance(size, tuple):
+                    dataset_size = list(size)
+                    dataset_size.extend([kwargs['scan_points'], ])
+                    group.create_dataset(f'{name}', shape=(tuple(dataset_size)))
 
         # h5_scan.attrs["scan type"] = f"Type of the scan #{scan_number}, ie. function call"
 
@@ -97,13 +102,20 @@ class DataCollector(DataComponent):
 
         self.h5file.flush()
 
-    def add_datapoint_mca(self, alias: str, idx: int, mca: MCA):
-        nb_channels = len(mca.counts)
-        self.current_scan[alias]['MCA'][0:nb_channels,idx] = mca.counts
-        self.current_scan[alias]['runtime'][idx] = mca.metadata.runtime
-        self.current_scan[alias]['ICR'][idx] = mca.metadata.input_cr
-        self.current_scan[alias]['OCR'][idx] = mca.metadata.output_cr
-        self.current_scan[alias]['OCR'][idx] = mca.metadata.output_cr
+    def add_datapoint_mca(self, alias: str, idx: int, data: Union[MCA, Frame]):
+        match data:
+            case MCA():
+                nb_channels = len(data.counts)
+                self.current_scan[alias]['MCA'][0:nb_channels,idx] = data.counts
+                self.current_scan[alias]['runtime'][idx] = data.metadata.runtime
+                self.current_scan[alias]['ICR'][idx] = data.metadata.input_cr
+                self.current_scan[alias]['OCR'][idx] = data.metadata.output_cr
+                self.current_scan[alias]['OCR'][idx] = data.metadata.output_cr
+            case Frame():
+                height, width = data.itot.shape
+                self.current_scan[alias]['Events'][0:height, 0: width, idx] = data.events
+                self.current_scan[alias]['IToT'][0:height, 0: width, idx] = data.itot
+                self.current_scan[alias]['runtime'][idx] = data.metadata.runtime
 
         self.h5file.flush()
 
