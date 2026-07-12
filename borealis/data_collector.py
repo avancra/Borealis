@@ -5,8 +5,8 @@ from typing import Union
 
 import h5py
 
-from borealis.mca import MCA, Frame
 from borealis.component import DataComponent
+from borealis.data_structures import ScalarDatasetSchema, VectorDatasetSchema, MatrixDatasetSchema
 
 LOGGER = logging.getLogger(__name__)
 
@@ -16,12 +16,7 @@ class DataCollector(DataComponent):
 
     def __init__(self):
         """
-        DataCollector constructor
-
-        Parameters
-        ----------
-        orchestrator: Orchestrator
-            Session orchestrator
+        DataCollector constructor.
 
         """
         super().__init__()
@@ -78,54 +73,39 @@ class DataCollector(DataComponent):
         self.current_scan.attrs["start_time"] = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
         self.current_scan.attrs["Sample name"] = self.current_sample
 
-        for alias, device_info in kwargs['all_device_info'].items():
-            group = self.current_scan.create_group(alias)
-            for name, value in device_info['attrs'].items():
+        for h5_schema in kwargs['all_h5_data_schema']:
+            group = self.current_scan.create_group(h5_schema.alias)
+            for name, value in h5_schema.attributes.items():
                 group.attrs[name.replace('_', ' ').capitalize()] = value
-            for name, size in device_info['data_sets'].items():
-                if size == 1:
-                    group.create_dataset(f'{name}', shape=(kwargs['scan_points'], ))
-                elif isinstance(size, int):
-                    group.create_dataset(f'{name}', shape=(size, kwargs['scan_points']))
-                elif isinstance(size, tuple):
-                    dataset_size = list(size)
-                    dataset_size.extend([kwargs['scan_points'], ])
-                    group.create_dataset(f'{name}', shape=(tuple(dataset_size)))
-
+            for schema in h5_schema.datasets.raw_data:
+                match schema:
+                    case ScalarDatasetSchema():
+                        group.create_dataset(f'{schema.name}', shape=(kwargs['scan_points'], ), dtype='f4')
+                    case VectorDatasetSchema():
+                        group.create_dataset(f'{schema.name}', shape=(schema.length, kwargs['scan_points']), dtype='f4')
+                    case MatrixDatasetSchema():
+                        group.create_dataset(f'{schema.name}', shape=(*schema.dims, kwargs['scan_points']), dtype='f4')
         # h5_scan.attrs["scan type"] = f"Type of the scan #{scan_number}, ie. function call"
 
         self.h5file.flush()
+
+    def add_scan_point(self, idx: int, data: dict):
+        for component_alias, component_data in data.items():
+            for dataset in component_data.get_datasets().raw_data:
+                match dataset.schema:
+                    case ScalarDatasetSchema():
+                        self.current_scan[component_alias][dataset.schema.name][idx] = dataset.value
+                    case VectorDatasetSchema():
+                        vector_length = dataset.schema.length
+                        self.current_scan[component_alias][dataset.schema.name][0:vector_length, idx] = dataset.value
+                    case MatrixDatasetSchema():
+                        height, width = dataset.schema.dims
+                        self.current_scan[component_alias][dataset.schema.name][0:height, 0:width, idx] = dataset.value
+
+            self.h5file.flush()
 
     def close_scan(self):
         self.current_scan.attrs["end_time"] = datetime.now().strftime("%Y-%m-%d %H-%M-%S")
         self.current_scan = None
 
         self.h5file.flush()
-
-    def add_datapoint_mca(self, alias: str, idx: int, data: Union[MCA, Frame]):
-        match data:
-            case MCA():
-                nb_channels = len(data.counts)
-                self.current_scan[alias]['MCA'][0:nb_channels,idx] = data.counts
-                self.current_scan[alias]['runtime'][idx] = data.metadata.runtime
-                self.current_scan[alias]['ICR'][idx] = data.metadata.input_cr
-                self.current_scan[alias]['OCR'][idx] = data.metadata.output_cr
-                self.current_scan[alias]['OCR'][idx] = data.metadata.output_cr
-            case Frame():
-                height, width = data.itot.shape
-                self.current_scan[alias]['Events'][0:height, 0: width, idx] = data.events
-                self.current_scan[alias]['IToT'][0:height, 0: width, idx] = data.itot
-                self.current_scan[alias]['runtime'][idx] = data.metadata.runtime
-
-        self.h5file.flush()
-
-    def add_motor_datapoint(self, alias: str, idx: int, position):
-        self.current_scan[alias]['user_position'][idx] = position
-
-        self.h5file.flush()
-
-    def add_scan_point(self, idx, data, positions):
-        for sensor_alias, sensor_data in data.items():
-            self.add_datapoint_mca(sensor_alias, idx, sensor_data)
-        for ctlr_alias, ctlr_position in positions.items():
-            self.add_motor_datapoint(ctlr_alias, idx, ctlr_position)

@@ -3,21 +3,26 @@ from unittest.mock import MagicMock, call
 import numpy as np
 
 from borealis.orchestrator import Orchestrator
-from borealis.data_structures import DeviceInfo
+from borealis.data_structures import H5DataSchemas, VectorDatasetSchema, ScalarDatasetSchema, SchemaCollection
+from borealis.data_templates import MCA, MoverPositions
 
 
 class MockSensor:
     def __init__(self, alias="S1"):
         self.alias = alias
 
-    def get_device_info(self):
-        return DeviceInfo(alias= self.alias, metadata={'data': 'test'})
+    def get_h5_data_schema(self):
+        dataset_schemas = SchemaCollection(raw_data=[VectorDatasetSchema(name='test_raw', length=42),],
+                                           processed_data=[ScalarDatasetSchema(name='test_processed'), ])
+        return H5DataSchemas(alias= self.alias, attributes={}, datasets=dataset_schemas)
 
     def acquisition(self, acquisition_time):
         # Fake acquisition result
-        mock = MagicMock()
-        mock.counts = np.array([1, 2, 3])
-        return mock
+
+        data = MCA(3)
+        data.mca.value = np.array([1, 2, 3]) * acquisition_time
+
+        return data
 
 
 class MockController:
@@ -25,11 +30,19 @@ class MockController:
         self.alias = name
         self.user_position = 0
 
-    def get_device_info(self):
-        return DeviceInfo(alias= self.alias, metadata={'data': 'test'})
+    def get_h5_data_schema(self):
+        dataset_schemas = SchemaCollection(raw_data=[VectorDatasetSchema(name='test_raw', length=42), ],
+                                           processed_data=[ScalarDatasetSchema(name='test_processed'), ])
+        return H5DataSchemas(alias=self.alias, attributes={}, datasets=dataset_schemas)
 
     def amove(self, pos):
         self.user_position = pos
+
+    def get_position(self) -> MoverPositions:
+        data = MoverPositions()
+        data.position.value = self.user_position
+
+        return data
 
 
 class MockDataManager:
@@ -86,7 +99,7 @@ def test_notify_scan_calls_scan_method(monkeypatch):
     orch = Orchestrator()
     orch.scan = MagicMock()
 
-    orch.notify(sender="X", message="Scan", scan_points=[1, 2], acq_times=[0.1, 0.1])
+    orch.dispatch(sender="X", message="Scan", scan_points=[1, 2], acq_times=[0.1, 0.1])
 
     orch.scan.assert_called_once_with("X", [1, 2], [0.1, 0.1])
 
@@ -95,7 +108,7 @@ def test_notify_scan_missing_arguments():
     orch = Orchestrator()
 
     with pytest.raises(AttributeError):
-        orch.notify(sender="X", message="Scan")
+        orch.dispatch(sender="X", message="Scan")
 
 
 # ---------------------------------------------------------
@@ -163,7 +176,7 @@ def test_notify_data_managers_calls_receive():
     orch.add_data_component(dm1)
     orch.add_data_component(dm2)
 
-    orch.notify_data_managers("event", {"x": 1})
+    orch.notify_data_managers(orch,"event", {"x": 1})
 
     dm1.receive.assert_called_once_with("event", x=1)
     dm2.receive.assert_called_once_with("event", x=1)

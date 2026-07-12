@@ -12,7 +12,8 @@ import numpy as np
 from borealis.controller.controller_base import Controller
 from borealis.exceptions import SoftLimitError, NotReadyError
 from borealis.component import ControllerComponent
-from borealis.data_structures import DeviceInfo
+from borealis.data_structures import H5DataSchemas
+from borealis.data_templates import MoverPositions
 
 LOGGER = logging.getLogger(__name__)
 
@@ -57,10 +58,17 @@ class Motor(ControllerComponent):
     def movement_direction(self):
         return "Pos(+)" if self._direction_coeff == 1 else "Neg(-)"
 
-    def get_device_info(self):
+    def get_h5_data_schema(self) -> H5DataSchemas:
         attrs = {'Alias': self.alias, }
-        datasets = {'user_position': 1, }
-        return DeviceInfo(alias=self.alias, metadata={'attrs': attrs, 'data_sets': datasets})
+        data_schema = MoverPositions().get_schemas()
+
+        return H5DataSchemas(alias=self.alias, attributes= attrs, datasets=data_schema)
+
+    def get_position(self) -> MoverPositions:
+        data = MoverPositions()
+        data.position.value = self.user_position
+
+        return data
 
     def where(self):
         """

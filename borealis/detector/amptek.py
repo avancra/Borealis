@@ -13,13 +13,15 @@ import usb.util
 import numpy as np
 
 from borealis.detector.detector_base import Detector
-from borealis.mca import MCAMetadata, MCA
+from borealis.data_templates import MCA
+from borealis.data_structures import SchemaCollection
 
 LOGGER = logging.getLogger(__name__)
 
 
 class AmptekCdTe123(Detector):
     """Interface for CdTe X-123 detector from Amptek."""
+
     vendor_id = 0x10C4
     product_id = 0x842A
     max_allowed_acq_time = 99999999.9
@@ -52,9 +54,17 @@ class AmptekCdTe123(Detector):
 
         self.serial_number = self._get_serial_number()
 
+        # TODO: get from detector
+        self.mca_size = 2048
+
         LOGGER.info("Detector %s successfully initialised", self)
 
-    def acquisition(self, acquisition_time: float):
+    def get_datasets_schemas(self) -> SchemaCollection:
+        schemas = MCA(self.mca_size).get_schemas()
+
+        return schemas
+
+    def acquisition(self, acquisition_time: float) -> MCA:
         """Start an acquisition and return corresponding Spectrum object."""
         self._clear_spectrum()
         self._set_acquisition_time(acquisition_time, save_to_mem=False)
@@ -62,16 +72,17 @@ class AmptekCdTe123(Detector):
         sleep(acquisition_time*1.1)
         self._disable_mca()
         raw_spe_st = self._get_spectrum_status()
-        mca_counts = self._get_mca_counts(raw_spe_st, num_chan=2048, contain_status=True)
-        status = Status.from_spectrum_status_packet(raw_spe_st, num_chan=2048)
 
-        mca_metadata = MCAMetadata(status.realtime,
-                                   status.fast_count / status.acq_time,
-                                   status.slow_count / status.acq_time,
-                                   self.get_det_info())
-        mca_obj = MCA(mca_counts, mca_metadata)
+        data = MCA(self.mca_size)
+        data.mca = self._get_mca_counts(raw_spe_st, num_chan=self.mca_size, contain_status=True)
 
-        return mca_obj
+        status = Status.from_spectrum_status_packet(raw_spe_st, num_chan=self.mca_size)
+
+        data.runtime = status.realtime
+        data.icr = status.fast_count / status.acq_time
+        data.ocr = status.slow_count / status.acq_time
+
+        return data
 
     def stop(self):
         """Close the connection to the detector and free resources."""

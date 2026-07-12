@@ -13,7 +13,7 @@ __all__ = [
     "controller",
     "detector",
     "motor",
-    "mca",
+    "data_templates",
     "exceptions",
     "component",
     "spellman",

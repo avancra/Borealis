@@ -3,7 +3,7 @@ import time
 
 import numpy as np
 
-from borealis.data_structures import DeviceInfo
+from borealis.data_structures import H5DataSchemas
 
 LOGGER = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ class Orchestrator():
         LOGGER.debug('Adding controller component %s', component)
 
         self._ensure_unique_alias(component)
-        self._validate_device_info(component)
+        self._check_h5_data_schema_method(component)
         self.controllers.append(component)
 
     def add_sensor_component(self, component):
@@ -34,7 +34,7 @@ class Orchestrator():
         LOGGER.debug('Adding sensor component %s', component)
 
         self._ensure_unique_alias(component)
-        self._validate_device_info(component)
+        self._check_h5_data_schema_method(component)
         self.sensors.append(component)
 
     def _ensure_unique_alias(self, component):
@@ -43,18 +43,18 @@ class Orchestrator():
             raise ValueError(f"Duplicate alias detected: '{component.alias}'")
 
     @staticmethod
-    def _validate_device_info(component):
-        if not hasattr(component, "get_device_info"):
-            LOGGER.error("Component %s is missing get_device_info()", component)
-            raise AttributeError(f"Component {component} must implement get_device_info()")
-        dev_info = component.get_device_info()
-        if not isinstance(dev_info, DeviceInfo):
+    def _check_h5_data_schema_method(component):
+        if not hasattr(component, "get_h5_data_schema"):
+            LOGGER.error("Component %s is missing get_h5_data_schema()", component)
+            raise AttributeError(f"Component {component} must implement get_h5_data_schema()")
+        h5_data_format = component.get_h5_data_schema()
+        if not isinstance(h5_data_format, H5DataSchemas):
             LOGGER.error(
-                "Component %s get_device_info() must return DeviceInfo, got %s",
-                component, type(dev_info)
+                "Component %s get_device_info() must return H5DataSchemas, got %s",
+                component, type(h5_data_format)
             )
             raise TypeError(
-                f"{component} get_device_info() must return DeviceInfo, got {type(dev_info)}"
+                f"{component} get_device_info() must return H5DataSchemas, got {type(h5_data_format)}"
             )
 
     def _remove_all_sensors(self):
@@ -63,7 +63,7 @@ class Orchestrator():
     def _remove_all_controllers(self):
         self.controllers = []
 
-    def notify(self, sender, message, **kwargs):
+    def dispatch(self, sender, message, **kwargs):
         """Notifies all components with the message."""
         match message:
             case 'Scan':
@@ -74,6 +74,8 @@ class Orchestrator():
                     raise AttributeError(f'No scan point or acquisition times is specified')
 
                 self.scan(sender, scan_points, acq_times)
+            case 'Processed data':
+                self.notify_data_managers(sender, message, kwargs)
 
     def scan(self, sender, scan_points, acq_times):
         scan_motor = sender
@@ -82,12 +84,9 @@ class Orchestrator():
             raise ValueError("Length of scan points and acquisition times does not match")
 
         # first create new scan in data collector
-        all_device_info = {
-            info.alias: info.metadata
-            for info in (device.get_device_info() for device in (self.sensors + self.controllers))
-        }
-        scan_info = {'scan_points': len(scan_points), 'all_device_info': all_device_info}
-        self.notify_data_managers('new_scan', scan_info)
+        all_h5_data_schema = [device.get_h5_data_schema() for device in (self.sensors + self.controllers)]
+        scan_info = {'scan_points': len(scan_points), 'all_h5_data_schema': all_h5_data_schema}
+        self.notify_data_managers(self, 'new_scan', scan_info)
 
         # Prepare console logging TODO: move to a dedicated DataComponent
         start_time = time.time()
@@ -118,26 +117,29 @@ class Orchestrator():
                     # TODO: make asynchronous in case there are many sensors
                     data[sensor.alias] = sensor.acquisition(acquisition_time=acq_time)
                     try:
-                        log_counts = data[sensor.alias].counts.sum()
+                        log_counts = data[sensor.alias].mca.value.sum()
                     except AttributeError:
                         log_counts = np.nan
             elif acq_time > 0:
                 time.sleep(float(acq_time))
 
             # Get all controller position
-            positions = {ctlr.alias: ctlr.user_position for ctlr in self.controllers}
+            positions = {ctlr.alias: ctlr.get_position() for ctlr in self.controllers}
 
-            point_data = {'idx': idx, 'data': data, 'positions': positions}
-            self.notify_data_managers('new_scan_point', point_data)
+            all_component_data = {**data, **positions}
+
+            point_data = {'idx': idx, 'data': all_component_data}
+            self.notify_data_managers(self, 'new_scan_point', point_data)
 
             LOGGER.info(f"| {idx:{idx_col_width}.0f} | {position:{pos_col_width}.4f} "
                         f"| {acq_time:{time_col_width}.2f} | {log_counts:{count_col_width}.0f} |")
 
-        self.notify_data_managers('close_scan', {})
+        self.notify_data_managers(self, 'close_scan', {})
 
         LOGGER.info(f"\n   Scan ended successfully. Total duration was: {time.time() - start_time:.2f} s\n")
 
-    def notify_data_managers(self, message, kwargs):
+    def notify_data_managers(self, sender,  message, kwargs):
         for component in self.data_managers:
-            LOGGER.debug(f'Notifying {component}...')
-            component.receive(message, **kwargs)
+            if component != sender:
+                LOGGER.debug(f'Notifying {component}...')
+                component.receive(message, **kwargs)

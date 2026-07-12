@@ -7,7 +7,8 @@ import numpy as np
 
 from borealis.motor import Motor
 from borealis.component import ControllerComponent
-from borealis.data_structures import DeviceInfo
+from borealis.data_structures import H5DataSchemas
+from borealis.data_templates import MoverPositions
 
 LOGGER = logging.getLogger(__name__)
 
@@ -65,11 +66,18 @@ class PseudoMotor(ControllerComponent):
     def motor_list(self):
         return [motor.alias for motor in self._motors]
 
-    def get_device_info(self):
+    def get_h5_data_schema(self) -> H5DataSchemas:
         attrs = {'Alias': self.alias,
                  'Motors': self.motor_list,}
-        datasets = {'user_position': 1, }
-        return DeviceInfo(alias=self.alias, metadata={'attrs': attrs, 'data_sets': datasets})
+        datasets = MoverPositions().get_schemas()
+
+        return H5DataSchemas(alias=self.alias, attributes= attrs, datasets= datasets)
+
+    def get_position(self) -> MoverPositions:
+        data = MoverPositions()
+        data.position.value = self.user_position
+
+        return data
 
     def _check_is_ready(self):
         # TODO: change to MotorNotReady error once available

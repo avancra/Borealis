@@ -6,8 +6,8 @@ import numpy as np
 
 from borealis.detector.detector_base import Detector
 from borealis.utils import get_lib_dir
-from borealis.mca import FrameMetadata, Frame
-from borealis.data_structures import DeviceInfo
+from borealis.data_templates import Frame
+from borealis.data_structures import SchemaCollection
 
 pixet_dir = get_lib_dir() / 'pixet/'
 sys.path.append(pixet_dir.as_posix())
@@ -50,10 +50,8 @@ class MinipixTPX3(Detector):
 
         self.width = self.device.width()
         self.height = self.device.height()
-        self.mca_size = self.width * self.height
 
         super().__init__(full_name)
-
 
     def stop(self):
         pypixet.exit()
@@ -64,20 +62,19 @@ class MinipixTPX3(Detector):
                                              self.pixet.PX_FTYPE_NONE,
                                              "")
         raw_frame = self.device.lastAcqFrameRefInc()
+        frame = Frame(self.width, self.height)
+        frame.runtime = raw_frame.acqTime()
+
         for sub_frame in raw_frame.subFrames():
             if sub_frame.frameName() in ("iToT", "ToT"):
+                frame.itot  = np.asarray(sub_frame.data()).reshape(self.height, self.width)
 
-                mca_metadata = FrameMetadata(raw_frame.acqTime(), self.get_det_info())
+            elif sub_frame.frameName() in ("Event", "ToA"):
+                frame.events = np.asarray(sub_frame.data()).reshape(self.height, self.width)
 
-                itot = np.asarray(sub_frame.data()).reshape(self.height, self.width)
-                frame = Frame(np.zeros_like(itot), itot, mca_metadata)
+        return frame
 
-                return frame
+    def get_datasets_schemas(self) -> SchemaCollection:
+        schemas = Frame(self.width, self.height).get_schemas()
 
-    def get_device_info(self):
-        attrs = self.get_det_info()
-        data_sets = {'IToT': (self.height, self.width),
-                     'Events': (self.height, self.width),
-                     'runtime': 1,
-                     }
-        return DeviceInfo(alias=self.alias, metadata={'attrs': attrs, 'data_sets': data_sets })
+        return schemas

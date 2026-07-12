@@ -14,7 +14,8 @@ import numpy as np
 
 from borealis.detector.ketek_error import check_error
 from borealis.detector.detector_base import Detector
-from borealis.mca import MCA, MCAMetadata
+from borealis.data_templates import MCA
+from borealis.data_structures import SchemaCollection
 
 LOGGER = logging.getLogger(__name__)
 
@@ -34,23 +35,31 @@ class KetekAXASM(Detector):
         self._start_system()
         self.serial_number = self._get_serial_number()
 
+        # TODO get from detector
+        self.mca_size = 4096
+
         LOGGER.info("Detector %s successfully initialised", self)
 
-    def acquisition(self, acquisition_time: float):
+    def get_datasets_schemas(self) -> SchemaCollection:
+        schemas = MCA(self.mca_size).get_schemas()
+
+        return schemas
+
+    def acquisition(self, acquisition_time: float) -> MCA:
         """Start an acquisition and return corresponding Spectrum object."""
         self._start_run()
         sleep(acquisition_time)
         self._stop_run()
-        mca_counts = self._get_spectrum()
+
+        data = MCA(self.mca_size)
+        data.mca = self._get_spectrum()
+
         run_stat = self._get_all_run_stats()
+        data.runtime = run_stat['runtime']
+        data.icr = run_stat['ICR']
+        data.ocr = run_stat['OCR']
 
-        mca_metadata = MCAMetadata(run_stat['runtime'],
-                                   run_stat['ICR'],
-                                   run_stat['OCR'],
-                                   self.get_det_info())
-        mca = MCA(mca_counts, mca_metadata)
-
-        return mca
+        return data
 
     def stop(self):
         """
