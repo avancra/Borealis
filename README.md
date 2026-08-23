@@ -1,11 +1,11 @@
 # Borealis
 
-Copyright (C) 2021-2026 Aurélie Vancraeyenest
+Control and acquisition software for X-ray spectrometers.
 
-This project is licensed under the GNU Lesser General Public License v3.0 or later (LGPL-3.0-or-later).
+_Copyright (C) 2021-2026 Aurélie Vancraeyenest_
 
-Control and acquisition software for X-ray emission and absorption 
-spectrometers.
+_This project is licensed under the GNU Lesser General Public License v3.0 or later (LGPL-3.0-or-later)._
+
 
 ## Purpose
 
