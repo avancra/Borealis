@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+
+title: Borealis
+message: "If you use this software in research, please cite it."
+authors:
+  - family-names: Vancraeyenest
+    given-names: Aurélie
+  - family-names: Bes
+    given-names: René
+license: LGPL-3.0-or-later
+
+abstract: >
+  Open-source software library for control and acquisition of X-ray spectrometers
